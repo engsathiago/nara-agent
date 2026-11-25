@@ -1,0 +1,45 @@
+name: Nara owner CI
+
+# A portable gate for this repository. The inherited full CI uses the
+# upstream Blacksmith runners and release credentials, which are not
+# provisioned in a new owner account.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nara-owner-ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  local-contract:
+    name: Product identity and core integrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install locked Python test environment
+        uses: ./.github/actions/setup-pm
+        with:
+          extras: '[]'
+          test-environment: 'true'
+
+      - name: Check active product identity
+        run: "$NARA_PYTHON" scripts/check_product_identity.py
+
+      - name: Test mission control, voice, and process cleanup
+        env:
+          NARA_TEST_WORKERS: '2'
+          OPENAI_API_KEY: ''
+          OPENROUTER_API_KEY: ''
+          NOUS_API_KEY: ''
+        run: scripts/run_tests.sh tests/plugins/mission_control tests/test_session_daemon_reaper.py tests/tools/test_voice_mode.py

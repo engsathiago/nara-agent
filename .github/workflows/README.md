@@ -1,5 +1,16 @@
 # GitHub Actions workflows
 
+## Owner account CI
+
+`nara-owner-ci.yml` is the portable gate for this repository. It runs on
+GitHub-hosted Ubuntu for pushes to `main`, pull requests, and manual dispatch.
+It checks the active Nara identity and runs focused mission control, voice,
+and process-cleanup tests from the locked test environment. The inherited
+`ci.yaml` and release workflows still describe the broader upstream pipeline;
+they require Blacksmith runner labels and protected publishing credentials
+before they can run in a new owner account. The owner gate is a smoke check,
+not evidence that the whole cross-platform release matrix passed.
+
 This directory has 57 workflow files. Most of them are **reusable workflows**
 (`on: workflow_call`). They never start on their own; an entry-point workflow
 calls them. This README covers what starts each workflow, which jobs it skips
