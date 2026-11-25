@@ -39,7 +39,7 @@ function makeFakeDesktop(version) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'msix-roundtrip-'))
   fs.writeFileSync(
     path.join(dir, 'product-identity.cjs'),
-    "module.exports = { store: false, light: false, displayName: 'Nara', appId: 'com.nousresearch.nara-bundled', channel: 'latest', artifactNamePascal: 'NaraBundled', msixAppIdWithOrg: 'NousResearch.NaraBundled' }\n"
+    "module.exports = { store: false, light: false, displayName: 'Nara', appId: 'io.github.engsathiago.nara-bundled', channel: 'latest', artifactNamePascal: 'NaraBundled', msixAppIdWithOrg: 'Engsathiago.NaraBundled' }\n"
   )
   fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'nara-desktop', version }))
   return dir

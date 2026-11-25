@@ -121,7 +121,7 @@ function channelRecord(channel: 'stable' | 'canary', sequence: number): FixtureR
       appNamePascal: 'Nara',
       artifactNamePascal: 'Nara',
       appId: 'chat.nous.nara',
-      msixAppIdWithOrg: 'NousResearch.Nara',
+      msixAppIdWithOrg: 'Engsathiago.Nara',
       cliName: 'nara',
       windowsExecutableName: 'nara'
     },
@@ -147,7 +147,7 @@ function buildManifest(
     appNamePascal: 'Nara',
     artifactNamePascal: 'Nara',
     appId: 'chat.nous.nara',
-    msixAppIdWithOrg: 'NousResearch.Nara',
+    msixAppIdWithOrg: 'Engsathiago.Nara',
     cliName: 'nara',
     windowsExecutableName: 'nara'
   }

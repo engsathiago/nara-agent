@@ -1003,7 +1003,7 @@ def _run_post_update_maintenance(
         print(
             "  ℹ macOS: if Nara re-prompts for permissions you already "
             "granted (toggle shows ON), the stored grant is stale — run "
-            "`tccutil reset ScreenCapture com.nousresearch.nara` (repeat "
+            "`tccutil reset ScreenCapture io.github.engsathiago.nara` (repeat "
             "per affected service), toggle it ON in System Settings, then "
             "fully quit & relaunch once."
         )

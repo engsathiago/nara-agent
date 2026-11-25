@@ -385,12 +385,12 @@ def _make_signable_app(desktop_dir: Path) -> Path:
     (ent_dir / "entitlements.mac.inherit.plist").write_text("<plist/>", encoding="utf-8")
 
     app = desktop_dir / "release" / "mac-arm64" / "Nara.app"
-    _write_info_plist(app, "com.nousresearch.nara")
+    _write_info_plist(app, "io.github.engsathiago.nara")
     (app / "Contents" / "MacOS").mkdir(parents=True)
     (app / "Contents" / "MacOS" / "Nara").write_text("", encoding="utf-8")
 
     helper = app / "Contents" / "Frameworks" / "Nara Helper.app"
-    _write_info_plist(helper, "com.nousresearch.nara.helper")
+    _write_info_plist(helper, "io.github.engsathiago.nara.helper")
 
     framework = app / "Contents" / "Frameworks" / "Electron Framework.framework"
     _write_info_plist(framework, "com.github.Electron.framework")
@@ -763,7 +763,7 @@ def test_relaunchable_fixup_configured_identity_failure_never_falls_back_to_adho
     # replacement would orphan its keychain ACLs and TCC grants.
     monkeypatch.setattr(
         main_desktop, "_macos_signature_summary",
-        lambda codesign, app: {"team": "TEAMID123", "identifier": "com.nousresearch.nara",
+        lambda codesign, app: {"team": "TEAMID123", "identifier": "io.github.engsathiago.nara",
                                "verified": True},
     )
 

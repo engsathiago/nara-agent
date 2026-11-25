@@ -29,12 +29,12 @@ function request(sequence: number = 65536, token: string = 'ab12cd34ef56ab78'): 
     identity: {
       token,
       displayName: 'Nara no-registry-needed',
-      appId: `com.nousresearch.nara-channel-${token}`,
+      appId: `io.github.engsathiago.nara-channel-${token}`,
       appNamePascal: `NaraChannel${token}`,
       artifactNamePascal: `NaraChannel${token}`,
       cliName: 'nara-no-registry-needed',
       windowsExecutableName: 'nara-no-registry-needed',
-      msixAppIdWithOrg: `NousResearch.NaraChannel${token}`
+      msixAppIdWithOrg: `Engsathiago.NaraChannel${token}`
     },
     bundleEnv: { NARA_PREVIEW_FULL_CONNECTORS: '1' },
     publicBase: 'https://builds.example.test'

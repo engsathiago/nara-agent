@@ -23,7 +23,7 @@ from pathlib import Path
 
 # Never ``ai.nara.*``: that prefix is what the gateway's restart route, its control-socket
 # supervisor declaration and every fleet scan read as "an installed, KeepAlive service".
-LABEL_PREFIX = "com.nousresearch.nara.runtime."
+LABEL_PREFIX = "io.github.engsathiago.nara.runtime."
 _POLL_INTERVAL_S = 0.5
 
 

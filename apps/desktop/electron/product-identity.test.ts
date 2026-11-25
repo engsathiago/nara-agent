@@ -52,6 +52,19 @@ async function identityForVariant(variant: string | undefined): Promise<ProductI
   return (await import('./product-identity')).PRODUCT_IDENTITY
 }
 
+test('desktop identities belong to the public Nara project', async (): Promise<void> => {
+  for (const variant of [undefined, 'light', 'bundled', 'store'] as const) {
+    const identity: ProductIdentity = await identityForVariant(variant)
+    assert.ok(identity.appId.startsWith('io.github.engsathiago.nara'), identity.appId)
+    assert.ok(identity.msixAppIdWithOrg.startsWith('Engsathiago.Nara'), identity.msixAppIdWithOrg)
+
+    if (variant === 'store') {
+      assert.equal(identity.storeMsix?.identityName, 'Engsathiago.NaraAgent')
+      assert.equal(identity.storeMsix?.publisherDisplayName, 'Nara Agent')
+    }
+  }
+})
+
 test('baked runtime identity never evaluates ambient build selectors', async (): Promise<void> => {
   const dir: string = fs.mkdtempSync(path.join(os.tmpdir(), 'baked-identity-'))
 
@@ -290,9 +303,9 @@ test('nonstable builds cannot claim the official Store package', async (): Promi
 test('store carries the Partner Center MSIX identity and no other variant does', async (): Promise<void> => {
   const store: ProductIdentity = await identityForVariant('store')
   assert.deepEqual(store.storeMsix, {
-    identityName: 'NousResearchInc.NaraAgent',
-    publisher: 'CN=EE6D86E4-606F-4E38-B940-AD7248C9D519',
-    publisherDisplayName: 'Nous Research Inc.'
+    identityName: 'Engsathiago.NaraAgent',
+    publisher: 'CN=Nara Agent',
+    publisherDisplayName: 'Nara Agent'
   })
 
   for (const v of [undefined, 'bundled', 'light'] as const) {

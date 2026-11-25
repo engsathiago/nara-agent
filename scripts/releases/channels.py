@@ -98,7 +98,7 @@ def preview_identity(name: str, token: str) -> dict:
     return {"token": token, "displayName": f"Nara {name}",
             "appId": f"ai.nara.channel.h{token}", "appNamePascal": pascal,
             "artifactNamePascal": pascal, "cliName": f"nara-{name}",
-            "windowsExecutableName": pascal, "msixAppIdWithOrg": f"NousResearch.{pascal}"}
+            "windowsExecutableName": pascal, "msixAppIdWithOrg": f"Engsathiago.{pascal}"}
 
 
 class ChannelPublisher:

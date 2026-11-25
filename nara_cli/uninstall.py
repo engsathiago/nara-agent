@@ -925,9 +925,9 @@ def _macos_cache_leftover_dirs() -> list[Path]:
     caches = Path.home() / "Library" / "Caches"
     return [
         caches / "Nara",
-        caches / "com.nousresearch.nara",
+        caches / "io.github.engsathiago.nara",
         caches / "nara-setup",
-        caches / "com.nousresearch.nara.setup",
+        caches / "io.github.engsathiago.nara.setup",
     ]
 
 

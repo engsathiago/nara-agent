@@ -242,7 +242,7 @@ rm "$HOME/.nara/nara-agent/.nara-bootstrap-complete"
 # Rebuild a broken Python venv
 rm -rf "$HOME/.nara/nara-agent/venv"
 # Reset a stuck macOS microphone prompt (macOS only)
-tccutil reset Microphone com.nousresearch.nara
+tccutil reset Microphone io.github.engsathiago.nara
 ```
 
 **Windows (PowerShell):**
