@@ -11,7 +11,8 @@
 #
 services:
   gateway:
-    image: nousresearch/nara-agent:latest
+    build: .
+    image: engsathiago/nara-agent:latest
     container_name: nara
     restart: unless-stopped
     volumes:
@@ -22,7 +23,7 @@ services:
     command: ["gateway", "run"]
 
   dashboard:
-    image: nousresearch/nara-agent:latest
+    image: engsathiago/nara-agent:latest
     container_name: nara-dashboard
     restart: unless-stopped
     depends_on:
