@@ -7,7 +7,7 @@
 //               with an explicit Upload button; nothing is sent before it.
 //   uploading — spinner while the backend collects, redacts and uploads.
 //   done      — the private view link (copyable) + where to pick up the
-//               discussion: GitHub Issues · Nous Portal Support · Discord.
+//               discussion: Nara GitHub Issues.
 import { useStore } from '@nanostores/react'
 
 import { Button } from '@/components/ui/button'
@@ -30,11 +30,7 @@ import {
   type SendDiagnosticsResult
 } from '@/store/send-diagnostics'
 
-const SUPPORT_LINKS = [
-  { key: 'github', url: 'https://github.com/engsathiago/nara-agent/issues' },
-  { key: 'portal', url: 'https://portal.nousresearch.com/help' },
-  { key: 'discord', url: 'https://discord.gg/NousResearch' }
-] as const
+const SUPPORT_LINKS = [{ key: 'github', url: 'https://github.com/engsathiago/nara-agent/issues' }] as const
 
 export function SendDiagnosticsHost() {
   const { t } = useI18n()

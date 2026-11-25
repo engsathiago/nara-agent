@@ -1106,13 +1106,13 @@ Upload a debug report (system info + recent logs) to a paste service and get a s
 |--------|-------------|
 | `--lines <N>` | Number of log lines to include per log file (default: 200). |
 | `--expire <days>` | Paste expiry in days (default: 7). |
-| `--nous` | Upload to Nous-internal diagnostics storage instead of a public paste service. Use this when Nous support asks for a private diagnostic bundle. |
+| `--nous` | Upload to the service explicitly configured in `NARA_DIAGNOSTICS_BASE_URL` instead of a public paste service. The flag name is retained for compatibility. |
 | `--local` | Print the report locally instead of uploading. |
 | `--no-redact` | Disable upload-time secret redaction. By default, uploads are redacted. |
 
 The report includes system info (OS, Python version, Nara version), recent agent, gateway, GUI/dashboard, and desktop logs (512 KB limit per file), plus the update and Desktop update hand-off logs when present, and redacted API key status. By default, uploads are redacted so secrets are not included; this covers the system dump (including config values such as `fallback_providers` entries and credentials in their URLs) as well as the logs, and the gateway `/debug` report too.
 
-Default uploads use public paste services tried in order: paste.rs, dpaste.com. `--nous` uploads the same debug bundle to private Nous diagnostics storage instead; the returned viewer link is for the Nous team and auto-deletes after 14 days.
+Default uploads use public paste services tried in order: paste.rs, dpaste.com. `--nous` uses the configured diagnostics endpoint and fails before sending data if `NARA_DIAGNOSTICS_BASE_URL` is absent. The endpoint operator controls access and retention; Nara does not assume these properties.
 
 ### Examples
 
@@ -1120,7 +1120,7 @@ Default uploads use public paste services tried in order: paste.rs, dpaste.com. 
 nara debug share              # Upload debug report, print URL
 nara debug share --lines 500  # Include more log lines
 nara debug share --expire 30  # Keep paste for 30 days
-nara debug share --nous       # Upload a private diagnostics bundle for Nous support
+nara debug share --nous       # Upload to your configured diagnostics service
 nara debug share --local      # Print report to terminal (no upload)
 ```
 

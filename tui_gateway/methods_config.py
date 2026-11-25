@@ -507,7 +507,7 @@ def _safe_client_label(label: str) -> str:
 
 @method("diagnostics.share_nous")
 def _(rid, params: dict) -> dict:
-    """Upload a redacted debug bundle to Nous-internal diagnostics storage — same collection +
+    """Upload a redacted debug bundle to the configured diagnostics service — same collection +
     force-redaction pipeline as ``nara debug share --nous``; redaction is NOT client-controllable
     and consent lives with the CALLER (privacy notice first). Structured ``ok``/``error`` envelope so
     upload failures render inline. Optional: ``error_context`` (-> ``error-context.txt``),

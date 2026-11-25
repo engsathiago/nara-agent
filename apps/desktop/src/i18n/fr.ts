@@ -512,9 +512,9 @@ export const frOverrides = {
   },
   ...frNotices,
   sendDiagnostics: {
-    title: 'Envoyer les diagnostics à Nous',
+    title: 'Envoyer les diagnostics',
     privacyNotice:
-      "Cela téléverse un paquet de débogage vers un stockage interne de Nous, et non vers un service de partage public. Il contient des informations système (système d'exploitation, versions, fournisseur et clés API configurées — jamais les clés elles-mêmes) ainsi que les journaux complets de l'agent, du gateway et du Desktop (jusqu'à 512 Ko chacun), susceptibles de contenir des conversations, des résultats d'outils et des chemins de fichiers. Les secrets sont expurgés avant l'envoi. Seuls le personnel de Nous et les modérateurs Discord autorisés peuvent consulter le paquet, qui est automatiquement supprimé après 14 jours.",
+      "Ce paquet est envoyé au service configuré dans NARA_DIAGNOSTICS_BASE_URL. Il contient des informations système et les journaux de l'agent, du gateway et du Desktop (jusqu'à 512 Ko chacun), qui peuvent inclure des conversations, des résultats d'outils et des chemins de fichiers. Les secrets sont expurgés avant l'envoi. Le service configuré définit l'accès et la conservation. Sans configuration, aucun envoi n'a lieu.",
     upload: 'Envoyer',
     uploading: 'Envoi en cours…',
     cancel: 'Annuler',
@@ -523,14 +523,14 @@ export const frOverrides = {
     uploadIdFallback: id => `Aucun lien de consultation renvoyé — indiquez l'identifiant ${id} au support`,
     doneTitle: 'Diagnostics envoyés',
     doneDescription:
-      "Votre paquet a été téléversé de manière privée. Partagez le lien ci-dessous dans votre fil d'assistance afin que l'équipe puisse consulter vos journaux.",
+      "Le paquet a été envoyé au service configuré. Vérifiez ses règles d'accès avant de partager le lien.",
     failedTitle: "Échec de l'envoi",
     failedHint:
-      'Vous pouvez également exécuter `nara debug share --nous` dans un terminal, ou `nara debug share --local` pour afficher le rapport sans le téléverser.',
+      'Configurez NARA_DIAGNOSTICS_BASE_URL ou exécutez `nara debug share --local` pour afficher le rapport sans envoi.',
     handoffLead: 'Poursuivez la discussion sur :',
     links: {
       github: 'Issues GitHub',
-      portal: 'Assistance du portail Nous',
+      portal: 'Portail de support',
       discord: 'Discord'
     }
   },

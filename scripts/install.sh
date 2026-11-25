@@ -193,7 +193,7 @@ print_banner() {
     printf '%s\n' "┌─────────────────────────────────────────────────────────┐"
     printf '%s\n' "│             ☤ Nara Agent Installer                    │"
     printf '%s\n' "├─────────────────────────────────────────────────────────┤"
-    printf '%s\n' "│  An open source AI agent by Nous Research.              │"
+    printf '%s\n' "│  Your open source AI agent: Nara.                        │"
     printf '%s\n' "└─────────────────────────────────────────────────────────┘"
     printf '%s\n' "$C_NC"
 }

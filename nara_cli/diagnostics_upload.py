@@ -1,5 +1,5 @@
-"""Client for uploading ``nara debug share`` bundles to Nous-internal S3.
-1. POST {NAS_BASE}/api/diagnostics/upload-url → {uploadUrl, viewUrl, id, ...}; the body carries ``sizeBytes``,
+"""Client for uploading ``nara debug share`` bundles to an explicitly configured service.
+1. POST {configured base}/api/diagnostics/upload-url → {uploadUrl, viewUrl, id, ...}; the body carries ``sizeBytes``,
    which NAS signs into the presigned URL's ``ContentLength``, so the PUT must send exactly that many bytes.
 2. PUT <uploadUrl> (gzipped bundle, Content-Type application/gzip). NAS is stateless — no confirm step."""
 
@@ -9,8 +9,8 @@ import urllib.request
 
 from nara_cli.debug_redaction import redact_debug_support_text
 
-# Overridable via env so the feature can be pointed at staging / a local dev NAS instance.
-NAS_BASE = os.environ.get("NARA_DIAGNOSTICS_BASE_URL", "https://portal.nousresearch.com")
+# There is no Nara-operated diagnostics host yet. Never send user logs to the
+# upstream project's service merely because no endpoint was configured.
 _REQUEST_TIMEOUT = 30
 _UPLOAD_TIMEOUT = 120  # the PUT carries the gzipped log bundle, so a more generous window
 _USER_AGENT = "nara-agent/debug-share"
@@ -30,11 +30,14 @@ def _urlopen_checked(url: str, data: bytes, method: str, headers: dict, *, timeo
 def request_upload_url(content_type: str = "application/gzip", size_bytes: int | None = None) -> dict:
     """Ask NAS to mint a presigned PUT URL for a diagnostics bundle. Returns the parsed JSON, expected to
     carry at least ``uploadUrl``, ``viewUrl`` and ``id``. Raises on non-2xx responses or unparseable JSON."""
+    base_url = os.environ.get("NARA_DIAGNOSTICS_BASE_URL", "").strip().rstrip("/")
+    if not base_url:
+        raise RuntimeError("Private diagnostics upload is unavailable: set NARA_DIAGNOSTICS_BASE_URL to a trusted service")
     payload: dict = {"contentType": content_type}
     if size_bytes is not None:
         payload["sizeBytes"] = int(size_bytes)
     body = _urlopen_checked(
-        f"{NAS_BASE}/api/diagnostics/upload-url", json.dumps(payload).encode("utf-8"), "POST",
+        f"{base_url}/api/diagnostics/upload-url", json.dumps(payload).encode("utf-8"), "POST",
         {"Content-Type": "application/json", "Accept": "application/json"},
         timeout=_REQUEST_TIMEOUT, what="diagnostics upload-url request").decode("utf-8")
     try:

@@ -500,9 +500,9 @@ export const en: Translations = {
   ...enBilling,
 
   sendDiagnostics: {
-    title: 'Send diagnostics to Nous',
+    title: 'Send diagnostics',
     privacyNotice:
-      'This uploads a debug bundle to Nous-internal storage (not a public paste). It includes system info (OS, versions, provider, which API keys are configured — never the keys themselves) and full agent, gateway, and desktop logs (up to 512 KB each), which likely contain conversation content, tool outputs, and file paths. Secrets are redacted before upload. The bundle is viewable only by Nous staff and allowlisted Discord moderators, and auto-deletes after 14 days.',
+      'This uploads a debug bundle to the service configured in NARA_DIAGNOSTICS_BASE_URL. It includes system info (OS, versions, provider, which API keys are configured — never the keys themselves) and agent, gateway, and desktop logs (up to 512 KB each), which may contain conversation content, tool outputs, and file paths. Secrets are redacted before upload. Access and retention depend on that service. Without a configured service, no upload is attempted.',
     upload: 'Upload',
     uploading: 'Uploading…',
     cancel: 'Cancel',
@@ -511,14 +511,14 @@ export const en: Translations = {
     uploadIdFallback: id => `No view link returned — quote upload ID ${id} to support`,
     doneTitle: 'Diagnostics sent',
     doneDescription:
-      'Your bundle was uploaded privately. Share the link below in your support thread so the team can see your logs.',
+      'Your bundle was uploaded to the configured service. Check its access rules before sharing the link below.',
     failedTitle: 'Upload failed',
     failedHint:
-      'You can also run `nara debug share --nous` from a terminal, or `nara debug share --local` to print the report without uploading.',
+      'Configure NARA_DIAGNOSTICS_BASE_URL to use this feature, or run `nara debug share --local` to print the report without uploading.',
     handoffLead: 'Pick up the discussion in:',
     links: {
       github: 'GitHub Issues',
-      portal: 'Nous Portal Support',
+      portal: 'Support portal',
       discord: 'Discord'
     }
   },
