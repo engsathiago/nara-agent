@@ -20,12 +20,18 @@ def clear_notes():
 
 
 def test_render_uses_the_public_asset_host(monkeypatch):
-    monkeypatch.delenv("CLOUDFLARE_R2_PUBLIC_URL", raising=False)
+    monkeypatch.setenv("CLOUDFLARE_R2_PUBLIC_URL", BASE)
     monkeypatch.delenv("R2_DISPOSABLE_RUN", raising=False)
     text = upload_summary.render([KEY])
     assert f"[download]({BASE}/{KEY})" in text
     assert text.startswith("\n### R2 uploads\n")
     assert upload_summary.render([]) == ""
+
+
+def test_render_without_archive_does_not_invent_download_url(monkeypatch):
+    monkeypatch.delenv("CLOUDFLARE_R2_PUBLIC_URL", raising=False)
+    text = upload_summary.render([KEY])
+    assert f"| `{KEY}` | — |" in text
 
 
 def test_render_names_a_key_whose_url_cannot_be_built(monkeypatch):
@@ -40,7 +46,7 @@ def test_note_dedupes_and_flush_appends_once(tmp_path, monkeypatch):
     summary = tmp_path / "summary.md"
     summary.write_text("existing\n", encoding="utf-8")
     monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
-    monkeypatch.delenv("CLOUDFLARE_R2_PUBLIC_URL", raising=False)
+    monkeypatch.setenv("CLOUDFLARE_R2_PUBLIC_URL", BASE)
     monkeypatch.delenv("R2_DISPOSABLE_RUN", raising=False)
     upload_summary.note(KEY)
     upload_summary.note(KEY)

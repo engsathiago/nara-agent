@@ -29,7 +29,7 @@
 services:
   gateway:
     build: .
-    image: nara-agent
+    image: engsathiago/nara-agent:latest
     container_name: nara
     restart: unless-stopped
     network_mode: host
@@ -61,7 +61,7 @@ services:
     command: ["gateway", "run"]
 
   dashboard:
-    image: nara-agent
+    image: engsathiago/nara-agent:latest
     container_name: nara-dashboard
     restart: unless-stopped
     network_mode: host

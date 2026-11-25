@@ -512,16 +512,17 @@ def commit_prefix_for(commit: str) -> str:
     return f"releases/commit/{commit}/"
 
 
-# Public download origin for object keys. CI supplies the authoritative
-# value as CLOUDFLARE_R2_PUBLIC_URL; the documented production origin is the
-# fallback so a local command can still name a page it is about to publish.
-DEFAULT_PUBLIC_URL = "https://nara-assets.nousresearch.com"
+# Public download origin for object keys. This fork has no published R2 origin
+# yet: callers must supply the project's own URL rather than silently naming
+# an upstream host for newly uploaded artifacts.
+DEFAULT_PUBLIC_URL = ""
 
 
 def public_base_url(explicit: str | None = None) -> str:
-    return R2Scope.configured().public_base(
-        explicit or os.environ.get("CLOUDFLARE_R2_PUBLIC_URL") or DEFAULT_PUBLIC_URL
-    )
+    configured = explicit or os.environ.get("CLOUDFLARE_R2_PUBLIC_URL") or DEFAULT_PUBLIC_URL
+    if not configured:
+        raise ValueError("CLOUDFLARE_R2_PUBLIC_URL must name the Nara release archive")
+    return R2Scope.configured().public_base(configured)
 
 
 def public_url_for(base_url: str, key: str) -> str:

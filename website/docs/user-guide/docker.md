@@ -11,17 +11,21 @@ There are two distinct ways Docker intersects with Nara Agent:
 1. **Running Nara IN Docker** — the agent itself runs inside a container (this page's primary focus)
 2. **Docker as a terminal backend** — the agent runs on your host but executes every command inside a single, persistent Docker sandbox container that survives across tool calls, `/new`, and subagents for the life of the Nara process (see [Configuration → Docker Backend](./configuration.md#docker-backend))
 
-This page covers option 1. The container stores all user data (config, API keys, sessions, skills, memories) in a single directory mounted from the host at `/opt/data`. The image itself is stateless and can be upgraded by pulling a new version without losing any configuration.
+This page covers option 1. The container stores all user data (config, API keys, sessions, skills, memories) in a single directory mounted from the host at `/opt/data`. The image itself is stateless, so rebuilding it does not erase the mounted data.
+
+:::note Current distribution
+The public Nara repository does not yet publish a Docker Hub image. Build the image locally from this checkout before using the `docker run` examples below. The `engsathiago/nara-agent:latest` tag in those commands is a local image name until a Nara release publishes it.
+:::
 
 ## Image channels and runtime ownership
 
 | Image tag | Meaning |
 |---|---|
-| `latest` / `stable` | The image accepted by the stable release gate. |
-| `main` | The development image published from main-branch builds. |
-| `X.Y.Z` | A versioned stable image. Use a digest for an exact deployment pin. |
+| `latest` / `stable` | Planned stable release tags; `latest` can also name your local build. |
+| `main` | Planned development image tag. |
+| `X.Y.Z` | Planned versioned release tag. Use a digest after publication for an exact deployment pin. |
 
-The workflow builds and tests amd64 and arm64 images. Stable publication uses
+The release workflow is designed to build and test amd64 and arm64 images. Stable publication uses
 the tested image archives rather than rebuilding them. Only the full release
 promotion moves `stable` and `latest`; a main push does not advance those tags.
 
@@ -31,7 +35,7 @@ Python 3.14). Its curated extras are not the native desktop bundle's
 
 ## Quick start
 
-If this is your first time running Nara Agent, create a data directory on the host and start the container interactively to run the setup wizard:
+If this is your first time running Nara Agent, build from the repository, create a data directory on the host, and start the container interactively to run the setup wizard:
 
 :::caution Avoid browser-based VPS consoles for the install commands
 Some VPS providers (Hetzner Cloud, and several others) offer a browser-based
@@ -47,10 +51,11 @@ result before hitting Enter.
 :::
 
 ```sh
+docker build -t engsathiago/nara-agent:latest .
 mkdir -p ~/.nara
 docker run -it --rm \
   -v ~/.nara:/opt/data \
-  nousresearch/nara-agent setup
+  engsathiago/nara-agent setup
 ```
 
 This drops you into the setup wizard, which will prompt you for your API keys and write them to `~/.nara/.env`. You only need to do this once. It is highly recommended to set up a chat system for the gateway to work with at this point.
@@ -69,7 +74,7 @@ docker run -d \
   --restart unless-stopped \
   -v ~/.nara:/opt/data \
   -p 8642:8642 \
-  nousresearch/nara-agent gateway run
+  engsathiago/nara-agent gateway run
 ```
 
 Port 8642 exposes the gateway's [OpenAI-compatible API server](./features/api-server.md) and health endpoint. It's optional if you only use chat platforms (Telegram, Discord, etc.), but required if you want the dashboard or external tools to reach the gateway.
@@ -109,7 +114,7 @@ docker run -d \
   -e API_SERVER_HOST=0.0.0.0 \
   -e API_SERVER_KEY="$(openssl rand -hex 32)" \
   -e API_SERVER_CORS_ORIGINS='*' \
-  nousresearch/nara-agent gateway run
+  engsathiago/nara-agent gateway run
 ```
 
 Opening any port on an internet facing machine is a security risk. You should not do it unless you understand the risks.
@@ -126,7 +131,7 @@ docker run -d \
   -p 8642:8642 \
   -p 9119:9119 \
   -e NARA_DASHBOARD=1 \
-  nousresearch/nara-agent gateway run
+  engsathiago/nara-agent gateway run
 ```
 
 The dashboard is supervised by s6 — if it crashes, `s6-supervise` restarts it automatically after a short backoff. Dashboard stdout/stderr is forwarded to `docker logs <container>` (no prefix; the gateway's own output now lives in a per-profile s6-log file — see [Where the logs go](#where-the-logs-go) below — so the two streams don't clash).
@@ -203,7 +208,7 @@ docker run -d \
   -p 9120:9120 \
   -e NARA_DASHBOARD_BASIC_AUTH_USERNAME=admin \
   -e NARA_DASHBOARD_BASIC_AUTH_PASSWORD="$(openssl rand -hex 16)" \
-  nousresearch/nara-agent gateway run
+  engsathiago/nara-agent gateway run
 ```
 
 A non-loopback `host` needs one of the [dashboard's auth providers](#running-the-dashboard), and the listener refuses to start without one. Without `public_url`, links printed by `nara webapp` inside the container use the container's own address, not the published one.
@@ -232,7 +237,7 @@ Cloudflare Tunnel needs no published port, because `cloudflared` dials out; it o
 ```yaml
 services:
   nara:
-    image: nousresearch/nara-agent
+    image: engsathiago/nara-agent
     command: gateway run
     restart: unless-stopped
     volumes:
@@ -270,7 +275,7 @@ To open an interactive chat session against a running data directory:
 ```sh
 docker run -it --rm \
   -v ~/.nara:/opt/data \
-  nousresearch/nara-agent
+  engsathiago/nara-agent
 ```
 
 Or if you have already opened a terminal in your running container (via Docker Desktop for instance), just run:
@@ -402,7 +407,7 @@ The default profile (`default`) is always registered on first boot, so a fresh c
 Profile-in-container is the default. Run a separate container per profile only when you have a specific reason:
 
 - **Resource isolation per workload** — e.g. a runaway browser-tool session in profile A shouldn't be able to OOM profile B. Containers give you `--memory` / `--cpus` per profile.
-- **Independent image pinning** — different upstream image tags per workload.
+- **Independent image pinning** — different Nara image tags per workload.
 - **Network segmentation** — distinct Docker networks per profile (e.g. one customer-facing, one internal).
 - **Compliance / blast radius** — distinct credentials never share an OS-level process tree.
 
@@ -411,7 +416,7 @@ In those cases, declare one service per profile with distinct `container_name`, 
 ```yaml
 services:
   nara-work:
-    image: nousresearch/nara-agent:latest
+    image: engsathiago/nara-agent:latest
     container_name: nara-work
     restart: unless-stopped
     command: gateway run
@@ -421,7 +426,7 @@ services:
       - ~/.nara-work:/opt/data
 
   nara-personal:
-    image: nousresearch/nara-agent:latest
+    image: engsathiago/nara-agent:latest
     container_name: nara-personal
     restart: unless-stopped
     command: gateway run
@@ -462,7 +467,7 @@ docker run -it --rm \
   -v ~/.nara:/opt/data \
   -e ANTHROPIC_API_KEY="sk-ant-..." \
   -e OPENAI_API_KEY="sk-..." \
-  nousresearch/nara-agent
+  engsathiago/nara-agent
 ```
 
 Direct `-e` flags override values from `.env`. This is useful for CI/CD or secrets-manager integrations where you don't want keys on disk.
@@ -478,7 +483,7 @@ For persistent deployment with both the gateway and dashboard, a `docker-compose
 ```yaml
 services:
   nara:
-    image: nousresearch/nara-agent:latest
+    image: engsathiago/nara-agent:latest
     container_name: nara
     restart: unless-stopped
     command: gateway run
@@ -533,7 +538,7 @@ ctl.!default {
 Then build a small derived image with the ALSA PulseAudio plugin installed:
 
 ```dockerfile title="Dockerfile.audio"
-FROM nousresearch/nara-agent:latest
+FROM engsathiago/nara-agent:latest
 
 USER root
 RUN apt-get update \
@@ -602,7 +607,7 @@ docker run -d \
   --restart unless-stopped \
   --memory=4g --cpus=2 \
   -v ~/.nara:/opt/data \
-  nousresearch/nara-agent gateway run
+  engsathiago/nara-agent gateway run
 ```
 
 ## What the Dockerfile does
@@ -675,7 +680,7 @@ If you must override the entrypoint, add Docker's init as PID 1 so orphans are r
 ```yaml
 services:
   nara-dashboard:
-    image: nousresearch/nara-agent:latest
+    image: engsathiago/nara-agent:latest
     init: true                                      # docker-init becomes PID 1 and reaps orphans
     entrypoint: ["/opt/nara/.venv/bin/nara"]
     command: ["dashboard", "--host", "0.0.0.0", "--port", "9119", "--no-open", "--skip-build"]
@@ -711,26 +716,27 @@ Each profile created with `nara profile create <name>` automatically gets an s6-
 
 ## Upgrading
 
-Pull the latest image and recreate the container. Your data directory is
+Rebuild the image from the updated repository and recreate the container. Your data directory is
 preserved, and the container runs non-interactive config-schema migrations
 against the mounted `$NARA_HOME/config.yaml` before starting the gateway.
 When a migration is needed, Nara writes timestamped backups next to
 `config.yaml` and `.env` first.
 
 ```sh
-docker pull nousresearch/nara-agent:latest
+git pull --ff-only
+docker build -t engsathiago/nara-agent:latest .
 docker rm -f nara
 docker run -d \
   --name nara \
   --restart unless-stopped \
   -v ~/.nara:/opt/data \
-  nousresearch/nara-agent gateway run
+  engsathiago/nara-agent gateway run
 ```
 
 Or with Docker Compose:
 
 ```sh
-docker compose pull
+docker compose up --build -d
 docker compose up -d
 ```
 
@@ -765,10 +771,10 @@ This is a good fit for tools that are quick to install and used occasionally. Fo
 
 ### Durable installs — build a derived image
 
-When a tool must be available immediately on every container start with no re-install delay, build a new image that inherits from `nousresearch/nara-agent` and installs the tool in a layer:
+When a tool must be available immediately on every container start with no re-install delay, build a new image that inherits from `engsathiago/nara-agent` and installs the tool in a layer:
 
 ```dockerfile
-FROM nousresearch/nara-agent:latest
+FROM engsathiago/nara-agent:latest
 
 USER root
 RUN apt-get update \
@@ -789,7 +795,7 @@ docker run -d \
   my-nara:latest gateway run
 ```
 
-The entrypoint script and `/opt/data` semantics are inherited unchanged, so the rest of this page still applies. Remember to rebuild the image when pulling a newer upstream `nousresearch/nara-agent`.
+The entrypoint script and `/opt/data` semantics are inherited unchanged, so the rest of this page still applies. Rebuild the derived image after updating Nara.
 
 ### Complex tools or multi-service stacks — run a sidecar container
 
@@ -798,7 +804,7 @@ For tools that bring their own service (a database, a web server, a queue, a hea
 ```yaml
 services:
   nara:
-    image: nousresearch/nara-agent:latest
+    image: engsathiago/nara-agent:latest
     container_name: nara
     restart: unless-stopped
     command: gateway run
@@ -825,7 +831,7 @@ From inside the Nara container, the sidecar is reachable at `http://my-tool:<por
 
 ### Broadly useful tools — open an issue or pull request
 
-If a tool is likely to be useful to most Nara Agent users, consider contributing it upstream rather than carrying it in a private derived image. Open an issue or pull request on the [nara-agent repository](https://github.com/engsathiago/nara-agent) describing the tool and its use case. Tools that get bundled into the official image benefit every user and avoid the maintenance overhead of a downstream fork.
+If a tool is likely to be useful to most Nara Agent users, consider contributing it to Nara rather than carrying it in a private derived image. Open an issue or pull request on the [nara-agent repository](https://github.com/engsathiago/nara-agent) describing the tool and its use case. Tools bundled into the project image benefit every user and avoid the maintenance overhead of a downstream fork.
 
 ## Connecting to local inference servers (vLLM, Ollama, etc.)
 
@@ -856,7 +862,7 @@ services:
             - capabilities: [gpu]
 
   nara:
-    image: nousresearch/nara-agent:latest
+    image: engsathiago/nara-agent:latest
     container_name: nara
     restart: unless-stopped
     command: gateway run
@@ -900,7 +906,7 @@ docker run -d \
   --name nara \
   -v ~/.nara:/opt/data \
   -p 8642:8642 \
-  nousresearch/nara-agent gateway run
+  engsathiago/nara-agent gateway run
 ```
 
 ```yaml
@@ -919,7 +925,7 @@ docker run -d \
   --name nara \
   --network host \
   -v ~/.nara:/opt/data \
-  nousresearch/nara-agent gateway run
+  engsathiago/nara-agent gateway run
 ```
 
 ```yaml
@@ -982,7 +988,7 @@ docker run -d \
   --name nara \
   -e PUID=1000 -e PGID=10 \
   -v /volume1/docker/nara:/opt/data \
-  nousresearch/nara-agent gateway run
+  engsathiago/nara-agent gateway run
 ```
 
 `docker exec nara <cmd>` automatically drops to UID 10000 too — see [`docker exec` automatically drops to the `nara` user](#docker-exec-automatically-drops-to-the-nara-user) for details and the per-invocation opt-out.
@@ -1014,7 +1020,7 @@ docker run -d \
   --name nara \
   --shm-size=1g \
   -v ~/.nara:/opt/data \
-  nousresearch/nara-agent gateway run
+  engsathiago/nara-agent gateway run
 ```
 
 ### Gateway not reconnecting after network issues
@@ -1029,6 +1035,6 @@ docker restart nara
 
 ```sh
 docker logs --tail 50 nara          # Recent logs
-docker run -it --rm nousresearch/nara-agent:latest --version   # Verify version
+docker run -it --rm engsathiago/nara-agent:latest --version   # Verify version
 docker stats nara                    # Resource usage
 ```

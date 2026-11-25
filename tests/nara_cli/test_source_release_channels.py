@@ -99,6 +99,7 @@ def releases(tmp_path, monkeypatch, request):
     # Legacy pointer tests below retain their HTTP/tag boundary. New CLI callers
     # consume the protocol reader, whose complete schema is tested independently.
     from nara_cli import source_releases
+    monkeypatch.setattr(source_releases, "_PUBLIC_BASE", "https://archive.example")
     def resolve_channel(name, repository):
         record = {"name": name, "repository": repository, "state": "active",
                   "policy": "source-branch" if name == "main" else "preview"}

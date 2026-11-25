@@ -13,7 +13,10 @@ import urllib.request
 from nara_cli.update_channel import STABLE_TAG_RE, is_canary_tag
 
 logger = logging.getLogger(__name__)
-_PUBLIC_BASE = "https://nara-assets.nousresearch.com"
+# Nara has not published a release archive. Stable/main source updates resolve
+# through GitHub; archive-backed preview channels remain unavailable until the
+# owner configures and publishes a Nara-controlled origin.
+_PUBLIC_BASE = ""
 OFFICIAL_REPOSITORY = "engsathiago/nara-agent"
 _GITHUB_ORIGIN = re.compile(
     r"^(?:https://github\.com/|git@github\.com:|ssh://git@github\.com/)"
@@ -75,6 +78,8 @@ def _resolve_channel(name: str, repository: str):
     """
     from nara_cli.release_channels import ChannelReader
 
+    if not _PUBLIC_BASE:
+        raise ValueError("Nara release channel archive is not published")
     return ChannelReader(_PUBLIC_BASE, repository=repository).resolve(name)
 
 
@@ -319,6 +324,8 @@ def _published_fallback(channel: str, base: str) -> dict:
 def _release_pointer(channel: str) -> tuple[str | None, str | None]:
     # Stable's completion job writes this before publishing the GitHub draft.
     # Publication is checked separately, so that interval fails closed.
+    if not _PUBLIC_BASE:
+        return None, None
     if channel == "stable":
         text = _read(f"{_PUBLIC_BASE}/releases/stable/release-candidates.json", missing_ok=True)
         if text is not None:

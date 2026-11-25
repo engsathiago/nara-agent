@@ -1,29 +1,28 @@
 ---
 sidebar_position: 3
 title: "Android / Termux"
-description: "Install Nara Agent on Android from its signed Termux APT repository"
+description: "Status of the planned Nara Agent package for Android / Termux"
 ---
 
 # Nara on Android with Termux
 
-:::danger Termux is currently broken
-The Termux package does not work right now. A fix is in progress and will
-ship soon. Until then, the steps below may fail or install a package that
-does not run.
+:::danger Termux package unavailable
+Nara has not published its own signed Termux APT repository or signing key.
+Do not install a package or trust a key from the original project's archive
+as if it were a Nara release. This page describes the intended packaging
+contract; installation commands will be added after a signed Nara package
+passes device testing.
 :::
 
-The Termux package runs Nara on **aarch64 (arm64-v8a)** Android devices.
-Two APT channels are published under
-`https://nara-assets.nousresearch.com/releases/termux/<channel>`:
+The planned package targets **aarch64 (arm64-v8a)** Android devices.
+Two APT channels are defined by the build code, but neither is published yet:
 
 | Channel | APT suite | Contents |
 | --- | --- | --- |
 | `stable` | `nara-stable` | Tagged `vMAJOR.MINOR.PATCH` releases that passed the stable release gate |
 | `canary` | `nara-canary` | Prerelease builds from canary tags; versions carry `~canary.<timestamp>` |
 
-The steps below use `stable`. To follow prereleases, replace `stable` with
-`canary` and `nara-stable` with `nara-canary` in steps 2 and 4. Both
-channels are signed with the same key.
+When published, `stable` will carry releases and `canary` will carry prereleases.
 
 The package includes Python, Node.js, npm, uv, ripgrep, ffmpeg, and their runtime libraries.
 The first `nara dashboard` downloads pnpm and installs the web UI's JavaScript dependencies.
@@ -33,64 +32,17 @@ environment during installation. The package uses Python 3.14 with the bionic
 interpreter pin; it does not require the same patch version as desktop CPython.
 The wheel closure is core plus `acp`, not all desktop extras.
 
-## Install
+## Installation status
 
-Use the standard [Termux](https://termux.dev/) application.
-The package requires its standard prefix, `/data/data/com.termux/files/usr`.
-Other architectures and renamed Termux application packages are not supported.
-The wheels target Android API 24 (`android_24_arm64_v8a`).
-Do not use the desktop/server `install.sh` or a glibc Linux archive on this target.
+Use the standard [Termux](https://termux.dev/) application when a Nara package
+is available. The planned package requires its standard prefix,
+`/data/data/com.termux/files/usr`, and targets Android API 24
+(`android_24_arm64_v8a`). Other architectures and renamed Termux application
+packages are outside the current build contract. The desktop/server
+`install.sh` and glibc Linux archives do not target Termux.
 
-1. Install the tools for repository setup:
-
-   ```bash
-   pkg install curl gnupg
-   ```
-
-2. Download the public key:
-
-   ```bash
-   mkdir -p "$PREFIX/etc/apt/keyrings"
-   curl -fsSL \
-     https://nara-assets.nousresearch.com/releases/termux/stable/key.asc \
-     -o "$PREFIX/etc/apt/keyrings/nara-agent.asc"
-   ```
-
-3. Verify its primary fingerprint:
-
-   ```bash
-   gpg --show-keys --with-fingerprint "$PREFIX/etc/apt/keyrings/nara-agent.asc"
-   ```
-
-   The repository key fingerprint is:
-
-   ```text
-   C572 B5FD D1A2 9CCF A9A9 12B6 840B 0848 E139 156D
-   ```
-
-   If the fingerprint differs, stop. Do not disable signature verification.
-
-4. Add the repository:
-
-   ```bash
-   printf '%s\n' \
-     "deb [signed-by=$PREFIX/etc/apt/keyrings/nara-agent.asc] https://nara-assets.nousresearch.com/releases/termux/stable nara-stable main" \
-     > "$PREFIX/etc/apt/sources.list.d/nara-agent.list"
-   ```
-
-5. Install Nara:
-
-   ```bash
-   pkg update
-   pkg install nara-agent
-   ```
-
-6. Configure a provider, then start the TUI:
-
-   ```bash
-   nara setup
-   nara --tui
-   ```
+There is no Nara-owned APT URL, public key fingerprint, or verified install
+command to publish yet.
 
 The `nara`, `nara-agent`, and `nara-acp` commands use the packaged runtimes.
 They do not require Termux's `python` or `nodejs` packages.
@@ -103,7 +55,7 @@ They do not require Termux's `python` or `nodejs` packages.
 | Command symlinks | `$PREFIX/bin/nara`, `$PREFIX/bin/nara-agent`, `$PREFIX/bin/nara-acp` |
 | Configuration and user data | `~/.nara/`, or the selected `NARA_HOME` |
 
-Update through APT:
+After publication, updates will use APT:
 
 ```bash
 pkg update

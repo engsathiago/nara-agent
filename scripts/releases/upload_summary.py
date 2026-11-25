@@ -31,11 +31,14 @@ def rows(keys: list[str]) -> list[tuple[str, str]]:
     """Public URL for each key, in upload order. A bad key is named, not dropped."""
     from scripts.releases import r2
 
-    base = r2.public_base_url()
+    try:
+        base = r2.public_base_url()
+    except ValueError:
+        base = ""
     listed = []
     for key in keys:
         try:
-            listed.append((key, r2.public_url_for(base, key)))
+            listed.append((key, r2.public_url_for(base, key) if base else ""))
         except ValueError:
             listed.append((key, ""))
     return listed
