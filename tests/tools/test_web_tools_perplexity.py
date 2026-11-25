@@ -21,7 +21,7 @@ def _assert_nara_identity_headers(headers):
     plus Perplexity's integration header."""
     from nara_cli.version_info import get_version_info
 
-    assert headers["HTTP-Referer"] == "https://nara-agent.nousresearch.com"
+    assert headers["HTTP-Referer"] == "https://engsathiago.github.io/nara-agent"
     assert headers["X-Title"] == "Nara Agent"
     assert headers["User-Agent"] == f"NaraAgent/{get_version_info().base_version}"
     assert headers["X-Pplx-Integration"] == "nara-agent"

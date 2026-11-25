@@ -1,7 +1,7 @@
 # Configuration, Toolsets & Voice
 
 Edit with `nara config edit` or `nara config set section.key value`.
-Full reference: https://nara-agent.nousresearch.com/docs/user-guide/configuration
+Full reference: https://engsathiago.github.io/nara-agent/docs/user-guide/configuration
 
 ### Config Sections (most-used keys)
 

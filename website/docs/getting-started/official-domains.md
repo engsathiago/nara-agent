@@ -11,18 +11,17 @@ Nara is developed in the public [engsathiago/nara-agent](https://github.com/engs
 |---|---|
 | [github.com/engsathiago/nara-agent](https://github.com/engsathiago/nara-agent) | Source code, issues, and reviewed changes |
 | [engsathiago.github.io/nara-agent/docs](https://engsathiago.github.io/nara-agent/docs/) | Documentation and public skill/plugin catalogs |
-| [engsathiago.github.io/nara-agent/install.sh](https://engsathiago.github.io/nara-agent/install.sh) | Source installer for macOS and Linux |
-| [engsathiago.github.io/nara-agent/install.ps1](https://engsathiago.github.io/nara-agent/install.ps1) | Source installer for Windows |
-| `raw.githubusercontent.com/engsathiago/nara-agent/...` | Raw files from the same repository |
+| [raw.githubusercontent.com/.../install.sh](https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh) | Source installer for macOS and Linux |
+| [raw.githubusercontent.com/.../install.ps1](https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.ps1) | Source installer for Windows |
 
 ## Installing from source
 
 ```bash
-curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | bash
 ```
 
 ```powershell
-iex (irm https://engsathiago.github.io/nara-agent/install.ps1)
+iex (irm https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.ps1)
 ```
 
 The repository's `main` branch is the current source channel. The project has not published a versioned stable release or an official signed desktop package. Local desktop builds are not Developer ID signed or Apple notarized. Do not treat an image, binary, token, subscription, or account offered under the Nara name as an official project release unless this repository links to it.

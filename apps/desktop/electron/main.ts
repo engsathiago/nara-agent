@@ -312,7 +312,7 @@ import {
   writeSecretFileAtomic
 } from './hardening'
 import { assertNotPassiveSpawn } from './host-backend-singleton'
-import { isNaraHubClipboardWrite, NARA_HUB_FALLBACK_ORIGIN, NARA_HUB_ORIGIN } from './hub-iframe-policy'
+import { isNaraHubClipboardWrite, NARA_HUB_ORIGIN } from './hub-iframe-policy'
 import { requestHudClose } from './hud-close'
 import { cursorPointInWindow } from './hud-cursor'
 import { startHudGameOverlayWatch } from './hud-game-overlay'
@@ -6795,12 +6795,12 @@ function focusedFrameOrigin(
   return null
 }
 
-/** The picker embed URL the hub iframe starts on (both deployments). */
+/** The picker embed URL the hub iframe starts on. */
 function isNaraHubPickerUrl(url: string): boolean {
   try {
     const parsed = new URL(url)
-    const isHubOrigin = parsed.origin === NARA_HUB_ORIGIN || parsed.origin === NARA_HUB_FALLBACK_ORIGIN
-    const isPickerPath = parsed.pathname === '/nara-agent/docs/skills' || parsed.pathname === '/docs/skills'
+    const isHubOrigin = parsed.origin === NARA_HUB_ORIGIN
+    const isPickerPath = parsed.pathname === '/nara-agent/docs/skills'
 
     return isHubOrigin && isPickerPath
   } catch {
@@ -11891,7 +11891,7 @@ function wireCommonWindowHandlers(win, { zoom = true }: { zoom?: boolean } = {})
     const frame = findFrameByIdentifier(win.webContents, frameProcessId, frameRoutingId)
     const frameOrigin = safeFrameOrigin(frame)
 
-    if (frameOrigin !== NARA_HUB_ORIGIN && frameOrigin !== NARA_HUB_FALLBACK_ORIGIN) {
+    if (frameOrigin !== NARA_HUB_ORIGIN) {
       return
     }
 

@@ -5,7 +5,7 @@ import { usePageHeader } from "@/contexts/usePageHeader";
 import { cn } from "@/lib/utils";
 import { PluginSlot } from "@/plugins";
 
-export const NARA_DOCS_URL = "https://nara-agent.nousresearch.com/docs/";
+export const NARA_DOCS_URL = "https://engsathiago.github.io/nara-agent/docs/";
 
 const DS_BUTTON_OUTLINED_LINK_CN = cn(
   "group relative inline-grid grid-cols-[auto_1fr_auto] items-center",

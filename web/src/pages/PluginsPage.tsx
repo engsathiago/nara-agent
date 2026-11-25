@@ -906,7 +906,7 @@ export default function PluginsPage() {
               {t.pluginsPage.catalogEmpty ?? "No catalog entries match."}{" "}
               <a
                 className="underline"
-                href="https://nara-agent.nousresearch.com/docs/plugins"
+                href="https://engsathiago.github.io/nara-agent/docs/plugins"
                 target="_blank"
                 rel="noreferrer"
               >

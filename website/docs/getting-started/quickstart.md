@@ -42,13 +42,13 @@ Install the current source channel from the [official Nara Pages](./official-dom
 ### Linux, macOS, or WSL2
 
 ```bash
-curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | bash
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
-iex (irm https://engsathiago.github.io/nara-agent/install.ps1)
+iex (irm https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.ps1)
 ```
 
 After it finishes, reload your shell:

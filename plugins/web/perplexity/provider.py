@@ -55,7 +55,7 @@ _KEY_URL = "https://www.perplexity.ai/account/api"
 # request; the call already carries the user's own API key.
 def _headers() -> dict[str, str]:
     return {
-        "HTTP-Referer": "https://nara-agent.nousresearch.com",
+        "HTTP-Referer": "https://engsathiago.github.io/nara-agent",
         "X-Title": "Nara Agent",
         "User-Agent": nara_user_agent("NaraAgent"),
         "X-Pplx-Integration": "nara-agent",

@@ -264,7 +264,7 @@ async function locateNara(ssh, remoteNaraPath) {
 
   const err: any = new Error(
     'Nara is not installed on the remote host (could not find a `nara` executable). ' +
-      'Install it on the remote with:  curl -fsSL https://nara-agent.nousresearch.com/install.sh | sh  ' +
+      'Install it on the remote with:  curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | sh  ' +
       '— or set the Nara path explicitly in the SSH connection settings.'
   )
 
@@ -693,12 +693,37 @@ async function pidIsOurDashboard(
     ' raw=open(f"/proc/{pid}/cmdline","rb").read()\n' +
     ' args=[x.decode("utf-8","surrogateescape") for x in raw.split(b"\\0") if x]\n' +
     'except OSError:\n' +
-    ' try:\n' +
-    '  line=subprocess.check_output(["ps","-ww","-o","command=","-p",str(pid)],text=True).strip()\n' +
-    ' except subprocess.CalledProcessError:\n' +
-    '  # pid already gone — a dead process is FOREIGN, not a transport error\n' +
-    '  print("FOREIGN");sys.exit(0)\n' +
-    ' args=shlex.split(line)\n' +
+    ' if sys.platform=="darwin":\n' +
+    '  # ps flattens argv and loses boundaries when paths contain spaces.\n' +
+    '  import ctypes\n' +
+    '  libc=ctypes.CDLL(None,use_errno=True)\n' +
+    '  mib=(ctypes.c_int*3)(1,49,pid) # CTL_KERN, KERN_PROCARGS2, pid\n' +
+    '  size=ctypes.c_size_t(0)\n' +
+    '  if libc.sysctl(mib,3,None,ctypes.byref(size),None,0)!=0 or not 4<size.value<=1048576:\n' +
+    '   print("FOREIGN");sys.exit(0)\n' +
+    '  buf=ctypes.create_string_buffer(size.value)\n' +
+    '  if libc.sysctl(mib,3,buf,ctypes.byref(size),None,0)!=0:\n' +
+    '   print("FOREIGN");sys.exit(0)\n' +
+    '  raw=buf.raw[:size.value]\n' +
+    '  argc=int.from_bytes(raw[:4],sys.byteorder,signed=True)\n' +
+    '  try:\n' +
+    '   if not 0<argc<4096:raise ValueError()\n' +
+    '   pos=raw.index(b"\\0",4)+1 # executable path precedes argv\n' +
+    '   while raw[pos]==0:pos+=1\n' +
+    '   args=[]\n' +
+    '   for _ in range(argc):\n' +
+    '    end=raw.index(b"\\0",pos)\n' +
+    '    args.append(raw[pos:end].decode("utf-8","surrogateescape"))\n' +
+    '    pos=end+1\n' +
+    '  except (ValueError,IndexError):\n' +
+    '   print("FOREIGN");sys.exit(0)\n' +
+    ' else:\n' +
+    '  try:\n' +
+    '   line=subprocess.check_output(["ps","-ww","-o","command=","-p",str(pid)],text=True).strip()\n' +
+    '  except subprocess.CalledProcessError:\n' +
+    '   # pid already gone — a dead process is FOREIGN, not a transport error\n' +
+    '   print("FOREIGN");sys.exit(0)\n' +
+    '  args=shlex.split(line)\n' +
     'ok=False\n' +
     'try:\n' +
     // A profile literally named "serve" puts the value token before the

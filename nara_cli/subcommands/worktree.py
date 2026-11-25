@@ -12,7 +12,7 @@ def build_worktree_parser(subparsers) -> None:
             "archived to refs/nara/archive/<tree> before removal "
             "(worktrees.archive_dirty); `restore` brings one back. In-use trees are "
             "never touched. See: "
-            "https://nara-agent.nousresearch.com/docs/user-guide/git-worktrees")
+            "https://engsathiago.github.io/nara-agent/docs/user-guide/git-worktrees")
     worktree_subparsers = worktree_parser.add_subparsers(dest="worktree_action")
     worktree_list = worktree_subparsers.add_parser(
         "list", aliases=["ls", "audit"],

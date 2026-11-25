@@ -1,7 +1,7 @@
 # Nara CLI Reference
 
 Live sources when anything looks stale: `nara --help`, `nara <command> --help`,
-https://nara-agent.nousresearch.com/docs/reference/cli-commands
+https://engsathiago.github.io/nara-agent/docs/reference/cli-commands
 
 ### Global Flags
 
@@ -79,7 +79,7 @@ nara gateway run|install|start|stop|restart|status|setup
 ```
 
 20+ platforms: Telegram, Discord, Slack, WhatsApp (Baileys + Business Cloud API), iMessage (Photon — `nara photon setup`), Signal, Email, SMS, Matrix, Mattermost, Teams, LINE, SimpleX, ntfy, Google Chat, Home Assistant, DingTalk, Feishu, WeCom, Weixin, API Server, Webhooks. Open WebUI connects via the API Server adapter. Most adapters ship under `plugins/platforms/`.
-Docs: https://nara-agent.nousresearch.com/docs/user-guide/messaging/
+Docs: https://engsathiago.github.io/nara-agent/docs/user-guide/messaging/
 
 ### Sessions
 
@@ -142,10 +142,10 @@ Plugin- and provider-supplied subcommands (e.g. `nara photon setup`) only appear
 
 | Looking for... | Location |
 |---|---|
-| Config options | `nara config edit` · [Configuration docs](https://nara-agent.nousresearch.com/docs/user-guide/configuration) |
-| Tools / toolsets | `nara tools list` · [Tools reference](https://nara-agent.nousresearch.com/docs/reference/tools-reference) |
-| Skills catalog | `nara skills browse` · [Skills catalog](https://nara-agent.nousresearch.com/docs/reference/skills-catalog) |
-| Provider setup | `nara model` · [Providers guide](https://nara-agent.nousresearch.com/docs/integrations/providers) |
-| Env variables | `nara config env-path` · [Env vars reference](https://nara-agent.nousresearch.com/docs/reference/environment-variables) |
+| Config options | `nara config edit` · [Configuration docs](https://engsathiago.github.io/nara-agent/docs/user-guide/configuration) |
+| Tools / toolsets | `nara tools list` · [Tools reference](https://engsathiago.github.io/nara-agent/docs/reference/tools-reference) |
+| Skills catalog | `nara skills browse` · [Skills catalog](https://engsathiago.github.io/nara-agent/docs/reference/skills-catalog) |
+| Provider setup | `nara model` · [Providers guide](https://engsathiago.github.io/nara-agent/docs/integrations/providers) |
+| Env variables | `nara config env-path` · [Env vars reference](https://engsathiago.github.io/nara-agent/docs/reference/environment-variables) |
 | Gateway logs | `~/.nara/logs/gateway.log` (or `nara logs`) |
 | Sessions | `nara sessions browse` (reads state.db) |

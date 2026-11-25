@@ -41,7 +41,7 @@ STEWARD_UPDATE_MESSAGES = {
         "\n"
         "Manage updates from within the desktop app.\n"
         "Prefer a self-managed source install? See:\n"
-        "  https://nara-agent.nousresearch.com/docs/user-guide/switching-to-source"
+        "  https://engsathiago.github.io/nara-agent/docs/user-guide/switching-to-source"
     ),
     STEWARD_NIX: (
         "✗ This Nara runs from the Nix store.\n"

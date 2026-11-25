@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 from nara_cli.telegram_managed_bot import (
     TELEGRAM_ONBOARDING_URL_ENV,
     TelegramPairing,
+    auto_setup_telegram_bot_result,
     create_pairing,
     poll_for_setup_result,
     print_qr_code,
@@ -41,6 +42,14 @@ class TestQRCode:
 
 
 class TestCreatePairing:
+    def test_unconfigured_service_does_not_make_a_network_request(self, monkeypatch, capsys):
+        monkeypatch.delenv(TELEGRAM_ONBOARDING_URL_ENV, raising=False)
+        with patch("nara_cli.telegram_managed_bot.httpx.post") as post:
+            assert create_pairing() is None
+            assert auto_setup_telegram_bot_result() is None
+        post.assert_not_called()
+        assert "manual BotFather setup" in capsys.readouterr().out
+
     def test_success(self):
         mock_resp = MagicMock()
         mock_resp.status_code = 201

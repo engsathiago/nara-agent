@@ -2,7 +2,7 @@
 
 Set via `nara model` (picker) or `nara setup`. 35+ provider profiles ship as
 plugins under `plugins/model-providers/`; user plugins of the same name override.
-Full docs: https://nara-agent.nousresearch.com/docs/integrations/providers
+Full docs: https://engsathiago.github.io/nara-agent/docs/integrations/providers
 
 ### Providers
 

@@ -179,7 +179,7 @@ nara-agent/
 ├── skills/                   # Habilidades incluidas (copiadas a ~/.nara/skills/ en la instalación)
 ├── optional-skills/          # Habilidades opcionales oficiales (descubribles vía hub, no activadas por defecto)
 ├── tests/                    # Suite de tests
-├── website/                  # Sitio de documentación (nara-agent.nousresearch.com)
+├── website/                  # Sitio de documentación (engsathiago.github.io/nara-agent)
 │
 ├── cli-config.yaml.example   # Configuración de ejemplo (copiada a ~/.nara/config.yaml)
 └── AGENTS.md                 # Guía de desarrollo para asistentes de codificación IA

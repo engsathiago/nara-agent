@@ -10,7 +10,7 @@ from providers import register_provider
 from providers.base import OMIT_TEMPERATURE, LazyHeaders, ProviderProfile
 
 _HEADERS = {
-    "HTTP-Referer": "https://nara-agent.nousresearch.com",
+    "HTTP-Referer": "https://engsathiago.github.io/nara-agent",
     "X-Title": "Nara Agent",
     "User-Agent": lambda: nara_user_agent("NaraAgent"),
     # Exclude brotli: httpx's brotlicffi backend has a streaming decode bug on

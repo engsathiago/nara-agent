@@ -34,7 +34,7 @@ fireworks = FireworksProfile(
     # Attribution headers (canonical Nara set); via default_headers so they
     # survive switch_model and credential rotation.
     default_headers=LazyHeaders({
-        "HTTP-Referer": "https://nara-agent.nousresearch.com",
+        "HTTP-Referer": "https://engsathiago.github.io/nara-agent",
         "X-Title": "Nara Agent",
         "User-Agent": lambda: nara_user_agent("NaraAgent"),
     }),

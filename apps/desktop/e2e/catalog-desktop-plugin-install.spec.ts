@@ -18,7 +18,7 @@ import { pathToFileURL } from 'node:url'
 import { type MockBackendFixture, setupMockBackend, waitForAppReady } from './fixtures'
 import { expect, test } from './test'
 
-const CATALOG_FEED = 'https://nousresearch.github.io/nara-agent/docs/api/plugins.json'
+const CATALOG_FEED = 'https://engsathiago.github.io/nara-agent/docs/api/plugins.json'
 const NAME = 'accent-picker'
 const INSTALL_ORIGIN = '.nara-origin.json'
 

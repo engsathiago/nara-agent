@@ -358,7 +358,7 @@ class LongPreviewAgent:
 
 
 class UrlPreviewAgent:
-    URL = "https://nara-agent.nousresearch.com/docs/gateway/discord/tool-progress"
+    URL = "https://engsathiago.github.io/nara-agent/docs/gateway/discord/tool-progress"
 
     def __init__(self, **kwargs):
         self.tool_progress_callback = kwargs.get("tool_progress_callback")

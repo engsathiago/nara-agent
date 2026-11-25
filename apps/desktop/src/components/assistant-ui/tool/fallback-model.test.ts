@@ -239,28 +239,28 @@ describe('buildToolView browser_navigate title', () => {
     const view = buildToolView(
       part({
         toolName: 'browser_navigate',
-        args: { url: 'https://nara-agent.nousresearch.com/docs' },
+        args: { url: 'https://engsathiago.github.io/nara-agent/docs' },
         result: { success: false, error: 'Command timed out after 60 seconds' }
       }),
       ''
     )
 
     expect(view.status).toBe('error')
-    expect(view.title).toContain('nara-agent.nousresearch.com/docs')
+    expect(view.title).toContain('engsathiago.github.io/nara-agent/docs')
   })
 
   it('shows opened title on success', () => {
     const view = buildToolView(
       part({
         toolName: 'browser_navigate',
-        args: { url: 'https://nara-agent.nousresearch.com/docs' },
-        result: { success: true, url: 'https://nara-agent.nousresearch.com/docs', title: 'Docs' }
+        args: { url: 'https://engsathiago.github.io/nara-agent/docs' },
+        result: { success: true, url: 'https://engsathiago.github.io/nara-agent/docs', title: 'Docs' }
       }),
       ''
     )
 
     expect(view.status).toBe('success')
-    expect(view.title).toContain('nara-agent.nousresearch.com/docs')
+    expect(view.title).toContain('engsathiago.github.io/nara-agent/docs')
   })
 })
 

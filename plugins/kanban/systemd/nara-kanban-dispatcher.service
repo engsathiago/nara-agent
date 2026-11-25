@@ -15,7 +15,7 @@
 
 [Unit]
 Description=Nara Kanban dispatcher (DEPRECATED standalone daemon — prefer gateway-embedded dispatch)
-Documentation=https://nara-agent.nousresearch.com/docs/user-guide/features/kanban
+Documentation=https://engsathiago.github.io/nara-agent/docs/user-guide/features/kanban
 After=network.target
 
 [Service]

@@ -876,7 +876,7 @@ _PROVIDERS_WITHOUT_VISION: frozenset = frozenset({"kimi-coding", "kimi-coding-cn
 
 # OpenRouter app attribution (always sent). `X-Title` is what the dashboard reads.
 _OR_HEADERS_BASE = {
-    "HTTP-Referer": "https://nara-agent.nousresearch.com",
+    "HTTP-Referer": "https://engsathiago.github.io/nara-agent",
     "X-Title": "Nara Agent",
     "X-OpenRouter-Categories": "productivity,cli-agent",
 }
@@ -945,7 +945,7 @@ from nara_cli.version_info import nara_user_agent
 
 
 def _ai_gateway_headers() -> dict[str, str]:
-    return {"HTTP-Referer": "https://nara-agent.nousresearch.com", "X-Title": "Nara Agent",
+    return {"HTTP-Referer": "https://engsathiago.github.io/nara-agent", "X-Title": "Nara Agent",
             "User-Agent": nara_user_agent("NaraAgent")}
 
 # Nous Portal attribution tags, built per call. They come from agent.portal_tags so the client=

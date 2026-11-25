@@ -40,12 +40,12 @@ description: "从公开仓库安装 Nara，并验证第一次对话"
 
 ```bash
 # Linux / macOS / WSL2
-curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | bash
 ```
 
 ```powershell
 # Windows PowerShell
-iex (irm https://engsathiago.github.io/nara-agent/install.ps1)
+iex (irm https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.ps1)
 ```
 
 源码脚本通过 PM 准备运行时。首次安装需要下载固定版本的工具，可能需要几分钟。

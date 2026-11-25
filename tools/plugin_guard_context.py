@@ -97,7 +97,7 @@ def prose_cap(finding: Finding) -> Optional[str]:
 _PIPE_TO_SHELL_IDS = {"curl_pipe_shell", "wget_pipe_shell", "curl_pipe_python"}
 _URL_IN_LINE = re.compile(r'https?://([^\s/"\'`)]+)([^\s"\'`)]*)')
 _TRUSTED_INSTALLER_HOSTS = {
-    "nara-agent.nousresearch.com", "ollama.com", "bun.sh",
+    "ollama.com", "bun.sh",
     "get.docker.com", "sh.rustup.rs", "deno.land", "astral.sh", "app.factory.ai",
 }
 
@@ -105,6 +105,8 @@ _TRUSTED_INSTALLER_HOSTS = {
 def _is_trusted_installer_url(host: str, path: str) -> bool:
     host = host.lower()
     if host in _TRUSTED_INSTALLER_HOSTS:
+        return True
+    if host == "engsathiago.github.io" and path.lower() in {"/nara-agent/install.sh", "/nara-agent/install.ps1"}:
         return True
     # A GitHub raw URL is user-controlled, so only an ``install``-named script path qualifies
     # (``.../scripts/install.sh``, ``.../install-plugin.sh``), never an arbitrary payload.

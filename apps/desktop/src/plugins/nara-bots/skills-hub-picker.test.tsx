@@ -15,8 +15,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { translateBots } from './i18n-test-helper'
 
-const HUB_ORIGIN = 'https://nara-agent.nousresearch.com'
-const FALLBACK_HUB_ORIGIN = 'https://nousresearch.github.io'
+const HUB_ORIGIN = 'https://engsathiago.github.io'
+const HUB_PICKER_URL = `${HUB_ORIGIN}/nara-agent/docs/skills?embed=picker`
 
 const mocks = vi.hoisted(() => ({
   notify: vi.fn(),
@@ -93,27 +93,21 @@ afterEach(() => {
 })
 
 describe('hub pick messages', () => {
-  it('uses GitHub Pages when the Vercel hub probe is unavailable', async () => {
+  it('uses local search when the owned hub probe is unavailable', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }))
 
-    const frame = openHubBrowser()
-
-    await waitFor(() =>
-      expect(frame.getAttribute('src')).toBe(`${FALLBACK_HUB_ORIGIN}/nara-agent/docs/skills?embed=picker`)
-    )
+    openHubBrowser()
+    await waitFor(() => expect(screen.queryByTitle(/skills hub/i)).toBeNull())
   })
 
-  it('uses GitHub Pages when the probe request fails', async () => {
+  it('uses local search when the probe request fails', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('network error')))
 
-    const frame = openHubBrowser()
-
-    await waitFor(() =>
-      expect(frame.getAttribute('src')).toBe(`${FALLBACK_HUB_ORIGIN}/nara-agent/docs/skills?embed=picker`)
-    )
+    openHubBrowser()
+    await waitFor(() => expect(screen.queryByTitle(/skills hub/i)).toBeNull())
   })
 
-  it('uses GitHub Pages when the probe hangs past its deadline', async () => {
+  it('uses local search when the probe hangs past its deadline', async () => {
     vi.useFakeTimers()
     // AbortSignal.timeout's internal timer bypasses vi's fake clock — route it
     // through setTimeout so the deadline is deterministic here.
@@ -136,34 +130,34 @@ describe('hub pick messages', () => {
     )
 
     try {
-      const frame = openHubBrowser()
+      openHubBrowser()
 
       await act(async () => {
         await vi.advanceTimersByTimeAsync(8_000)
       })
 
-      expect(frame.getAttribute('src')).toBe(`${FALLBACK_HUB_ORIGIN}/nara-agent/docs/skills?embed=picker`)
+      expect(screen.queryByTitle(/skills hub/i)).toBeNull()
     } finally {
       vi.restoreAllMocks()
       vi.useRealTimers()
     }
   })
 
-  it('keeps the Vercel picker when the probe succeeds', async () => {
+  it('keeps the owned picker when the probe succeeds', async () => {
     const frame = openHubBrowser()
 
-    await waitFor(() => expect(frame.getAttribute('src')).toBe(`${HUB_ORIGIN}/docs/skills?embed=picker`))
+    await waitFor(() => expect(frame.getAttribute('src')).toBe(HUB_PICKER_URL))
   })
 
-  it('accepts an install message from the fallback picker frame', () => {
+  it('rejects an install message from the former upstream picker frame', () => {
     const frame = openHubBrowser()
 
     postPick(
       { identifier: 'nous/web-research', name: 'Web Research', type: 'nara-skill-pick' },
-      { origin: FALLBACK_HUB_ORIGIN, source: frame.contentWindow }
+      { origin: 'https://nousresearch.github.io', source: frame.contentWindow }
     )
 
-    expect(installCalls()).toEqual([['skills.manage', { action: 'install', query: 'nous/web-research' }]])
+    expect(installCalls()).toEqual([])
   })
 
   it('pins the hub frame to the required sandbox and clipboard posture (#91612)', async () => {

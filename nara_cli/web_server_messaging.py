@@ -26,7 +26,7 @@ _PLATFORM_OVERRIDES: dict[str, dict[str, Any]] = {
     "api_server": {
         "name": "API server",
         "description": "Expose Nara as an OpenAI-compatible HTTP API for tools like Open WebUI.",
-        "docs_url": "https://nara-agent.nousresearch.com/docs/user-guide/messaging/",
+        "docs_url": "https://engsathiago.github.io/nara-agent/docs/user-guide/messaging/",
         "env_vars": (
             "API_SERVER_ENABLED", "API_SERVER_KEY", "API_SERVER_PORT", "API_SERVER_HOST",
             "API_SERVER_MODEL_NAME",
@@ -36,13 +36,13 @@ _PLATFORM_OVERRIDES: dict[str, dict[str, Any]] = {
     "webhook": {
         "name": "Webhooks",
         "description": "Receive events from GitHub, GitLab, and other webhook sources.",
-        "docs_url": "https://nara-agent.nousresearch.com/docs/user-guide/messaging/webhooks/",
+        "docs_url": "https://engsathiago.github.io/nara-agent/docs/user-guide/messaging/webhooks/",
         "env_vars": ("WEBHOOK_ENABLED", "WEBHOOK_PORT", "WEBHOOK_SECRET"), "required_env": (),
     },
     "msgraph_webhook": {
         "name": "Microsoft Graph Webhook",
         "description": "Receive Microsoft Graph change notifications (Teams meetings, Outlook, …).",
-        "docs_url": "https://nara-agent.nousresearch.com/docs/user-guide/messaging/msgraph-webhook",
+        "docs_url": "https://engsathiago.github.io/nara-agent/docs/user-guide/messaging/msgraph-webhook",
         "required_env": (),
     },
     "relay": {
@@ -227,7 +227,7 @@ def _restart_gateway_after_whatsapp_onboarding(profile: Optional[str] = None) ->
     return _restart_gateway_after(profile, what="WhatsApp onboarding", label="WhatsApp onboarding")
 
 
-_TELEGRAM_ONBOARDING_DEFAULT_URL = "https://setup.nara-agent.nousresearch.com"
+_TELEGRAM_ONBOARDING_DEFAULT_URL = ""
 
 
 @dataclass
@@ -267,6 +267,9 @@ def _telegram_onboarding_request_sync(
     method: str, path: str, *, body: dict[str, Any] | None = None, bearer_token: str | None = None
 ) -> dict[str, Any]:
     import httpx
+    base_url = _telegram_onboarding_base_url()
+    if not base_url:
+        raise HTTPException(status_code=503, detail="Managed Telegram setup is not configured. Use manual BotFather setup or configure TELEGRAM_ONBOARDING_URL.")
     headers = {"Accept": "application/json", "User-Agent": nara_user_agent("NaraDashboard")}
     request_kwargs: dict[str, Any] = {}
     if body is not None:
@@ -276,7 +279,7 @@ def _telegram_onboarding_request_sync(
         headers["Authorization"] = f"Bearer {bearer_token}"
     try:
         with httpx.Client(timeout=httpx.Timeout(10.0)) as client:
-            response = client.request(method, f"{_telegram_onboarding_base_url()}{path}", headers=headers, **request_kwargs)
+            response = client.request(method, f"{base_url}{path}", headers=headers, **request_kwargs)
             response.raise_for_status()
     except httpx.HTTPStatusError as exc:
         try:

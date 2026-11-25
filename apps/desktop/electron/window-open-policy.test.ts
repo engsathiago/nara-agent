@@ -5,15 +5,14 @@ import {
   isNaraHubClipboardWrite,
   isNaraHubExternalUrl,
   isNaraHubOrigin,
-  NARA_HUB_FALLBACK_ORIGIN,
   NARA_HUB_ORIGIN
 } from './hub-iframe-policy'
 import { createWindowOpenHandler, describeDeniedUrl } from './window-open-policy'
 
 describe('hub-iframe-policy predicates', () => {
-  it('admits exactly the two hub origins and nothing else', () => {
+  it('admits only the owned hub origin', () => {
     expect(isNaraHubOrigin(NARA_HUB_ORIGIN)).toBe(true)
-    expect(isNaraHubOrigin(NARA_HUB_FALLBACK_ORIGIN)).toBe(true)
+    expect(isNaraHubOrigin('https://nousresearch.github.io')).toBe(false)
 
     // Opaque sandboxed frames, data URLs, look-alikes, and absent origins
     // never qualify.
@@ -21,7 +20,7 @@ describe('hub-iframe-policy predicates', () => {
     expect(isNaraHubOrigin('')).toBe(false)
     expect(isNaraHubOrigin(null)).toBe(false)
     expect(isNaraHubOrigin(undefined)).toBe(false)
-    expect(isNaraHubOrigin('https://nara-agent.nousresearch.com.evil.example')).toBe(false)
+    expect(isNaraHubOrigin('https://engsathiago.github.io.evil.example')).toBe(false)
     expect(isNaraHubOrigin('https://evil.example')).toBe(false)
     expect(isNaraHubOrigin('file://')).toBe(false)
   })
@@ -37,9 +36,9 @@ describe('hub-iframe-policy predicates', () => {
     expect(isNaraHubExternalUrl('not a url')).toBe(false)
   })
 
-  it('grants clipboard-write to hub origins only', () => {
+  it('grants clipboard-write to the owned hub origin only', () => {
     expect(isNaraHubClipboardWrite(NARA_HUB_ORIGIN)).toBe(true)
-    expect(isNaraHubClipboardWrite(NARA_HUB_FALLBACK_ORIGIN)).toBe(true)
+    expect(isNaraHubClipboardWrite('https://nousresearch.github.io')).toBe(false)
     expect(isNaraHubClipboardWrite('null')).toBe(false)
     expect(isNaraHubClipboardWrite('https://artifact-preview.invalid')).toBe(false)
     expect(isNaraHubClipboardWrite(null)).toBe(false)
@@ -73,16 +72,16 @@ describe('createWindowOpenHandler trusted-hub delegation', () => {
     expect(openExternalUrl).toHaveBeenCalledExactlyOnceWith('https://github.com/engsathiago/nara-agent')
   })
 
-  it('delegates from the fallback (GitHub Pages) hub origin too', () => {
+  it('never delegates from the former upstream hub origin', () => {
     const openExternalUrl = vi.fn()
 
     const handler = createWindowOpenHandler(undefined, {
-      getOpenerOrigin: () => NARA_HUB_FALLBACK_ORIGIN,
+      getOpenerOrigin: () => 'https://nousresearch.github.io',
       openExternalUrl
     })
 
     expect(handler({ url: 'https://docs.example.com/x' })).toEqual({ action: 'deny' })
-    expect(openExternalUrl).toHaveBeenCalledExactlyOnceWith('https://docs.example.com/x')
+    expect(openExternalUrl).not.toHaveBeenCalled()
   })
 
   it('never delegates file:// or unknown schemes from a hub-origin opener', () => {
@@ -103,7 +102,7 @@ describe('createWindowOpenHandler trusted-hub delegation', () => {
     const openExternalUrl = vi.fn()
 
     const handler = createWindowOpenHandler(undefined, {
-      getOpenerOrigin: () => 'https://nara-agent.nousresearch.com.evil.example',
+      getOpenerOrigin: () => 'https://engsathiago.github.io.evil.example',
       openExternalUrl
     })
 

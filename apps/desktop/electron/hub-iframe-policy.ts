@@ -2,8 +2,7 @@
  * Capability carve-outs for the embedded Skills Hub iframe ONLY.
  *
  * The Skills Hub picker (Bot Mode) embeds the public docs site
- * (`https://nara-agent.nousresearch.com/docs/skills?embed=picker`, or the
- * GitHub Pages mirror when Vercel refuses the network). Three default denials
+ * (`https://engsathiago.github.io/nara-agent/docs/skills?embed=picker`). Three default denials
  * make that embed nearly unusable — window.open is killed by the CVE-2026-70608
  * handler, clipboard writes by the session permission handlers, and the frame
  * can drift off the picker URL into the un-embeddable docs site. Every carve-out
@@ -11,12 +10,8 @@
  * origin `null`) or any other guest frame never qualifies.
  */
 
-/** The docs site served from Vercel. */
-export const NARA_HUB_ORIGIN = 'https://nara-agent.nousresearch.com'
-/** The equivalent GitHub Pages deployment of the same site. */
-export const NARA_HUB_FALLBACK_ORIGIN = 'https://nousresearch.github.io'
-
-const HUB_ORIGINS = new Set([NARA_HUB_ORIGIN, NARA_HUB_FALLBACK_ORIGIN])
+/** The owned GitHub Pages origin; URL path is checked separately. */
+export const NARA_HUB_ORIGIN = 'https://engsathiago.github.io'
 
 /**
  * Exact-origin membership — `origin` comes from the frame's own `origin`
@@ -25,7 +20,7 @@ const HUB_ORIGINS = new Set([NARA_HUB_ORIGIN, NARA_HUB_FALLBACK_ORIGIN])
  * never alias the hub.
  */
 export function isNaraHubOrigin(origin: string | null | undefined): boolean {
-  return typeof origin === 'string' && HUB_ORIGINS.has(origin)
+  return origin === NARA_HUB_ORIGIN
 }
 
 /** The URL schemes a trusted hub frame may delegate to the OS browser. */

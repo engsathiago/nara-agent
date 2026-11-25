@@ -211,7 +211,7 @@ source ~/.bashrc
 # If you previously installed with sudo, clean up:
 sudo rm /usr/local/bin/nara
 # Then re-run the standard installer
-curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | bash
 ```
 
 ---
@@ -800,7 +800,7 @@ Skills with very long descriptions are truncated to 40 characters in the Telegra
 
 1. Install Nara Agent on the new machine:
    ```bash
-   curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | bash
    ```
 
 2. On the **source machine**, create a full backup:
