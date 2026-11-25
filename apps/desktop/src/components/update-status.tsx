@@ -26,7 +26,7 @@ import {
 } from '@/store/updates'
 
 const RELEASE_NOTES_URL = 'https://github.com/engsathiago/nara-agent/releases'
-const INSTALLER_URL = 'https://nara-agent.nousresearch.com/'
+const INSTALLER_URL = 'https://engsathiago.github.io/nara-agent/'
 
 export type UpdateStatusTone = 'idle' | 'available' | 'error' | 'unsupported'
 

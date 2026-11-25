@@ -4,18 +4,16 @@
   <img src="assets/banner.png" alt="Nara Agent" width="100%">
 </p>
 
-# ہرمیس ایجنٹ ☤ (Nara Agent)
+# نارا ایجنٹ ☤ (Nara Agent)
 
 <p align="center">
-  <a href="https://nara-agent.nousresearch.com/docs/"><img src="https://img.shields.io/badge/Docs-nara--agent.nousresearch.com-FFD700?style=for-the-badge" alt="Documentation"></a>
-  <a href="https://discord.gg/NousResearch"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://engsathiago.github.io/nara-agent/docs/"><img src="https://img.shields.io/badge/Docs-Nara-FFD700?style=for-the-badge" alt="Documentation"></a>
   <a href="https://github.com/engsathiago/nara-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
-  <a href="https://nousresearch.com"><img src="https://img.shields.io/badge/Built%20by-Nous%20Research-blueviolet?style=for-the-badge" alt="Built by Nous Research"></a>
   <a href="README.md"><img src="https://img.shields.io/badge/Lang-English-lightgrey?style=for-the-badge" alt="English"></a>
   <a href="README.zh-CN.md"><img src="https://img.shields.io/badge/Lang-中文-red?style=for-the-badge" alt="中文"></a>
 </p>
 
-**[نوس ریسرچ (Nous Research)](https://nousresearch.com) کا تیار کردہ خود کو بہتر بنانے والا اے آئی (AI) ایجنٹ۔** یہ واحد ایجنٹ ہے جس میں سیکھنے کا عمل (learning loop) پہلے سے موجود ہے — یہ اپنے تجربات سے نئی مہارتیں (skills) بناتا ہے، استعمال کے دوران ان کو بہتر کرتا ہے، معلومات کو محفوظ رکھنے کے لیے خود کو یاد دہانی کرواتا ہے، اپنی پرانی بات چیت کو تلاش کر سکتا ہے، اور مختلف سیشنز کے دوران آپ کے بارے میں ایک گہری سمجھ پیدا کرتا ہے۔ اسے $5 والے VPS پر چلائیں، GPU کلسٹر پر، یا سرور لیس (serverless) انفراسٹرکچر پر جس کی قیمت استعمال نہ ہونے پر تقریباً صفر ہے۔ یہ آپ کے لیپ ٹاپ تک محدود نہیں ہے — آپ ٹیلی گرام (Telegram) سے اس کے ساتھ بات چیت کر سکتے ہیں جبکہ یہ کلاؤڈ VM پر کام کر رہا ہو۔
+**Nara Agent ایک آزاد منصوبہ ہے جو کھلے ماخذ کے کوڈ پر مبنی ہے۔** اس میں سیکھنے اور یادداشت کی خصوصیات شامل ہیں — یہ اپنے تجربات سے نئی مہارتیں (skills) بناتا ہے، استعمال کے دوران ان کو بہتر کرتا ہے، معلومات کو محفوظ رکھنے کے لیے خود کو یاد دہانی کرواتا ہے، اپنی پرانی بات چیت کو تلاش کر سکتا ہے، اور مختلف سیشنز کے دوران آپ کے بارے میں ایک گہری سمجھ پیدا کرتا ہے۔ اسے $5 والے VPS پر چلائیں، GPU کلسٹر پر، یا سرور لیس (serverless) انفراسٹرکچر پر جس کی قیمت استعمال نہ ہونے پر تقریباً صفر ہے۔ یہ آپ کے لیپ ٹاپ تک محدود نہیں ہے — آپ ٹیلی گرام (Telegram) سے اس کے ساتھ بات چیت کر سکتے ہیں جبکہ یہ کلاؤڈ VM پر کام کر رہا ہو۔
 
 آپ اپنی مرضی کا کوئی بھی ماڈل استعمال کر سکتے ہیں — [Nous Portal](https://portal.nousresearch.com)، [OpenRouter](https://openrouter.ai) (200 سے زائد ماڈلز)، [NovitaAI](https://novita.ai) (ماڈل API، ایجنٹ سینڈ باکس، اور GPU کلاؤڈ کے لیے اے آئی مقامی کلاؤڈ)، [NVIDIA NIM](https://build.nvidia.com) (Nemotron)، [Xiaomi MiMo](https://platform.xiaomimimo.com)، [z.ai/GLM](https://z.ai)، [Kimi/Moonshot](https://platform.moonshot.ai)، [MiniMax](https://www.minimax.io)، [Hugging Face](https://huggingface.co)، OpenAI، یا اپنا حسب ضرورت اینڈ پوائنٹ (endpoint) استعمال کریں۔ ماڈل تبدیل کرنے کے لیے صرف `nara model` استعمال کریں — کسی کوڈ کو تبدیل کرنے کی ضرورت نہیں، کوئی پابندی نہیں۔
 
@@ -38,33 +36,33 @@
 <div dir="ltr">
 
 ```bash
-curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | bash
 ```
 
 </div>
 
 ### ونڈوز (نیٹو، پاور شیل)
 
-> **توجہ فرمائیں:** مقامی ونڈوز (Native Windows) پر ہرمیس بغیر WSL کے چلتا ہے — CLI، گیٹ وے، TUI، اور ٹولز سب مقامی طور پر کام کرتے ہیں۔ اگر آپ WSL2 استعمال کرنا پسند کرتے ہیں، تو اوپر دی گئی لینکس/میک او ایس کی کمانڈ وہاں بھی کام کرے گی۔ کوئی مسئلہ نظر آیا؟ براہ کرم [مسائل (issues) درج کریں](https://github.com/engsathiago/nara-agent/issues)۔
+> **توجہ فرمائیں:** مقامی ونڈوز (Native Windows) پر نارا بغیر WSL کے چلتا ہے — CLI، گیٹ وے، TUI، اور ٹولز سب مقامی طور پر کام کرتے ہیں۔ اگر آپ WSL2 استعمال کرنا پسند کرتے ہیں، تو اوپر دی گئی لینکس/میک او ایس کی کمانڈ وہاں بھی کام کرے گی۔ کوئی مسئلہ نظر آیا؟ براہ کرم [مسائل (issues) درج کریں](https://github.com/engsathiago/nara-agent/issues)۔
 
 اسے پاور شیل (PowerShell) میں چلائیں:
 
 <div dir="ltr">
 
 ```powershell
-iex (irm https://nara-agent.nousresearch.com/install.ps1)
+iex (irm https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.ps1)
 ```
 
 </div>
 
 سورس انسٹالر Python 3.14، Node.js، npm، pnpm، ripgrep، FFmpeg اور Python کی
 ڈیپینڈینسیز کے لیے PM استعمال کرتا ہے۔ اگر Git موجود نہ ہو تو Git for Windows
-کا تصدیق شدہ آرکائیو ہرمیس کے ٹول اسٹور میں نصب کرتا ہے۔ سسٹم کا Git تبدیل نہیں
+کا تصدیق شدہ آرکائیو نارا کے ٹول اسٹور میں نصب کرتا ہے۔ سسٹم کا Git تبدیل نہیں
 ہوتا۔ MSIX/App Installer ایک الگ پیکیج ہے۔
 
-> **اینڈرائیڈ / ٹرمکس (Android / Termux):** aarch64 آلات کے لیے آزمائشی APT پیکیج دستیاب ہے۔ اس میں Python، Node.js اور TUI شامل ہیں۔ ڈیسک ٹاپ اور سرور کے انسٹالیشن اسکرپٹ کے بجائے [Termux گائیڈ](https://nara-agent.nousresearch.com/docs/getting-started/termux) استعمال کریں۔
+> **اینڈرائیڈ / ٹرمکس (Android / Termux):** aarch64 آلات کے لیے آزمائشی APT پیکیج دستیاب ہے۔ اس میں Python، Node.js اور TUI شامل ہیں۔ ڈیسک ٹاپ اور سرور کے انسٹالیشن اسکرپٹ کے بجائے [Termux گائیڈ](https://engsathiago.github.io/nara-agent/docs/getting-started/termux) استعمال کریں۔
 >
-> **ونڈوز (Windows):** مقامی سورس انسٹال کے لیے اوپر دیا گیا PowerShell کمانڈ استعمال کریں۔ WSL2 میں لینکس کمانڈ استعمال ہوتا ہے۔ مقامی ڈیٹا `%LOCALAPPDATA%\nara` میں اور WSL2 کا ڈیٹا `~/.nara` میں ہوتا ہے۔ ڈیش بورڈ چیٹ مقامی Windows پر pywinpty/ConPTY استعمال کرتا ہے؛ پلیٹ فارم کی حدود [Windows گائیڈ](https://nara-agent.nousresearch.com/docs/user-guide/windows-native) میں درج ہیں۔
+> **ونڈوز (Windows):** مقامی سورس انسٹال کے لیے اوپر دیا گیا PowerShell کمانڈ استعمال کریں۔ WSL2 میں لینکس کمانڈ استعمال ہوتا ہے۔ مقامی ڈیٹا `%LOCALAPPDATA%\nara` میں اور WSL2 کا ڈیٹا `~/.nara` میں ہوتا ہے۔ ڈیش بورڈ چیٹ مقامی Windows پر pywinpty/ConPTY استعمال کرتا ہے؛ پلیٹ فارم کی حدود [Windows گائیڈ](https://engsathiago.github.io/nara-agent/docs/user-guide/windows-native) میں درج ہیں۔
 
 انسٹالیشن کے بعد:
 
@@ -97,13 +95,13 @@ nara doctor       # کسی بھی مسئلے کی تشخیص کریں
 
 </div>
 
-📖 **[مکمل دستاویزات →](https://nara-agent.nousresearch.com/docs/)**
+📖 **[مکمل دستاویزات →](https://engsathiago.github.io/nara-agent/docs/)**
 
 ---
 
 ## API-کیز اکٹھی کرنے سے بچیں — Nous Portal
 
-ہرمیس آپ کے پسندیدہ پرووائیڈر کے ساتھ کام کرتا ہے — یہ چیز تبدیل نہیں ہو رہی۔ لیکن اگر آپ ماڈل، ویب سرچ، امیج جنریشن، TTS، اور کلاؤڈ براؤزر کے لیے پانچ الگ الگ API کیز جمع نہیں کرنا چاہتے، تو **[Nous Portal](https://portal.nousresearch.com)** ان سب کو ایک ہی سبسکرپشن کے تحت کور کرتا ہے:
+نارا آپ کے پسندیدہ پرووائیڈر کے ساتھ کام کرتا ہے — یہ چیز تبدیل نہیں ہو رہی۔ لیکن اگر آپ ماڈل، ویب سرچ، امیج جنریشن، TTS، اور کلاؤڈ براؤزر کے لیے پانچ الگ الگ API کیز جمع نہیں کرنا چاہتے، تو **[Nous Portal](https://portal.nousresearch.com)** ان سب کو ایک ہی سبسکرپشن کے تحت کور کرتا ہے:
 
 - **300+ ماڈلز** — ان میں سے کوئی بھی ماڈل `/model <name>` کے ذریعے منتخب کریں
 - **ٹول گیٹ وے (Tool Gateway)** — ویب سرچ، امیج جنریشن (FAL)، ٹیکسٹ ٹو سپیچ (OpenAI)، کلاؤڈ براؤزر (Browser Use)، یہ سب آپ کی سبسکرپشن کے ذریعے چلتے ہیں۔ کسی اضافی اکاؤنٹ کی ضرورت نہیں۔
@@ -118,7 +116,7 @@ nara setup --portal
 
 </div>
 
-یہ آپ کو OAuth کے ذریعے لاگ ان کرواتا ہے، Nous کو آپ کا پرووائیڈر مقرر کرتا ہے، اور ٹول گیٹ وے کو آن کر دیتا ہے۔ `nara portal info` کمانڈ استعمال کر کے آپ کسی بھی وقت چیک کر سکتے ہیں کہ کون کون سی سروسز منسلک ہیں۔ مکمل تفصیلات [Tool Gateway دستاویزات کے صفحے](https://nara-agent.nousresearch.com/docs/user-guide/features/tool-gateway) پر موجود ہیں۔
+یہ آپ کو OAuth کے ذریعے لاگ ان کرواتا ہے، Nous کو آپ کا پرووائیڈر مقرر کرتا ہے، اور ٹول گیٹ وے کو آن کر دیتا ہے۔ `nara portal info` کمانڈ استعمال کر کے آپ کسی بھی وقت چیک کر سکتے ہیں کہ کون کون سی سروسز منسلک ہیں۔ مکمل تفصیلات [Tool Gateway دستاویزات کے صفحے](https://engsathiago.github.io/nara-agent/docs/user-guide/features/tool-gateway) پر موجود ہیں۔
 
 آپ اب بھی کسی بھی ٹول کے لیے اپنی مرضی کی API کیز استعمال کر سکتے ہیں — گیٹ وے ہر سروس کے لیے الگ الگ کام کرتا ہے، ایسا نہیں کہ یا تو سب کچھ استعمال کریں یا کچھ بھی نہیں۔
 
@@ -126,7 +124,7 @@ nara setup --portal
 
 ## CLI بمقابلہ میسجنگ فوری حوالہ
 
-ہرمیس کے دو بنیادی انٹر فیس ہیں: آپ ٹرمینل UI کو `nara` کے ساتھ شروع کریں، یا گیٹ وے چلا کر اس کے ساتھ ٹیلی گرام، ڈسکارڈ، سلیک، واٹس ایپ، سگنل، یا ای میل کے ذریعے بات کریں۔ جب آپ کسی بات چیت میں ہوتے ہیں، تو بہت سی سلیش (slash) کمانڈز دونوں انٹرفیسز میں ایک جیسی ہوتی ہیں۔
+نارا کے دو بنیادی انٹر فیس ہیں: آپ ٹرمینل UI کو `nara` کے ساتھ شروع کریں، یا گیٹ وے چلا کر اس کے ساتھ ٹیلی گرام، ڈسکارڈ، سلیک، واٹس ایپ، سگنل، یا ای میل کے ذریعے بات کریں۔ جب آپ کسی بات چیت میں ہوتے ہیں، تو بہت سی سلیش (slash) کمانڈز دونوں انٹرفیسز میں ایک جیسی ہوتی ہیں۔
 
 <div dir="ltr">
 
@@ -144,33 +142,33 @@ nara setup --portal
 
 </div>
 
-مکمل کمانڈ لسٹ کے لیے، [CLI گائیڈ](https://nara-agent.nousresearch.com/docs/user-guide/cli) اور [میسجنگ گیٹ وے گائیڈ](https://nara-agent.nousresearch.com/docs/user-guide/messaging) دیکھیں۔
+مکمل کمانڈ لسٹ کے لیے، [CLI گائیڈ](https://engsathiago.github.io/nara-agent/docs/user-guide/cli) اور [میسجنگ گیٹ وے گائیڈ](https://engsathiago.github.io/nara-agent/docs/user-guide/messaging) دیکھیں۔
 
 ---
 
 ## دستاویزات (Documentation)
 
-تمام دستاویزات **[nara-agent.nousresearch.com/docs](https://nara-agent.nousresearch.com/docs/)** پر موجود ہیں:
+تمام دستاویزات **[engsathiago.github.io/nara-agent/docs](https://engsathiago.github.io/nara-agent/docs/)** پر موجود ہیں:
 
 <div dir="ltr">
 
 | سیکشن (Section)                                                                                     | تفصیل (What's Covered)                                     |
 | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [فوری آغاز (Quickstart)](https://nara-agent.nousresearch.com/docs/getting-started/quickstart)     | انسٹالیشن → سیٹ اپ → 2 منٹ میں پہلی بات چیت شروع کریں       |
-| [CLI کا استعمال](https://nara-agent.nousresearch.com/docs/user-guide/cli)                         | کمانڈز، کی بائنڈنگز (keybindings)، پرسنلٹیز (personalities)، سیشنز |
-| [کنفیگریشن (Configuration)](https://nara-agent.nousresearch.com/docs/user-guide/configuration)    | کنفگ فائل، پرووائیڈرز، ماڈلز، اور تمام آپشنز               |
-| [میسجنگ گیٹ وے](https://nara-agent.nousresearch.com/docs/user-guide/messaging)                    | ٹیلی گرام، ڈسکارڈ، سلیک، واٹس ایپ، سگنل، ہوم اسسٹنٹ         |
-| [سیکیورٹی (Security)](https://nara-agent.nousresearch.com/docs/user-guide/security)              | کمانڈ کی منظوری، DM پیئرنگ (pairing)، کنٹینر آئسولیشن       |
-| [ٹولز اور ٹول سیٹس](https://nara-agent.nousresearch.com/docs/user-guide/features/tools)          | 40 سے زائد ٹولز، ٹول سیٹ سسٹم، ٹرمینل بیک اینڈز             |
-| [مہارتوں کا سسٹم (Skills System)](https://nara-agent.nousresearch.com/docs/user-guide/features/skills)| پروسیجرل (Procedural) میموری، سکلز ہب، نئی مہارتیں بنانا    |
-| [میموری (Memory)](https://nara-agent.nousresearch.com/docs/user-guide/features/memory)            | مستقل میموری، یوزر پروفائلز، بہترین طریقہ کار              |
-| [MCP انضمام (Integration)](https://nara-agent.nousresearch.com/docs/user-guide/features/mcp)      | صلاحیتوں کو بڑھانے کے لیے کسی بھی MCP سرور کو جوڑیں        |
-| [کرون (Cron) شیڈیولنگ](https://nara-agent.nousresearch.com/docs/user-guide/features/cron)         | پلیٹ فارم ڈیلیوری کے ساتھ شیڈول کیے گئے کام                 |
-| [کانٹیکسٹ (Context) فائلز](https://nara-agent.nousresearch.com/docs/user-guide/features/context-files)| پروجیکٹ کا سیاق و سباق (context) جو ہر بات چیت پر اثر انداز ہوتا ہے |
-| [آرکیٹیکچر (Architecture)](https://nara-agent.nousresearch.com/docs/developer-guide/architecture) | پروجیکٹ کا ڈھانچہ، ایجنٹ لوپ، اہم کلاسز                    |
-| [تعاون (Contributing)](https://nara-agent.nousresearch.com/docs/developer-guide/contributing)     | ڈیویلپمنٹ سیٹ اپ، PR کا طریقہ کار، کوڈنگ کا انداز          |
-| [CLI حوالہ جات (Reference)](https://nara-agent.nousresearch.com/docs/reference/cli-commands)      | تمام کمانڈز اور فلیگز (flags)                              |
-| [انوائرمنٹ ویری ایبلز](https://nara-agent.nousresearch.com/docs/reference/environment-variables)  | مکمل انوائرمنٹ ویری ایبل حوالہ جات                         |
+| [فوری آغاز (Quickstart)](https://engsathiago.github.io/nara-agent/docs/getting-started/quickstart)     | انسٹالیشن → سیٹ اپ → 2 منٹ میں پہلی بات چیت شروع کریں       |
+| [CLI کا استعمال](https://engsathiago.github.io/nara-agent/docs/user-guide/cli)                         | کمانڈز، کی بائنڈنگز (keybindings)، پرسنلٹیز (personalities)، سیشنز |
+| [کنفیگریشن (Configuration)](https://engsathiago.github.io/nara-agent/docs/user-guide/configuration)    | کنفگ فائل، پرووائیڈرز، ماڈلز، اور تمام آپشنز               |
+| [میسجنگ گیٹ وے](https://engsathiago.github.io/nara-agent/docs/user-guide/messaging)                    | ٹیلی گرام، ڈسکارڈ، سلیک، واٹس ایپ، سگنل، ہوم اسسٹنٹ         |
+| [سیکیورٹی (Security)](https://engsathiago.github.io/nara-agent/docs/user-guide/security)              | کمانڈ کی منظوری، DM پیئرنگ (pairing)، کنٹینر آئسولیشن       |
+| [ٹولز اور ٹول سیٹس](https://engsathiago.github.io/nara-agent/docs/user-guide/features/tools)          | 40 سے زائد ٹولز، ٹول سیٹ سسٹم، ٹرمینل بیک اینڈز             |
+| [مہارتوں کا سسٹم (Skills System)](https://engsathiago.github.io/nara-agent/docs/user-guide/features/skills)| پروسیجرل (Procedural) میموری، سکلز ہب، نئی مہارتیں بنانا    |
+| [میموری (Memory)](https://engsathiago.github.io/nara-agent/docs/user-guide/features/memory)            | مستقل میموری، یوزر پروفائلز، بہترین طریقہ کار              |
+| [MCP انضمام (Integration)](https://engsathiago.github.io/nara-agent/docs/user-guide/features/mcp)      | صلاحیتوں کو بڑھانے کے لیے کسی بھی MCP سرور کو جوڑیں        |
+| [کرون (Cron) شیڈیولنگ](https://engsathiago.github.io/nara-agent/docs/user-guide/features/cron)         | پلیٹ فارم ڈیلیوری کے ساتھ شیڈول کیے گئے کام                 |
+| [کانٹیکسٹ (Context) فائلز](https://engsathiago.github.io/nara-agent/docs/user-guide/features/context-files)| پروجیکٹ کا سیاق و سباق (context) جو ہر بات چیت پر اثر انداز ہوتا ہے |
+| [آرکیٹیکچر (Architecture)](https://engsathiago.github.io/nara-agent/docs/developer-guide/architecture) | پروجیکٹ کا ڈھانچہ، ایجنٹ لوپ، اہم کلاسز                    |
+| [تعاون (Contributing)](https://engsathiago.github.io/nara-agent/docs/developer-guide/contributing)     | ڈیویلپمنٹ سیٹ اپ، PR کا طریقہ کار، کوڈنگ کا انداز          |
+| [CLI حوالہ جات (Reference)](https://engsathiago.github.io/nara-agent/docs/reference/cli-commands)      | تمام کمانڈز اور فلیگز (flags)                              |
+| [انوائرمنٹ ویری ایبلز](https://engsathiago.github.io/nara-agent/docs/reference/environment-variables)  | مکمل انوائرمنٹ ویری ایبل حوالہ جات                         |
 
 </div>
 
@@ -178,7 +176,7 @@ nara setup --portal
 
 ## OpenClaw سے منتقلی
 
-اگر آپ OpenClaw سے منتقل ہو رہے ہیں، تو ہرمیس آپ کی سیٹنگز، یادیں (memories)، مہارتیں (skills)، اور API کیز کو خود بخود امپورٹ کر سکتا ہے۔
+اگر آپ OpenClaw سے منتقل ہو رہے ہیں، تو نارا آپ کی سیٹنگز، یادیں (memories)، مہارتیں (skills)، اور API کیز کو خود بخود امپورٹ کر سکتا ہے۔
 
 **پہلی بار سیٹ اپ کے دوران:** سیٹ اپ وزرڈ (`nara setup`) خود بخود `~/.openclaw` کو پہچان لیتا ہے اور کنفیگریشن شروع ہونے سے پہلے مائیگریٹ (migrate) کرنے کا آپشن دیتا ہے۔
 
@@ -213,7 +211,7 @@ nara claw migrate --overwrite  # موجودہ متصادم فائلوں کو ا�
 
 ## تعاون کریں (Contributing)
 
-ہم آپ کے تعاون کا خیرمقدم کرتے ہیں! ڈیویلپمنٹ سیٹ اپ، کوڈ کے انداز اور PR کے طریقہ کار کے لیے براہ کرم ہماری [Contributing گائیڈ](https://nara-agent.nousresearch.com/docs/developer-guide/contributing) دیکھیں۔
+ہم آپ کے تعاون کا خیرمقدم کرتے ہیں! ڈیویلپمنٹ سیٹ اپ، کوڈ کے انداز اور PR کے طریقہ کار کے لیے براہ کرم ہماری [Contributing گائیڈ](https://engsathiago.github.io/nara-agent/docs/developer-guide/contributing) دیکھیں۔
 
 PM اور Python 3.14 کے ٹیسٹ ماحول اور تصدیقی کمانڈز کے لیے
 [Development Setup](CONTRIBUTING.md#development-setup) دیکھیں۔
@@ -222,11 +220,10 @@ PM اور Python 3.14 کے ٹیسٹ ماحول اور تصدیقی کمانڈز 
 
 ## کمیونٹی (Community)
 
-- 💬 [ڈسکارڈ (Discord)](https://discord.gg/NousResearch)
 - 📚 [سکلز ہب (Skills Hub)](https://agentskills.io)
 - 🐛 [مسائل (Issues)](https://github.com/engsathiago/nara-agent/issues)
-- 🔌 [computer-use-linux](https://github.com/avifenesh/computer-use-linux) — ہرمیس اور دیگر MCP ہوسٹس کے لیے لینکس (Linux) ڈیسک ٹاپ کنٹرول MCP سرور، جس میں AT-SPI ایکسیسیبلٹی ٹریز، Wayland/X11 ان پٹ، سکرین شاٹس، اور کمپوزیٹر ونڈو ٹارگیٹنگ شامل ہے۔
-- 🔌 [NaraClaw](https://github.com/AaronWong1999/naraclaw) — کمیونٹی وی چیٹ (WeChat) برج: ہرمیس ایجنٹ اور OpenClaw کو ایک ہی وی چیٹ اکاؤنٹ پر چلائیں۔
+- 🔌 [computer-use-linux](https://github.com/avifenesh/computer-use-linux) — نارا اور دیگر MCP ہوسٹس کے لیے لینکس (Linux) ڈیسک ٹاپ کنٹرول MCP سرور، جس میں AT-SPI ایکسیسیبلٹی ٹریز، Wayland/X11 ان پٹ، سکرین شاٹس، اور کمپوزیٹر ونڈو ٹارگیٹنگ شامل ہے۔
+- 🔌 [NaraClaw](https://github.com/AaronWong1999/naraclaw) — کمیونٹی وی چیٹ (WeChat) برج: نارا ایجنٹ اور OpenClaw کو ایک ہی وی چیٹ اکاؤنٹ پر چلائیں۔
 
 ---
 

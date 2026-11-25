@@ -5,7 +5,7 @@ import { useProfileScope } from "@/contexts/useProfileScope";
 import { useI18n } from "@/i18n";
 
 const DOCS_URL =
-  "https://nara-agent.nousresearch.com/docs/developer-guide/relay-shared-metrics";
+  "https://engsathiago.github.io/nara-agent/docs/developer-guide/relay-shared-metrics";
 const STORAGE_KEY = "sharedMetricsOfferDismissed";
 
 /**

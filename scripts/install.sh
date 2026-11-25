@@ -436,7 +436,7 @@ check_platform() {
     # install the phone cannot run (no Android wheels in the lock). The
     # signed APT package is the only supported shape there.
     if [ -n "${TERMUX_VERSION:-}" ] || case "${PREFIX:-}" in *com.termux/files/usr*) true ;; *) false ;; esac; then
-        fail "Termux is installed from its APT repository, not install.sh: pkg install nara-agent (setup: https://nara-agent.nousresearch.com/docs/getting-started/termux)" unsupported_platform
+        fail "This installer does not support Termux; see https://engsathiago.github.io/nara-agent/docs/getting-started/termux for source setup." unsupported_platform
     fi
     case "$(uname -s 2>/dev/null)" in
         Linux*) : ;;

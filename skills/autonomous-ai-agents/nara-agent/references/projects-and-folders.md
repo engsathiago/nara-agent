@@ -141,6 +141,6 @@ nara kanban create "Wire the webhook" --project payments
 - `references/background-systems.md` — kanban overview.
 - `references/project-context-files.md` — a different feature: `AGENTS.md` / `.nara.md` /
   `CLAUDE.md` instruction files that load into a session.
-- https://nara-agent.nousresearch.com/docs/user-guide/features/kanban#managing-boards-from-the-dashboard
+- https://engsathiago.github.io/nara-agent/docs/user-guide/features/kanban#managing-boards-from-the-dashboard
   (board ↔ project binding) and
-  https://nara-agent.nousresearch.com/docs/reference/cli-commands#nara-project
+  https://engsathiago.github.io/nara-agent/docs/reference/cli-commands#nara-project

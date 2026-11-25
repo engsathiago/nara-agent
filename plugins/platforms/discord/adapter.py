@@ -430,7 +430,7 @@ def _format_privileged_intents_guidance(*, needs_members: bool) -> str:
             "Fix: https://discord.com/developers/applications → your application "
             "→ Bot → Privileged Gateway Intents → enable the intent(s) listed "
             "above → Save Changes, then restart the gateway.",
-            "Docs: https://nara-agent.nousresearch.com/docs/user-guide/messaging/discord",
+            "Docs: https://engsathiago.github.io/nara-agent/docs/user-guide/messaging/discord",
         ]
     )
     return "\n".join(lines)

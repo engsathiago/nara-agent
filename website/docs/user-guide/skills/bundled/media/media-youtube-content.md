@@ -43,7 +43,7 @@ Use `terminal` with the Python from a PM-prepared Nara source checkout. The
 Nara with raw pip or project-discovering `uv run`.
 
 From that checkout, first follow the isolated development-home setup in
-[Package Management](https://nara-agent.nousresearch.com/docs/reference/package-management#developer-workflow),
+[Package Management](https://engsathiago.github.io/nara-agent/docs/reference/package-management#developer-workflow),
 then prepare the extra and reactivate before running the helper:
 
 ```bash

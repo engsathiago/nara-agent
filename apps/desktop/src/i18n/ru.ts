@@ -1209,7 +1209,7 @@ export const ruOverrides = {
       sshErrHostKey:
         'Ключ хоста ИЗМЕНИЛСЯ с последнего подключения. Убедитесь, что это ожидаемо, затем выполните ssh-keygen -R <host> и переподключитесь.',
       sshErrNotInstalled:
-        'Nara не установлен на удалённой машине. Установите его там (curl -fsSL https://nara-agent.nousresearch.com/install.sh | sh) или задайте путь к Nara.',
+        'Nara не установлен на удалённой машине. Установите его там (curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | sh) или задайте путь к Nara.',
       sshErrPlatform:
         'Неподдерживаемая удалённая платформа. SSH-режим Nara Desktop поддерживает удалённые хосты Linux, macOS и Windows.',
       sshErrTimeout: 'SSH-соединение истекло. Хост может быть недоступен или «спит».',

@@ -83,7 +83,7 @@ nara webhook subscribe todoist-nara \
   --deliver telegram --deliver-chat-id "12345"
 ```
 
-Full filter syntax: https://nara-agent.nousresearch.com/docs/user-guide/messaging/webhooks#payload-filters
+Full filter syntax: https://engsathiago.github.io/nara-agent/docs/user-guide/messaging/webhooks#payload-filters
 
 ### List subscriptions
 ```bash

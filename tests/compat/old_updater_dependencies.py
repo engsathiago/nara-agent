@@ -196,4 +196,4 @@ def _sync_python_dependencies_after_pull(
         print(f"  ⚠ {failing_module} still fails to import after updating:")
         print(f"      {import_error}")
         print("    Run `nara update` again — if it persists, reinstall:")
-        print("    https://nara-agent.nousresearch.com")
+        print("    https://engsathiago.github.io/nara-agent")

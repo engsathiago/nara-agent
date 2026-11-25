@@ -23,7 +23,7 @@ import urllib.request
 from email.message import Message
 from urllib.parse import urljoin
 
-DEFAULT_URL = "https://nara-agent.nousresearch.com/docs/api/plugins.json"
+DEFAULT_URL = "https://engsathiago.github.io/nara-agent/docs/api/plugins.json"
 ORIGIN = "null"
 MAX_HOPS = 5
 TIMEOUT_SECONDS = 20

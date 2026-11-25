@@ -28,7 +28,7 @@ No admin rights required. The installer goes to `%LOCALAPPDATA%\nara\` and adds 
 **Installer options** use a scriptblock:
 
 ```powershell
-& ([scriptblock]::Create((irm https://engsathiago.github.io/nara-agent/install.ps1))) -NonInteractive -Channel main
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.ps1))) -NonInteractive -Channel main
 ```
 
 | Parameter | Purpose |

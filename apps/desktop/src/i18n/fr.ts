@@ -1856,7 +1856,7 @@ export const frOverrides = {
       sshErrHostKey:
         "La clé de l'hôte a changé depuis votre dernière connexion. Vérifiez que ce changement est attendu, puis exécutez ssh-keygen -R <host> et reconnectez-vous.",
       sshErrNotInstalled:
-        "Nara n'est pas installé sur l'hôte distant. Installez-le là-bas (curl -fsSL https://nara-agent.nousresearch.com/install.sh | sh) ou définissez le chemin Nara.",
+        "Nara n'est pas installé sur l'hôte distant. Installez-le là-bas (curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | sh) ou définissez le chemin Nara.",
       sshErrPlatform:
         'Plateforme distante non prise en charge. Le mode SSH de Nara Desktop supporte les hôtes distants Linux, macOS et Windows.',
       sshErrTimeout: "Expiration de la connexion SSH. L'hôte peut être inaccessible ou en veille.",

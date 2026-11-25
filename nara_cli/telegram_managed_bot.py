@@ -1,5 +1,8 @@
-"""Telegram Managed Bot onboarding client: creates a user-owned child bot via the Nous onboarding
-service (no BotFather copy-paste); the raw Telegram token is saved locally after one retrieval."""
+"""Optional Telegram managed-bot onboarding client.
+
+An operator-provided pairing service can create a bot and return its token once.
+Manual BotFather setup remains available when no service is configured.
+"""
 
 from __future__ import annotations
 
@@ -13,8 +16,8 @@ from typing import Optional
 
 import httpx
 
-# Nous-hosted pairing API; override for PoC/staging with TELEGRAM_ONBOARDING_URL.
-DEFAULT_API_URL = "https://setup.nara-agent.nousresearch.com"
+# No pairing service is bundled with this fork.
+DEFAULT_API_URL = ""
 TELEGRAM_ONBOARDING_URL_ENV = "TELEGRAM_ONBOARDING_URL"
 DEFAULT_BOT_NAME = "Nara Agent"
 DEFAULT_POLL_TIMEOUT = 180
@@ -89,8 +92,11 @@ def create_pairing(
     api_url: str | None = None, bot_name: str = DEFAULT_BOT_NAME, timeout: float = 10.0
 ) -> TelegramPairing | None:
     """POST a pairing; the returned poll token is only used as a bearer credential while polling."""
+    resolved_api_url = _api_url(api_url)
+    if not resolved_api_url:
+        return None
     try:
-        resp = httpx.post(f"{_api_url(api_url)}/v1/telegram/pairings", json={"bot_name": bot_name}, timeout=timeout)
+        resp = httpx.post(f"{resolved_api_url}/v1/telegram/pairings", json={"bot_name": bot_name}, timeout=timeout)
         if resp.status_code not in (200, 201):
             return None
         data = resp.json()
@@ -151,6 +157,10 @@ def auto_setup_telegram_bot_result(
     """Run the full automatic Telegram bot creation flow."""
     _ = manager_bot, profile_name  # accepted for callers; the service decides both
     resolved_api_url = _api_url(api_url)
+    if not resolved_api_url:
+        print("\n  Managed Telegram setup is not configured. Use manual BotFather setup,"
+              " or set TELEGRAM_ONBOARDING_URL to a pairing service you operate.")
+        return None
     print(f"\n  Contacting Nara Telegram onboarding service: {resolved_api_url}")
     sys.stdout.flush()
     pairing = create_pairing(resolved_api_url)

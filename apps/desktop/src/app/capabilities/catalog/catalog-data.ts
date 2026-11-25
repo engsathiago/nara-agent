@@ -47,9 +47,8 @@ export interface CatalogEntry {
   search: string
 }
 
-// The public domain redirects here without CORS headers on the redirect.
-// Use the docs' actual static host, not GitHub's API or repository endpoints.
-const CATALOG_BASE = 'https://nousresearch.github.io/nara-agent/docs/api'
+// Fetch the generated JSON directly from the owned static site.
+const CATALOG_BASE = 'https://engsathiago.github.io/nara-agent/docs/api'
 /** A download with no new bytes for this long is aborted (inactivity, not total time). */
 const CATALOG_STALL_MS = 60_000
 const text = (value: unknown): string => (typeof value === 'string' ? value : '')

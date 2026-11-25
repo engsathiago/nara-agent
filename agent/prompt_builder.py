@@ -182,7 +182,7 @@ NARA_AGENT_HELP_GUIDANCE = (
     # persona (no Nara identity line) still learns from "Nara Agent itself" + "your own features" what it runs on.
     "For help with Nara Agent itself — configuring, setting up, using, extending, or troubleshooting it — "
     "or to understand your own features, tools, or capabilities, the documentation at "
-    "https://nara-agent.nousresearch.com/docs is your "
+    "https://engsathiago.github.io/nara-agent/docs is your "
     "authoritative reference and always holds the latest, most up-to-date information. The `nara-agent` "
     "skill has the actual commands and proven workflows — load it with skill_view(name='nara-agent') "
     "before configuring, modifying, or troubleshooting Nara so you don't guess or invent workarounds."
@@ -192,7 +192,7 @@ NARA_AGENT_HELP_GUIDANCE = (
 NARA_AGENT_HELP_GUIDANCE_NO_SKILLS = (
     "For help with Nara Agent itself — configuring, setting up, using, extending, or troubleshooting it — "
     "or to understand your own features, tools, or capabilities, the documentation at "
-    "https://nara-agent.nousresearch.com/docs is the "
+    "https://engsathiago.github.io/nara-agent/docs is the "
     "authoritative reference and always holds the latest, most up-to-date information. Point the user there "
     "(or read it yourself if you have a way to fetch web content)."
 )

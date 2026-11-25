@@ -677,7 +677,7 @@ def _maybe_setup_dashboard_auth_interactively(args) -> None:
             "    nara dashboard register\n"
             "  It provisions a Nous Portal OAuth client and writes "
             "NARA_DASHBOARD_OAUTH_CLIENT_ID into ~/.nara/.env for you.\n"
-            "  Docs: https://nara-agent.nousresearch.com/docs/"
+            "  Docs: https://engsathiago.github.io/nara-agent/docs/"
             "user-guide/features/web-dashboard#authentication-gated-mode"
         )
         sys.exit(0)

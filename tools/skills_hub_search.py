@@ -24,7 +24,7 @@ from tools.skills_hub_sources import BrowseShSource, LobeHubSource, UrlSource, W
 # Log-record parity with the origin module.
 logger = logging.getLogger("tools.skills_hub")
 
-NARA_INDEX_URL = "https://nara-agent.nousresearch.com/docs/api/skills-index.json"
+NARA_INDEX_URL = "https://engsathiago.github.io/nara-agent/docs/api/skills-index.json"
 NARA_INDEX_TTL = 6 * 3600  # 6 hours
 
 

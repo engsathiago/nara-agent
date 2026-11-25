@@ -73,7 +73,7 @@ def test_how_nara_works_reads_the_docs_and_builds_three_screens():
 
     assert text.split("\n")[1] == ("Load these skills with skill_view first: nara-agent, claude-design, p5js, "
                                    "humanizer.")
-    assert "https://nara-agent.nousresearch.com/docs" in text and "web_extract" in text
+    assert "https://engsathiago.github.io/nara-agent/docs" in text and "web_extract" in text
     assert all(f"Screen {n}" in text for n in (1, 2, 3)) and "~/nara-first-task/" in text
 
 

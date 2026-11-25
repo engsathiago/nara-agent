@@ -1,13 +1,12 @@
 # Nara Desktop ☤
 
 <p align="center">
-  <a href="https://github.com/engsathiago/nara-agent/releases"><img src="https://img.shields.io/badge/Download-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-FFD700?style=for-the-badge" alt="Download"></a>
-  <a href="https://nara-agent.nousresearch.com/docs/"><img src="https://img.shields.io/badge/Docs-nara--agent.nousresearch.com-FFD700?style=for-the-badge" alt="Documentation"></a>
-  <a href="https://discord.gg/NousResearch"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://github.com/engsathiago/nara-agent"><img src="https://img.shields.io/badge/Source-GitHub-FFD700?style=for-the-badge" alt="Source"></a>
+  <a href="https://engsathiago.github.io/nara-agent/docs/"><img src="https://img.shields.io/badge/Docs-Nara-FFD700?style=for-the-badge" alt="Documentation"></a>
   <a href="https://github.com/engsathiago/nara-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
 </p>
 
-**The native desktop app for [Nara Agent](../../README.md) — the self-improving AI agent from [Nous Research](https://nousresearch.com).** Same agent, same skills, same memory as the CLI and gateway, in a polished native window — chat with streaming tool output, side-by-side previews, a file browser, voice, and settings, no terminal required. Available for **macOS, Windows, and Linux**.
+**The native desktop app for [Nara Agent](../../README.md).** It uses the same agent, skills, and memory as the CLI and gateway, in a native window with chat, previews, file browsing, voice, and settings. The source supports **macOS, Windows, and Linux**; official signed binaries have not been published for this fork.
 
 > **Intel Macs:** the `Nara-Setup.dmg` bootstrap installer is built for
 > Apple Silicon (arm64) only, so on an Intel Mac it reports "not supported on
@@ -40,7 +39,7 @@ It builds and launches the GUI against your existing install — same config, ke
 
 ### Prebuilt installers
 
-Prebuilt installers are built and distributed via [the Nara Desktop website.](https://nara-agent.nousresearch.com/).
+No official prebuilt installer is published for this fork yet. Build from source with [BUILDING.md](BUILDING.md).
 
 ---
 
@@ -262,7 +261,7 @@ Remove-Item -Recurse -Force "$env:LOCALAPPDATA\nara\nara-agent\venv"
 ## Community
 
 - 💬 [Discord](https://discord.gg/NousResearch)
-- 📖 [Documentation](https://nara-agent.nousresearch.com/docs/)
+- 📖 [Documentation](https://engsathiago.github.io/nara-agent/docs/)
 - 🐛 [Issues](https://github.com/engsathiago/nara-agent/issues)
 
 ---

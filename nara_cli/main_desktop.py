@@ -1719,7 +1719,7 @@ def cmd_gui(args: argparse.Namespace):
             print(
                 "  This Nara came from Homebrew, which does not ship the desktop app's\n"
                 "  source tree, so it cannot be built from this install.\n"
-                "  Install the desktop app from https://nara-agent.nousresearch.com,\n"
+                "  Install the desktop app from https://engsathiago.github.io/nara-agent,\n"
                 "  or run `nara desktop` from a source checkout."
             )
         sys.exit(1)

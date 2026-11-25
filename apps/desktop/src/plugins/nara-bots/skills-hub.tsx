@@ -14,22 +14,19 @@ import { requestForBot } from './routing'
 import type { RosterRow } from './types'
 
 // ── skills hub section: the REAL hub page (docs) embedded as a picker ──────
-// https://nara-agent.nousresearch.com/docs/skills?embed=picker hides the
+// https://engsathiago.github.io/nara-agent/docs/skills?embed=picker hides the
 // docs chrome and adds "+ Add to this Agent" per card, posting
 // {type: 'nara-skill-pick', ...} to us (nara-agent#86243). We validate
 // the origin, install via skills.manage, and bubble onInstalled so the
 // checklist above gains the row. Search-box fallback kept for offline use.
 
-const HUB_ORIGIN = 'https://nara-agent.nousresearch.com'
-const FALLBACK_HUB_ORIGIN = 'https://nousresearch.github.io'
-const HUB_PICKER_URL = HUB_ORIGIN + '/docs/skills?embed=picker'
-const FALLBACK_HUB_PICKER_URL = FALLBACK_HUB_ORIGIN + '/nara-agent/docs/skills?embed=picker'
-// A WAF-blocked or unreachable docs host must not delay the fallback longer
-// than this — the probe only decides which origin to embed, never blocks it.
+const HUB_ORIGIN = 'https://engsathiago.github.io'
+const HUB_PICKER_URL = HUB_ORIGIN + '/nara-agent/docs/skills?embed=picker'
+// An unreachable docs site must not delay the local search fallback.
 const HUB_PROBE_TIMEOUT_MS = 8_000
 
 function isHubOrigin(origin: string) {
-  return origin === HUB_ORIGIN || origin === FALLBACK_HUB_ORIGIN
+  return origin === HUB_ORIGIN
 }
 
 /** One `skills.manage action=search` hit. */
@@ -53,16 +50,12 @@ export function HubSkillsSection({ bot, onInstalled }: HubSkillsSectionProps) {
   const [installing, setInstalling] = useState<null | string>(null)
   const [installed, setInstalled] = useState<Record<string, boolean>>({})
   const [browseHub, setBrowseHub] = useState(false)
-  const [hubPickerUrl, setHubPickerUrl] = useState(HUB_PICKER_URL)
+  const [hubAvailable, setHubAvailable] = useState(true)
   const installRef = useRef<((name: string, displayName?: string) => Promise<void>) | null>(null)
   const frameRef = useRef<HTMLIFrameElement | null>(null)
 
-  // Vercel's WAF denies some residential IP ranges for the whole docs domain,
-  // leaving the pane on a block page (#118203). The equivalent GitHub Pages
-  // deployment serves the same picker, so probe the primary before each
-  // browse session and fall back when it is unreachable or refuses us. The
-  // probe carries its own deadline — a hanging connection must not stall the
-  // fallback.
+  // Probe the owned docs site before embedding it. If publication or the
+  // network is unavailable, keep the backend-powered search usable.
   useEffect(() => {
     if (!browseHub) {
       return undefined
@@ -75,13 +68,13 @@ export function HubSkillsSection({ bot, onInstalled }: HubSkillsSectionProps) {
       signal: AbortSignal.timeout(HUB_PROBE_TIMEOUT_MS)
     })
       .then(response => {
-        if (mounted && !response.ok) {
-          setHubPickerUrl(FALLBACK_HUB_PICKER_URL)
+        if (mounted) {
+          setHubAvailable(response.ok)
         }
       })
       .catch(() => {
         if (mounted) {
-          setHubPickerUrl(FALLBACK_HUB_PICKER_URL)
+          setHubAvailable(false)
         }
       })
 
@@ -210,7 +203,7 @@ export function HubSkillsSection({ bot, onInstalled }: HubSkillsSectionProps) {
           {browseHub ? h.pickerHide : h.pickerBrowse}
         </Button>
       </div>
-      {browseHub ? (
+      {browseHub && hubAvailable ? (
         <div className="grid gap-1">
           {/* Resizable viewport: native CSS resize handle (bottom-right */
           /* corner) lets the user drag it larger/smaller. The iframe */
@@ -239,7 +232,7 @@ export function HubSkillsSection({ bot, onInstalled }: HubSkillsSectionProps) {
               allow="clipboard-write"
               ref={frameRef}
               sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-              src={hubPickerUrl}
+              src={HUB_PICKER_URL}
               style={{
                 width: '133.34%',
                 height: '133.34%',

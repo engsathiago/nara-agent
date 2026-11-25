@@ -4,19 +4,17 @@
 
 # Nara Agent ☤
 <p align="center">
-  <a href="https://nara-agent.nousresearch.com/">Nara Agent</a> | <a href="https://nara-agent.nousresearch.com/">Nara Desktop</a>
+  <a href="https://engsathiago.github.io/nara-agent/">Nara Agent</a> | <a href="https://engsathiago.github.io/nara-agent/">Nara Desktop</a>
 </p>
 <p align="center">
-  <a href="https://nara-agent.nousresearch.com/docs/"><img src="https://img.shields.io/badge/Docs-nara--agent.nousresearch.com-FFD700?style=for-the-badge" alt="Documentación"></a>
-  <a href="https://discord.gg/NousResearch"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://engsathiago.github.io/nara-agent/docs/"><img src="https://img.shields.io/badge/Docs-Nara-FFD700?style=for-the-badge" alt="Documentación"></a>
   <a href="https://github.com/engsathiago/nara-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/Licencia-MIT-green?style=for-the-badge" alt="Licencia: MIT"></a>
-  <a href="https://nousresearch.com"><img src="https://img.shields.io/badge/Creado%20por-Nous%20Research-blueviolet?style=for-the-badge" alt="Creado por Nous Research"></a>
   <a href="README.md"><img src="https://img.shields.io/badge/Lang-English-blue?style=for-the-badge" alt="English"></a>
   <a href="README.zh-CN.md"><img src="https://img.shields.io/badge/Lang-中文-red?style=for-the-badge" alt="中文"></a>
   <a href="README.ur-pk.md"><img src="https://img.shields.io/badge/Lang-اردو-green?style=for-the-badge" alt="اردو"></a>
 </p>
 
-**El agente de IA con mejora continua creado por [Nous Research](https://nousresearch.com).** Es el único agente con un bucle de aprendizaje integrado: crea habilidades a partir de la experiencia, las mejora durante el uso, se impulsa a sí mismo a persistir el conocimiento, busca en sus propias conversaciones pasadas y construye un modelo cada vez más profundo de quién eres a lo largo de las sesiones. Ejecútalo en un VPS de $5, un clúster de GPUs o infraestructura sin servidor que cuesta casi nada cuando está inactivo. No está atado a tu laptop — habla con él desde Telegram mientras trabaja en una VM en la nube.
+**Nara Agent es un proyecto independiente basado en código abierto.** Incluye herramientas de aprendizaje y memoria: crea habilidades a partir de la experiencia, las mejora durante el uso, se impulsa a sí mismo a persistir el conocimiento, busca en sus propias conversaciones pasadas y construye un modelo cada vez más profundo de quién eres a lo largo de las sesiones. Ejecútalo en un VPS de $5, un clúster de GPUs o infraestructura sin servidor que cuesta casi nada cuando está inactivo. No está atado a tu laptop — habla con él desde Telegram mientras trabaja en una VM en la nube.
 
 Usa cualquier modelo que quieras — [Nous Portal](https://portal.nousresearch.com), [OpenRouter](https://openrouter.ai) (más de 200 modelos), [NovitaAI](https://novita.ai), [NVIDIA NIM](https://build.nvidia.com) (Nemotron), [Xiaomi MiMo](https://platform.xiaomimimo.com), [z.ai/GLM](https://z.ai), [Kimi/Moonshot](https://platform.moonshot.ai), [MiniMax](https://www.minimax.io), [Hugging Face](https://huggingface.co), OpenAI, o tu propio endpoint. Cambia con `nara model` — sin cambios de código, sin dependencias.
 
@@ -37,7 +35,7 @@ Usa cualquier modelo que quieras — [Nous Portal](https://portal.nousresearch.c
 ### Linux, macOS, WSL2
 
 ```bash
-curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | bash
 ```
 
 ### Windows (nativo, PowerShell)
@@ -47,7 +45,7 @@ curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
 Ejecuta esto en PowerShell:
 
 ```powershell
-iex (irm https://nara-agent.nousresearch.com/install.ps1)
+iex (irm https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.ps1)
 ```
 
 El instalador de código fuente usa PM para Python 3.14, Node.js, npm, pnpm,
@@ -55,7 +53,7 @@ ripgrep, FFmpeg y las dependencias de Python. Si falta Git, descarga el archivo
 verificado de Git for Windows en el almacén de Nara, sin reemplazar el Git
 del sistema. MSIX/App Installer es una distribución separada.
 
-> **Android / Termux:** Hay un paquete APT en pruebas para dispositivos aarch64. Incluye Python, Node.js y la TUI. Sigue la [guía de Termux](https://nara-agent.nousresearch.com/docs/getting-started/termux), no el script de instalación para escritorio y servidor.
+> **Android / Termux:** Este fork no publica un paquete APT. Consulta la [guía de Termux](https://engsathiago.github.io/nara-agent/docs/getting-started/termux), no el script de instalación para escritorio y servidor.
 >
 > **Windows:** Windows nativo es totalmente compatible — el comando de PowerShell de arriba instala todo. Si prefieres usar WSL2, el comando de Linux también funciona allí. La instalación nativa de Windows se encuentra en `%LOCALAPPDATA%\nara`; WSL2 instala en `~/.nara` como en Linux.
 
@@ -82,7 +80,7 @@ nara update       # Actualiza a la última versión
 nara doctor       # Diagnostica cualquier problema
 ```
 
-📖 **[Documentación completa →](https://nara-agent.nousresearch.com/docs/)**
+📖 **[Documentación completa →](https://engsathiago.github.io/nara-agent/docs/)**
 
 ---
 
@@ -99,7 +97,7 @@ Un comando desde una instalación nueva:
 nara setup --portal
 ```
 
-Esto te autentica vía OAuth, establece Nous como tu proveedor y activa el Tool Gateway. Comprueba qué está conectado en cualquier momento con `nara portal info`. Detalles completos en la [página de documentación del Tool Gateway](https://nara-agent.nousresearch.com/docs/user-guide/features/tool-gateway).
+Esto te autentica vía OAuth, establece Nous como tu proveedor y activa el Tool Gateway. Comprueba qué está conectado en cualquier momento con `nara portal info`. Detalles completos en la [página de documentación del Tool Gateway](https://engsathiago.github.io/nara-agent/docs/user-guide/features/tool-gateway).
 
 Puedes seguir usando tus propias claves por herramienta cuando quieras — el gateway es por backend, no todo o nada.
 
@@ -121,31 +119,31 @@ Nara tiene dos puntos de entrada: inicia la interfaz de terminal con `nara`, o e
 | Interrumpir trabajo actual          | `Ctrl+C` o enviar un nuevo mensaje            | `/stop` o enviar un nuevo mensaje                                                 |
 | Estado específico de plataforma     | `/platforms`                                  | `/status`, `/sethome`                                                             |
 
-Para las listas de comandos completas, consulta la [guía de CLI](https://nara-agent.nousresearch.com/docs/user-guide/cli) y la [guía del Gateway de Mensajería](https://nara-agent.nousresearch.com/docs/user-guide/messaging).
+Para las listas de comandos completas, consulta la [guía de CLI](https://engsathiago.github.io/nara-agent/docs/user-guide/cli) y la [guía del Gateway de Mensajería](https://engsathiago.github.io/nara-agent/docs/user-guide/messaging).
 
 ---
 
 ## Documentación
 
-Toda la documentación está en **[nara-agent.nousresearch.com/docs](https://nara-agent.nousresearch.com/docs/)**:
+Toda la documentación está en **[engsathiago.github.io/nara-agent/docs](https://engsathiago.github.io/nara-agent/docs/)**:
 
 | Sección                                                                                             | Contenido                                                    |
 | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [Inicio rápido](https://nara-agent.nousresearch.com/docs/getting-started/quickstart)              | Instalar → configurar → primera conversación en 2 minutos   |
-| [Uso de CLI](https://nara-agent.nousresearch.com/docs/user-guide/cli)                             | Comandos, atajos de teclado, personalidades, sesiones        |
-| [Configuración](https://nara-agent.nousresearch.com/docs/user-guide/configuration)               | Archivo de configuración, proveedores, modelos, todas las opciones |
-| [Gateway de Mensajería](https://nara-agent.nousresearch.com/docs/user-guide/messaging)           | Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant   |
-| [Seguridad](https://nara-agent.nousresearch.com/docs/user-guide/security)                        | Aprobación de comandos, emparejamiento por DM, aislamiento en contenedor |
-| [Herramientas y Toolsets](https://nara-agent.nousresearch.com/docs/user-guide/features/tools)   | Más de 40 herramientas, sistema de toolsets, backends de terminal |
-| [Sistema de Habilidades](https://nara-agent.nousresearch.com/docs/user-guide/features/skills)   | Memoria procedimental, Skills Hub, creación de habilidades   |
-| [Memoria](https://nara-agent.nousresearch.com/docs/user-guide/features/memory)                   | Memoria persistente, perfiles de usuario, mejores prácticas  |
-| [Integración MCP](https://nara-agent.nousresearch.com/docs/user-guide/features/mcp)              | Conecta cualquier servidor MCP para capacidades extendidas   |
-| [Programación Cron](https://nara-agent.nousresearch.com/docs/user-guide/features/cron)           | Tareas programadas con entrega a plataforma                  |
-| [Archivos de Contexto](https://nara-agent.nousresearch.com/docs/user-guide/features/context-files) | Contexto de proyecto que da forma a cada conversación      |
-| [Arquitectura](https://nara-agent.nousresearch.com/docs/developer-guide/architecture)            | Estructura del proyecto, bucle del agente, clases principales |
-| [Contribuir](https://nara-agent.nousresearch.com/docs/developer-guide/contributing)              | Configuración de desarrollo, proceso de PR, estilo de código |
-| [Referencia de CLI](https://nara-agent.nousresearch.com/docs/reference/cli-commands)             | Todos los comandos y flags                                   |
-| [Variables de Entorno](https://nara-agent.nousresearch.com/docs/reference/environment-variables) | Referencia completa de variables de entorno                  |
+| [Inicio rápido](https://engsathiago.github.io/nara-agent/docs/getting-started/quickstart)              | Instalar → configurar → primera conversación en 2 minutos   |
+| [Uso de CLI](https://engsathiago.github.io/nara-agent/docs/user-guide/cli)                             | Comandos, atajos de teclado, personalidades, sesiones        |
+| [Configuración](https://engsathiago.github.io/nara-agent/docs/user-guide/configuration)               | Archivo de configuración, proveedores, modelos, todas las opciones |
+| [Gateway de Mensajería](https://engsathiago.github.io/nara-agent/docs/user-guide/messaging)           | Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant   |
+| [Seguridad](https://engsathiago.github.io/nara-agent/docs/user-guide/security)                        | Aprobación de comandos, emparejamiento por DM, aislamiento en contenedor |
+| [Herramientas y Toolsets](https://engsathiago.github.io/nara-agent/docs/user-guide/features/tools)   | Más de 40 herramientas, sistema de toolsets, backends de terminal |
+| [Sistema de Habilidades](https://engsathiago.github.io/nara-agent/docs/user-guide/features/skills)   | Memoria procedimental, Skills Hub, creación de habilidades   |
+| [Memoria](https://engsathiago.github.io/nara-agent/docs/user-guide/features/memory)                   | Memoria persistente, perfiles de usuario, mejores prácticas  |
+| [Integración MCP](https://engsathiago.github.io/nara-agent/docs/user-guide/features/mcp)              | Conecta cualquier servidor MCP para capacidades extendidas   |
+| [Programación Cron](https://engsathiago.github.io/nara-agent/docs/user-guide/features/cron)           | Tareas programadas con entrega a plataforma                  |
+| [Archivos de Contexto](https://engsathiago.github.io/nara-agent/docs/user-guide/features/context-files) | Contexto de proyecto que da forma a cada conversación      |
+| [Arquitectura](https://engsathiago.github.io/nara-agent/docs/developer-guide/architecture)            | Estructura del proyecto, bucle del agente, clases principales |
+| [Contribuir](https://engsathiago.github.io/nara-agent/docs/developer-guide/contributing)              | Configuración de desarrollo, proceso de PR, estilo de código |
+| [Referencia de CLI](https://engsathiago.github.io/nara-agent/docs/reference/cli-commands)             | Todos los comandos y flags                                   |
+| [Variables de Entorno](https://engsathiago.github.io/nara-agent/docs/reference/environment-variables) | Referencia completa de variables de entorno                  |
 
 ---
 
@@ -191,7 +189,6 @@ de verificación están en [Development Setup](CONTRIBUTING.md#development-setup
 
 ## Comunidad
 
-- 💬 [Discord](https://discord.gg/NousResearch)
 - 📚 [Skills Hub](https://agentskills.io)
 - 🐛 [Issues](https://github.com/engsathiago/nara-agent/issues)
 - 🔌 [computer-use-linux](https://github.com/avifenesh/computer-use-linux) — Servidor MCP de control de escritorio Linux para Nara y otros hosts MCP, con árboles de accesibilidad AT-SPI, entrada Wayland/X11, capturas de pantalla y targeting de ventanas del compositor.

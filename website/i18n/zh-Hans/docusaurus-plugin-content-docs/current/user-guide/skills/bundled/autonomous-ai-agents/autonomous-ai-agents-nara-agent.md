@@ -63,7 +63,7 @@ Never answer "Nara can't do that" from memory. Nara ships far more than this ski
 
 ```bash
 # Install (shell installer — bootstraps PM, Python, dependencies, and the launcher)
-curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | bash
 
 # Interactive chat (default surface; set display.interface: tui to launch the Ink TUI instead)
 nara

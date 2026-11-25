@@ -25,13 +25,13 @@ The Nara project currently publishes source code and scripts from its own reposi
 ### Linux, macOS, or WSL2
 
 ```bash
-curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | bash
 ```
 
 ### Windows
 
 ```powershell
-iex (irm https://engsathiago.github.io/nara-agent/install.ps1)
+iex (irm https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.ps1)
 ```
 
 You can also clone [engsathiago/nara-agent](https://github.com/engsathiago/nara-agent) directly, run `source ./activate` (PowerShell: `. ./activate.ps1`), then start `nara`. The source installer offers an optional desktop build; `nara desktop` starts the installed desktop path when its dependencies are present.
@@ -167,7 +167,7 @@ configuration, and launcher must belong to that user.
 2. As the service user, run the regular installer:
 
    ```bash
-   curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | bash
    ```
 
 3. Add the actual launcher directory to the service user's shell environment:

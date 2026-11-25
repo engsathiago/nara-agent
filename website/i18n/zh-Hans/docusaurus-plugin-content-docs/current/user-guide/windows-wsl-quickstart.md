@@ -100,7 +100,7 @@ wsl --shutdown
 打开 WSL2 shell 后执行：
 
 ```bash
-curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/engsathiago/nara-agent/main/scripts/install.sh | bash
 source ~/.bashrc
 nara
 ```

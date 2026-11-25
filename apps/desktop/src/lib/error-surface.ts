@@ -367,8 +367,8 @@ export interface ErrorCardActions {
 }
 
 export const ERROR_SETUP_GUIDE_URLS = {
-  tls: 'https://nara-agent.nousresearch.com/docs/user-guide/security#tls-certificate-trust',
-  local: 'https://nara-agent.nousresearch.com/docs/user-guide/local-models#using-your-own-llama-server'
+  tls: 'https://engsathiago.github.io/nara-agent/docs/user-guide/security#tls-certificate-trust',
+  local: 'https://engsathiago.github.io/nara-agent/docs/user-guide/local-models#using-your-own-llama-server'
 } as const
 
 /** Provider pages where the user fixes an account-level routing/privacy block. */

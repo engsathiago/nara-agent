@@ -36,7 +36,7 @@ _IN_NIX_BUILD = os.environ.get("NARA_NIX_BUILD") == "1"
 _BLOCK_MESSAGE = (
     "Building wheels or sdists for nara-agent is not supported.\n"
     "Nara is distributed via the shell installer, Docker image, or Nix.\n"
-    "See: https://nara-agent.nousresearch.com/docs/getting-started/installation\n"
+    "See: https://engsathiago.github.io/nara-agent/docs/getting-started/installation\n"
     "\n"
     "If you are developing, use an editable install instead:\n"
     "  source ./activate  # PowerShell: . .\\activate.ps1\n"
