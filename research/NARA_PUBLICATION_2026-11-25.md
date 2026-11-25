@@ -17,7 +17,10 @@ Data: 2026-11-25 (America/Sao_Paulo)
 - `nara --version` no checkout publicado: `git.d61f0b1`, Python 3.14.9; gateway supervisionado pelo launchd, definição compatível com este checkout.
 - Manifesto limpo do commit empacotado: `/Users/fate/Desktop/Nara-release-manifest-d61f0b15c0.json`, SHA-256 `e3a86816814f6dd5b172e92694e54d5ba7a82b904288dc098f8f011a58bad39d`, SHA-256 do conjunto de conteúdo `67c1a3c568151d362e6c3ae41bd292a04c63c9685cdcdb4db35bc73e30068c43`.
 
-## Distribuição e limites
+## Distribuição e limites do snapshot inicial
+
+Os arquivos desse snapshot `d61f0b1` foram substituídos nos mesmos caminhos pelo build atual
+`3c02ec2`; os hashes antigos abaixo são preservados apenas como histórico.
 
 - O instalador de fonte segue `main` por padrão. Não há ainda tag de release estável neste repositório.
 - O build macOS arm64 terminou com código zero e checkout limpo. O `build/install-stamp.json` fixa o commit acima e `dirty: false`.
@@ -52,3 +55,10 @@ A ordem combinada é código local, documentação, GitHub público e depois ins
 - O primeiro build do site com o índice passou, mas o deploy consultou a API antes de o artefato `github-pages` ficar visível. A [PR #10](https://github.com/engsathiago/nara-agent/pull/10) adicionou essa espera. O [run 45665630200](https://github.com/engsathiago/nara-agent/actions/runs/45665630200) passou por build, upload e deploy. `https://engsathiago.github.io/nara-agent/docs/`, `/docs/api/skills-index.json` e `/docs/api/plugin-catalog.json` responderam HTTP 200. O índice servido tinha 106.709 linhas e SHA-256 `ca7ae41aee5bf101d90e834179fb2b8f8172baf729aa250e0351217e04eaddde`, idêntico ao artefato do run. O catálogo público tinha 1.378 plugins; a prova CORS do Desktop retornou `ok` com `Origin: null`.
 - A [PR #11](https://github.com/engsathiago/nara-agent/pull/11), integrada no commit `6a691f469f`, substituiu os identificadores ativos de Desktop, plugin, launchd, Linux e MSIX pelo namespace do projeto próprio. O teste de identidade falhou na base com `com.nousresearch.nara` e passou após a mudança. Passaram 191 testes Python dirigidos, mais 18 testes de bundle, 15 testes de identidade/canais do Desktop, 6 testes MSIX, typecheck do Desktop, `scripts/check --staged` (16 checks) e o CI da PR. A assinatura Windows/Store ainda requer certificado e identidade cadastrada pelo proprietário; `CN=Nara Agent` é a identidade local, não uma prova de publicação assinada.
 - No `main` atual, `nara --version` apontou para `/Users/fate/Desktop/Nara` no commit `6a691f469f`; `scripts/check_product_identity.py` passou e o scorecard estrito de continuidade retornou `ready` sem bloqueios. A tentativa de repetir a suíte Python integral no snapshot publicado encontrou timeouts de arquivos sob carga e foi interrompida; portanto ela **não** conta como aprovação da suíte integral atual.
+
+## Atualização: pacote macOS do commit publicado
+
+- A [PR #13](https://github.com/engsathiago/nara-agent/pull/13) atualizou autor, publisher, copyright visível e mantenedor dos pacotes para a Nara, preservando as licenças e atribuições do código upstream. O CI da PR passou. O `main` limpo `3c02ec2a3765587701c8c89122e432ee534c40f8` foi empacotado com `bash scripts/build-bundle.sh`; o processo terminou com código zero e `build/install-stamp.json` registrou esse commit com `dirty: false`.
+- Manifesto do código nesse commit: `/Users/fate/Desktop/Nara-release-manifest-3c02ec2a37.json`, SHA-256 `6a0d8a8e47a7fac89c6a61792469d2ba71020571d6b92bcbd80138f5be843797`, 304 arquivos, `content_set_sha256` `9a8a0afb2a7a0b5fd9bf8996cba4045bd193b66dddfe6c1c22051369c56999cc`.
+- DMG local `apps/desktop/release/NaraBundled-0.0.0-mac-arm64.dmg`: SHA-256 `8848770acaad252793749ea7dff6bd0e21eda2b477d9f8899ba56a7cc2ccf670`; `hdiutil verify` confirmou checksum válido. ZIP local `apps/desktop/release/NaraBundled-0.0.0-mac-arm64.zip`: SHA-256 `7a6636dbdcfde21feeb4d32682882cef10b3fe8a8f3a9b3a70f03e8b5caafe52`; `zipinfo -t` confirmou 126.956 arquivos. Ambos contêm o `CFBundleIdentifier` `io.github.engsathiago.nara-bundled-3c02ec2`, lido diretamente de seus `Info.plist`.
+- O aplicativo desempacotado `apps/desktop/release/mac-arm64/Nara Agent 3c02ec2.app` foi reassinado ad hoc após gerar DMG/ZIP e passou em `codesign --verify --deep --strict`; CDHash `6e09ad8cdc7e23a7701d59595566ae4a39bd6eb2`. Essa assinatura manual **não está dentro** dos arquivos DMG/ZIP. Nenhum deles foi notarizado ou assinado com Developer ID, e nenhum binário foi anexado a um GitHub Release.
