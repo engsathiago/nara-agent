@@ -88,8 +88,8 @@ async function stampExeIdentity(
     'version-string': {
       ProductName: 'Nara',
       FileDescription: 'Nara',
-      CompanyName: 'Nous Research',
-      LegalCopyright: 'Copyright (c) 2026 Nous Research'
+      CompanyName: 'Nara Agent',
+      LegalCopyright: 'Copyright (c) 2026 Nara Agent contributors'
     }
   }
 

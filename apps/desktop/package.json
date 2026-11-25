@@ -4,7 +4,7 @@
   "private": true,
   "version": "0.0.0",
   "description": "Native desktop shell for Nara Agent.",
-  "author": "Nous Research",
+  "author": "Nara Agent contributors",
   "type": "module",
   "main": "dist/electron-main.mjs",
   "engines": {

@@ -2,7 +2,7 @@
 name = "nara-bootstrap"
 version = "0.0.0"
 description = "Nara Setup — signed installer that drives scripts/install.ps1"
-authors = ["Nous Research <info@nousresearch.com>"]
+authors = ["Nara Agent contributors"]
 edition = "2021"
 rust-version = "1.77"
 
