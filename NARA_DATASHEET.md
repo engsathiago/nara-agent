@@ -62,7 +62,7 @@ por adapters observáveis; a competência será medida por tarefa, sem promessa 
 | Palavra de ativação | “Ei, Nara”; modelo acústico próprio pendente de treino e avaliação |
 | Política futura | Novas regras entram somente por versão staged, promoção explícita e rollback no módulo central já implementado |
 | Prioridade de construção | Continuidade → aprendizado entre sessões → estudo ativo → evolução → escala → interfaces |
-| Publicação | Repositório público em `github.com/engsathiago/nara-agent`; instalador de fonte no próprio repositório; Pages, instalador assinado e feed próprio ainda pendentes |
+| Publicação | Repositório e documentação Pages públicos em `github.com/engsathiago/nara-agent` e `engsathiago.github.io/nara-agent/docs/`; instalador de fonte disponível; instalador assinado e feed próprio ainda pendentes |
 
 ## 3. Estado de implementação registrado
 
@@ -1621,7 +1621,7 @@ autorização de publicação, alteração de políticas ou execução de açõe
 | Trading Lab | Plugin opcional; pesquisa e backtest primeiro, paper depois e live somente após gates e Fase 9 |
 | Reverse Engineering Lab | REA oficial como ferramenta; Ghidra atual para nativos; demais providers somente por demanda validada |
 | Segurança e políticas | PDP e privacidade implementados; perfil inicial `observe_only`, regras futuras exigem promoção explícita |
-| Distribuição | Repositório público e instalador de fonte disponíveis; Pages, instaladores assinados e feeds ainda dependem dos respectivos gates da Fase 10 |
+| Distribuição | Repositório, documentação Pages e instalador de fonte públicos; instaladores assinados e feeds ainda dependem dos respectivos gates da Fase 10 |
 
 Credenciais, orçamento, máquinas adicionais e contas de mensageiros são parâmetros de instalação,
 não pendências da arquitetura. A primeira prova usa arquivos locais e destinos de teste; limites
@@ -1631,8 +1631,8 @@ retenção e autoridade continuam reservadas ao documento próprio da Fase 9.
 ## 19. Próxima entrega e critério de prioridade
 
 As provas locais das Fases 1 a 10 e das trilhas A1/A2 e B1 foram implementadas. A documentação,
-o manifesto e o pacote local foram registrados, e o repositório está público no GitHub. O site Pages
-e seus catálogos ainda aguardam publicação comprovada. Depois vêm a instalação e os gates de
+o manifesto e o pacote local foram registrados, e o repositório, o site Pages e seus catálogos estão
+públicos e foram validados por HTTP em 2026-11-25. Depois vêm a instalação e os gates de
 **implantação externa**: repetir o failover em VPS/SSH, medir
 o wake word com dataset PT-BR, ligar apenas as contas e providers escolhidos e executar o período
 paper em dados futuros. Cada resultado volta ao mesmo Mission Control, Event Log, Receipt Store,

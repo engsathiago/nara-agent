@@ -82,3 +82,14 @@ The owner chose this order: finish the local code, documentation, manifest and p
 the repository on GitHub; then install and validate on the VPS. The active project goal remains
 open through the applicable external gates. They must not be converted to passes by mocks,
 documentation, empty provider rows, or a locally signed package.
+
+## Subsequent publication evidence (2026-11-25)
+
+The repository is public at `https://github.com/engsathiago/nara-agent`. Its owned skills-index
+workflow completed with 106,709 entries, and the GitHub Pages workflow deployed the documentation.
+The public docs, skills index and plugin catalog returned HTTP 200. The live skills index matched
+the workflow artifact by SHA-256; the Desktop CORS probe passed. The active desktop and plugin
+identifiers now use the project's own namespace. See `research/NARA_PUBLICATION_2026-11-25.md`
+for run IDs, counts and focused validation. The attempted full Python suite on the published
+snapshot was interrupted after file timeouts under load, so its current verdict is still open.
+The VPS, acoustic, external-account, future paper-feed and signed-release gates above remain open.
