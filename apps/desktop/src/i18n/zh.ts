@@ -292,9 +292,9 @@ export const zhOverrides = {
   ...zhNotices,
 
   sendDiagnostics: {
-    title: '向 Nous 发送诊断信息',
+    title: '发送诊断信息',
     privacyNotice:
-      '这会将调试包上传到 Nous 内部存储（并非公开粘贴板）。内容包括系统信息（操作系统、版本、服务商、已配置的 API 密钥种类 — 绝不包含密钥本身）以及完整的 agent、gateway 和桌面端日志（每个最多 512 KB，很可能包含对话内容、工具输出与文件路径）。上传前会先脱敏。仅 Nous 员工与获准的 Discord 版主可查看，14 天后自动删除。',
+      '调试包将上传到 NARA_DIAGNOSTICS_BASE_URL 配置的服务。内容包括系统信息及 agent、gateway 和桌面端日志（每个最多 512 KB），可能含有对话、工具输出和文件路径。上传前会先遮盖机密信息。访问权限和保留期限由该服务决定。未配置时不会上传。',
     upload: '上传',
     uploading: '上传中…',
     cancel: '取消',
@@ -302,14 +302,14 @@ export const zhOverrides = {
     copyLink: '复制链接',
     uploadIdFallback: id => `未返回查看链接 — 请向支持人员提供上传 ID ${id}`,
     doneTitle: '诊断信息已发送',
-    doneDescription: '调试包已私密上传。在您的支持会话中分享以下链接，团队即可查看您的日志。',
+    doneDescription: '调试包已上传到配置的服务。分享链接前请确认其访问规则。',
     failedTitle: '上传失败',
     failedHint:
-      '您也可以在终端运行 `nara debug share --nous`，或运行 `nara debug share --local` 在不上传的情况下查看报告。',
+      '请配置 NARA_DIAGNOSTICS_BASE_URL，或运行 `nara debug share --local` 在不上传的情况下查看报告。',
     handoffLead: '在以下位置继续讨论:',
     links: {
       github: 'GitHub Issues',
-      portal: 'Nous Portal 支持',
+      portal: '支持门户',
       discord: 'Discord'
     }
   },

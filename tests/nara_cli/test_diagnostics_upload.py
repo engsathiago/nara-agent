@@ -28,8 +28,18 @@ def _resp(*, status=200, body=b""):
 # ---------------------------------------------------------------------------
 
 class TestRequestUploadUrl:
-    def test_happy_path_posts_json_and_returns_dict(self):
-        from nara_cli.diagnostics_upload import request_upload_url
+    def test_unconfigured_endpoint_never_sends_logs(self, monkeypatch):
+        import nara_cli.diagnostics_upload as mod
+
+        monkeypatch.delenv("NARA_DIAGNOSTICS_BASE_URL", raising=False)
+        with patch("nara_cli.diagnostics_upload.urllib.request.urlopen") as urlopen:
+            with pytest.raises(RuntimeError, match="NARA_DIAGNOSTICS_BASE_URL"):
+                mod.request_upload_url(size_bytes=512)
+        urlopen.assert_not_called()
+
+    def test_happy_path_posts_json_and_returns_dict(self, monkeypatch):
+        from nara_cli import diagnostics_upload as mod
+        monkeypatch.setenv("NARA_DIAGNOSTICS_BASE_URL", "https://diagnostics.example.com")
 
         payload = {
             "success": True,
@@ -44,7 +54,7 @@ class TestRequestUploadUrl:
             "nara_cli.diagnostics_upload.urllib.request.urlopen",
             return_value=resp,
         ) as urlopen:
-            result = request_upload_url(content_type="application/gzip", size_bytes=512)
+            result = mod.request_upload_url(content_type="application/gzip", size_bytes=512)
 
         assert result == payload
 
@@ -58,8 +68,9 @@ class TestRequestUploadUrl:
         # urllib lower-cases header keys.
         assert req.headers["Content-type"] == "application/json"
 
-    def test_non_2xx_raises(self):
-        from nara_cli.diagnostics_upload import request_upload_url
+    def test_non_2xx_raises(self, monkeypatch):
+        from nara_cli import diagnostics_upload as mod
+        monkeypatch.setenv("NARA_DIAGNOSTICS_BASE_URL", "https://diagnostics.example.com")
 
         resp = _resp(status=500, body=b"boom")
         with patch(
@@ -67,34 +78,23 @@ class TestRequestUploadUrl:
             return_value=resp,
         ):
             with pytest.raises(RuntimeError):
-                request_upload_url()
+                mod.request_upload_url()
 
 
     def test_base_url_env_override(self, monkeypatch):
-        # NAS_BASE is read at import time; re-import the module under the
-        # patched env to confirm the override is honoured.
-        import importlib
-
         monkeypatch.setenv("NARA_DIAGNOSTICS_BASE_URL", "https://staging.example.com")
         import nara_cli.diagnostics_upload as mod
-
-        mod = importlib.reload(mod)
-        try:
-            assert mod.NAS_BASE == "https://staging.example.com"
-            resp = _resp(
-                status=200,
-                body=json.dumps({"uploadUrl": "u", "id": "i", "viewUrl": "v"}).encode(),
-            )
-            with patch(
-                "nara_cli.diagnostics_upload.urllib.request.urlopen",
-                return_value=resp,
-            ) as urlopen:
-                mod.request_upload_url()
-            req = urlopen.call_args[0][0]
-            assert req.full_url == "https://staging.example.com/api/diagnostics/upload-url"
-        finally:
-            monkeypatch.delenv("NARA_DIAGNOSTICS_BASE_URL", raising=False)
-            importlib.reload(mod)
+        resp = _resp(
+            status=200,
+            body=json.dumps({"uploadUrl": "u", "id": "i", "viewUrl": "v"}).encode(),
+        )
+        with patch(
+            "nara_cli.diagnostics_upload.urllib.request.urlopen",
+            return_value=resp,
+        ) as urlopen:
+            mod.request_upload_url()
+        req = urlopen.call_args[0][0]
+        assert req.full_url == "https://staging.example.com/api/diagnostics/upload-url"
 
 
 # ---------------------------------------------------------------------------

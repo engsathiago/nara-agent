@@ -202,9 +202,9 @@ export const jaOverrides = {
   ...jaNotices,
 
   sendDiagnostics: {
-    title: 'Nous に診断情報を送信',
+    title: '診断情報を送信',
     privacyNotice:
-      'デバッグバンドルを Nous 内部ストレージにアップロードします（公開ペーストではありません）。システム情報（OS、バージョン、プロバイダー、設定済み API キーの種類 — キー自体は含まれません）と、エージェント/ゲートウェイ/デスクトップの完全なログ（各最大 512 KB。会話内容、ツール出力、ファイルパスを含む可能性が高い）が含まれます。シークレットはアップロード前にマスクされます。閲覧できるのは Nous スタッフと許可された Discord モデレーターのみで、14 日後に自動削除されます。',
+      'デバッグバンドルは NARA_DIAGNOSTICS_BASE_URL に設定されたサービスへ送信されます。システム情報とエージェント、ゲートウェイ、デスクトップのログ（各最大 512 KB）が含まれ、会話内容、ツール出力、ファイルパスが入る場合があります。送信前に秘密情報はマスクされます。アクセス権と保存期間は設定先のサービスが決めます。未設定なら送信しません。',
     upload: 'アップロード',
     uploading: 'アップロード中…',
     cancel: 'キャンセル',
@@ -213,14 +213,14 @@ export const jaOverrides = {
     uploadIdFallback: id => `表示リンクが返されませんでした — サポートにアップロード ID ${id} をお伝えください`,
     doneTitle: '診断情報を送信しました',
     doneDescription:
-      'バンドルは非公開でアップロードされました。サポートスレッドで以下のリンクを共有すると、チームがログを確認できます。',
+      '設定されたサービスへ送信しました。リンクを共有する前にアクセス権を確認してください。',
     failedTitle: 'アップロードに失敗しました',
     failedHint:
-      'ターミナルから `nara debug share --nous` を実行するか、`nara debug share --local` でアップロードせずにレポートを表示することもできます。',
+      'NARA_DIAGNOSTICS_BASE_URL を設定するか、`nara debug share --local` で送信せずにレポートを表示してください。',
     handoffLead: '続きは次の場所で:',
     links: {
       github: 'GitHub Issues',
-      portal: 'Nous Portal サポート',
+      portal: 'サポートポータル',
       discord: 'Discord'
     }
   },

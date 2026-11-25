@@ -512,9 +512,9 @@ export const deOverrides = {
   },
   ...deNotices,
   sendDiagnostics: {
-    title: 'Diagnosedaten an Nous senden',
+    title: 'Diagnosedaten senden',
     privacyNotice:
-      'Damit laden Sie ein Debug-Paket in den internen Nous-Speicher hoch (kein öffentliches Paste). Es enthält Systeminfos (Betriebssystem, Versionen, Provider, welche API-Keys konfiguriert sind – niemals die Keys selbst) sowie vollständige Agent-, Gateway- und Desktop-Logs (bis zu 512 KB je Datei), die sehr wahrscheinlich Gesprächsinhalte, Tool-Ausgaben und Dateipfade enthalten. Geheimnisse werden vor dem Upload geschwärzt. Das Paket ist nur für Nous-Mitarbeitende und freigeschaltete Discord-Moderatoren einsehbar und wird nach 14 Tagen automatisch gelöscht.',
+      'Dieses Debug-Paket wird an den in NARA_DIAGNOSTICS_BASE_URL konfigurierten Dienst gesendet. Es enthält Systeminformationen und Agent-, Gateway- und Desktop-Logs (bis zu 512 KB je Datei), möglicherweise mit Gesprächsinhalten, Tool-Ausgaben und Dateipfaden. Geheimnisse werden vor dem Upload geschwärzt. Zugriff und Aufbewahrung bestimmt der konfigurierte Dienst. Ohne Konfiguration erfolgt kein Upload.',
     upload: 'Hochladen',
     uploading: 'Wird hochgeladen…',
     cancel: 'Abbrechen',
@@ -523,14 +523,14 @@ export const deOverrides = {
     uploadIdFallback: id => `Kein Link zurückgegeben — zitiere die Upload-ID ${id} im Support`,
     doneTitle: 'Diagnosedaten gesendet',
     doneDescription:
-      'Ihr Paket wurde privat hochgeladen. Teilen Sie den Link unten in Ihrem Support-Thread, damit das Team Ihre Logs sehen kann.',
+      'Das Paket wurde an den konfigurierten Dienst gesendet. Prüfen Sie dessen Zugriffsregeln, bevor Sie den Link teilen.',
     failedTitle: 'Hochladen fehlgeschlagen',
     failedHint:
-      'Sie können auch `nara debug share --nous` im Terminal ausführen oder `nara debug share --local`, um den Bericht ohne Hochladen auszugeben.',
+      'Konfigurieren Sie NARA_DIAGNOSTICS_BASE_URL oder verwenden Sie `nara debug share --local`, um den Bericht ohne Upload auszugeben.',
     handoffLead: 'Diskussion hier fortsetzen:',
     links: {
       github: 'GitHub Issues',
-      portal: 'Nous-Portal-Support',
+      portal: 'Supportportal',
       discord: 'Discord'
     }
   },

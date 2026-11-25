@@ -62,6 +62,20 @@ def test_share_nous_uploads_redacted_bundle(captured_upload):
     assert "report" in envelope["files"]
 
 
+def test_share_nous_without_endpoint_never_uploads(monkeypatch):
+    import nara_cli.diagnostics_upload as du
+
+    monkeypatch.delenv("NARA_DIAGNOSTICS_BASE_URL", raising=False)
+    with monkeypatch.context() as context:
+        calls = []
+        context.setattr(du.urllib.request, "urlopen", lambda *args, **kwargs: calls.append((args, kwargs)))
+        result = _handler()("rid-unconfigured", {})
+
+    assert result["result"]["ok"] is False
+    assert "NARA_DIAGNOSTICS_BASE_URL" in result["result"]["error"]
+    assert calls == []
+
+
 def test_share_nous_attaches_redacted_error_context(captured_upload):
     secret = "sk-abc123def456ghi789jkl012mno345pqr678"
     result = _handler()(

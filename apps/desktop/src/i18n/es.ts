@@ -515,9 +515,9 @@ export const esOverrides = {
   },
   ...esNotices,
   sendDiagnostics: {
-    title: 'Enviar diagnóstico a Nous',
+    title: 'Enviar diagnóstico',
     privacyNotice:
-      'Esto sube un paquete de depuración a un almacenamiento interno de Nous (no a un sitio público). Incluye información del sistema (SO, versiones, proveedor y qué claves API están configuradas, nunca las claves en sí) y los registros completos del agente, del gateway y de la app de escritorio (hasta 512 KB cada uno), que probablemente contengan contenido de conversaciones, salidas de herramientas y rutas de archivos. Los secretos se ocultan antes de subirlo. Solo el personal de Nous y los moderadores autorizados de Discord pueden ver el paquete, que se elimina automáticamente a los 14 días.',
+      'El paquete de depuración se sube al servicio configurado en NARA_DIAGNOSTICS_BASE_URL. Incluye información del sistema y registros del agente, gateway y escritorio (hasta 512 KB por archivo), que pueden contener conversaciones, resultados de herramientas y rutas de archivos. Los secretos se ocultan antes de subirlo. El servicio configurado determina el acceso y la conservación. Sin configuración no se sube nada.',
     upload: 'Subir',
     uploading: 'Subiendo…',
     cancel: 'Cancelar',
@@ -526,14 +526,14 @@ export const esOverrides = {
     uploadIdFallback: id => `No se devolvió un enlace para verlo: indica el ID de subida ${id} al equipo de soporte`,
     doneTitle: 'Diagnóstico enviado',
     doneDescription:
-      'Tu paquete se subió de forma privada. Comparte el enlace de abajo en tu hilo de soporte para que el equipo pueda ver tus registros.',
+      'El paquete se subió al servicio configurado. Comprueba sus reglas de acceso antes de compartir el enlace.',
     failedTitle: 'Error al subir',
     failedHint:
-      'También puedes ejecutar `nara debug share --nous` desde una terminal, o `nara debug share --local` para mostrar el informe sin subirlo.',
+      'Configura NARA_DIAGNOSTICS_BASE_URL o ejecuta `nara debug share --local` para ver el informe sin subirlo.',
     handoffLead: 'Continúa la conversación en:',
     links: {
       github: 'Issues de GitHub',
-      portal: 'Soporte de Nous Portal',
+      portal: 'Portal de soporte',
       discord: 'Discord'
     }
   },
