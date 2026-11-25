@@ -40,11 +40,11 @@ WATCHDOGS = {
 
 The Skills Hub at /docs/skills depends on `/docs/api/skills-index.json`.
 The unified index is rebuilt by `.github/workflows/skills-index.yml` (cron 6/18 UTC)
-and `.github/workflows/deploy-site.yml` (on every push affecting website/skills).
+and published by `.github/workflows/nara-pages.yml` after a successful build.
 If this issue keeps reopening, check the latest runs:
 
 - https://github.com/{repository}/actions/workflows/skills-index.yml
-- https://github.com/{repository}/actions/workflows/deploy-site.yml
+- https://github.com/{repository}/actions/workflows/nara-pages.yml
 
 This issue was opened by `.github/workflows/skills-index-freshness.yml`. Close it once the underlying problem is fixed; the next probe will reopen if it's still broken.""",
     ),

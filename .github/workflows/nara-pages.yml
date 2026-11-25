@@ -12,9 +12,13 @@ on:
       - 'scripts/install.ps1'
       - '.github/workflows/nara-pages.yml'
   workflow_dispatch:
+  workflow_run:
+    workflows: [Build Skills Index]
+    types: [completed]
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -24,7 +28,10 @@ concurrency:
 
 jobs:
   publish:
-    if: github.repository == 'engsathiago/nara-agent'
+    if: >-
+      github.repository == 'engsathiago/nara-agent' &&
+      (github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'))
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment:
@@ -35,6 +42,28 @@ jobs:
         uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Download and verify owned skills index
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == 'workflow_run' ]]; then
+            run_id='${{ github.event.workflow_run.id }}'
+          else
+            run_id="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow skills-index.yml --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+          fi
+          if [[ -z "$run_id" ]]; then
+            echo '::error::No successful Nara Skills Index artifact exists yet'
+            exit 1
+          fi
+          gh run download "$run_id" --repo "$GITHUB_REPOSITORY" --name skills-index --dir _index
+          index_file="$(find _index -name skills-index.json -type f -print -quit)"
+          test -n "$index_file" && test -s "$index_file"
+          python scripts/ci/skills_index_probe.py "$index_file" > _index/probe.txt
+          cat _index/probe.txt
+          grep -qx 'status=ok' _index/probe.txt
+          install -m 0644 "$index_file" website/static/api/skills-index.json
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -64,6 +93,7 @@ jobs:
           set -euo pipefail
           test -s website/build/index.html
           test -s website/build/api/skills.json
+          test -s website/build/api/skills-index.json
           test -s website/build/api/plugin-catalog.json
           test -s website/build/search-index.json
           python - <<'PY'
@@ -71,9 +101,10 @@ jobs:
           from pathlib import Path
           api = Path('website/build/api')
           skills = json.loads((api / 'skills.json').read_text())
+          index = json.loads((api / 'skills-index.json').read_text())
           catalog = json.loads((api / 'plugin-catalog.json').read_text())
           search = json.loads(Path('website/build/search-index.json').read_text())
-          if len(skills) < 100 or len(catalog.get('entries', [])) < 100:
+          if len(skills) < 1500 or index.get('skill_count', 0) < 1500 or len(catalog.get('entries', [])) < 100:
               raise SystemExit('Catalog extraction collapsed; refusing to publish empty Pages data')
           documents = search[0]['documents'] if search else []
           if len(documents) < 100 or any(not row['u'].startswith('/nara-agent/docs/') for row in documents):

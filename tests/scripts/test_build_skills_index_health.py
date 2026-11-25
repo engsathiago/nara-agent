@@ -97,3 +97,22 @@ def test_healthy_crawl_writes_index_with_all_sources(tmp_path, monkeypatch):
     # Every GitHub-API-backed source that vanished in the regression is present.
     assert {"github", "well-known"} <= sources
     assert data["skill_count"] == len(data["skills"])
+    assert data["path_resolution"] == "complete"
+
+
+def test_quota_bounded_crawl_preserves_full_catalog_without_tree_requests(tmp_path, monkeypatch):
+    out = tmp_path / "skills-index.json"
+    monkeypatch.setattr(build_mod, "OUTPUT_PATH", str(out))
+    _install_fake_sources(monkeypatch, github_count=200)
+
+    def unexpected_tree_scan(_skills, _auth):
+        raise AssertionError("quota-bounded build must not scan repository trees")
+
+    monkeypatch.setattr(build_mod, "batch_resolve_paths", unexpected_tree_scan)
+    build_mod.main(resolve_paths=False)
+
+    import json
+    data = json.loads(out.read_text())
+    assert data["path_resolution"] == "deferred"
+    assert any(row["source"] == "skills.sh" for row in data["skills"])
+    assert data["skill_count"] == len(data["skills"])

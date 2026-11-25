@@ -2,20 +2,23 @@
 """Build the Nara Skills Index — a centralized JSON catalog of all skills.
 
 This script crawls every skill source (skills.sh, GitHub taps, official,
-clawhub, lobehub) and writes a JSON index with resolved
-GitHub paths. The index is served as a static file on the docs site so that
-`nara skills search/install` can use it without hitting the GitHub API.
+clawhub, lobehub) and writes a JSON index. It resolves GitHub paths by
+default; the owner workflow defers those scans to installation time to stay
+within its API quota. The index is served as a static file on the docs site.
 
 Usage:
     # Local (uses gh CLI or GITHUB_TOKEN for auth)
     python scripts/build_skills_index.py
 
-    # CI (set GITHUB_TOKEN as secret)
-    GITHUB_TOKEN=ghp_... python scripts/build_skills_index.py
+    # Quota-bounded owner workflow: index every source, defer per-repo tree scans
+    python scripts/build_skills_index.py --skip-path-resolution
+
+    # CI: use the built-in GITHUB_TOKEN
 
 Output: website/static/api/skills-index.json
 """
 
+import argparse
 import json
 import os
 import re
@@ -104,6 +107,15 @@ def crawl_skills_sh(source: SkillsShSource) -> list:
     print(f"  skills.sh: {len(all_skills)} unique skills ({elapsed:.1f}s)",
           flush=True)
     return list(all_skills.values())
+
+
+def crawl_and_prepare_skills_sh(source: SkillsShSource, auth: GitHubAuth, *, resolve_paths: bool) -> list:
+    """Keep the full sitemap, with optional repo-tree resolution before the long hub crawl."""
+    skills = crawl_skills_sh(source)
+    if resolve_paths:
+        return batch_resolve_paths(skills, auth)
+    print("  Deferred skills.sh repo-tree scans; installation resolves paths on demand", flush=True)
+    return skills
 
 
 def _fetch_repo_tree(repo: str, auth: GitHubAuth) -> tuple[str, list]:
@@ -264,7 +276,7 @@ def batch_resolve_paths(skills: list, auth: GitHubAuth) -> list:
     return [s for s in skills if s.get("identifier") not in dropped]
 
 
-def main():
+def main(*, resolve_paths: bool = True):
     print("Building Nara Skills Index...", flush=True)
     overall_start = time.time()
 
@@ -286,10 +298,7 @@ def main():
 
     all_skills: list[dict] = []
 
-    # Crawl skills.sh, then resolve its repo paths right away: the CI App token lives 1 h and
-    # the ClawHub walk below runs longer, so resolving after it 401'd every tree (0/20000).
-    all_skills.extend(crawl_skills_sh(skills_sh_source))
-    all_skills = batch_resolve_paths(all_skills, auth)
+    all_skills = crawl_and_prepare_skills_sh(skills_sh_source, auth, resolve_paths=resolve_paths)
 
     # Crawl other sources in parallel.
     # Per-source soft caps — sources stop returning when they run out, so these
@@ -470,6 +479,7 @@ def main():
         "version": INDEX_VERSION,
         "generated_at": datetime.now(UTC).isoformat(),
         "skill_count": len(deduped),
+        "path_resolution": "complete" if resolve_paths else "deferred",
         "skills": deduped,
     }
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
@@ -482,4 +492,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Build the public Nara Skills Index")
+    parser.add_argument("--skip-path-resolution", action="store_true",
+                        help="Skip per-repo GitHub tree scans; keep rows for on-demand install resolution")
+    args = parser.parse_args()
+    main(resolve_paths=not args.skip_path_resolution)
