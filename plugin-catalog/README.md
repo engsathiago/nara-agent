@@ -173,7 +173,7 @@ meaningful:
 
 The step-by-step submission guide, with the same rules and what reviewers check,
 lives at
-[Submitting to the plugin catalog](https://nara-agent.nousresearch.com/docs/developer-guide/plugins/catalog-submission).
+[Submitting to the plugin catalog](https://engsathiago.github.io/nara-agent/docs/developer-guide/plugins/catalog-submission).
 
 ## Entry schema
 
