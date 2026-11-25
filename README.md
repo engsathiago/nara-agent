@@ -5,20 +5,22 @@ projeto upstream MIT, com procedência e atribuição preservadas em
 [UPSTREAM_PROVENANCE.md](UPSTREAM_PROVENANCE.md). Nara mantém o LLM de raciocínio separado e
 substituível por provider.
 
-A especificação do produto está fechada em [NARA_DATASHEET.md](NARA_DATASHEET.md), versão 1.2.
-A base e a identidade estão implementadas; as novas capacidades são entregues por fases e provas.
+A especificação do produto está em [NARA_DATASHEET.md](NARA_DATASHEET.md), versão 1.2.
+O núcleo e os módulos locais foram implementados e validados; os gates que exigem
+hardware, contas externas e VPS são documentados separadamente.
 
 ## Executar localmente
 
 ```bash
-cd /Users/fate/Desktop/Nara
+git clone https://github.com/engsathiago/nara-agent.git
+cd nara-agent
 source ./activate
 nara --version
 nara
 ```
 
-O comando global `nara` também aponta para este checkout. Estado por perfil: `~/.nara` no
-macOS/Linux e `%LOCALAPPDATA%\nara` no Windows. O estado anterior foi preservado na migração.
+O comando global `nara` pode ser instalado para apontar a este checkout. Estado por perfil:
+`~/.nara` no macOS/Linux e `%LOCALAPPDATA%\nara` no Windows.
 
 ## Construção do produto
 
@@ -40,6 +42,6 @@ o runtime exige um modelo explícito e não reutiliza um detector de outra ident
 - [Auditoria de voz, autonomia e aprendizado](research/AUDITORIA_VOZ_AUTONOMIA_APRENDIZADO_2026-11-17.md)
 - [Validação da migração](research/NARA_RENAME_VALIDATION_2026-11-17.md)
 
-Bibliotecas, modelos, vozes e conteúdos externos mantêm suas identidades e licenças. Repositório
-público, domínio, instaladores assinados e feed de atualização próprios serão preparados na fase
-de distribuição; URLs herdadas não representam uma publicação oficial da Nara.
+Bibliotecas, modelos, vozes e conteúdos externos mantêm suas identidades e licenças. Este é o
+repositório público da Nara. Domínio, instaladores assinados e feed de atualização próprios
+dependem da fase de distribuição; URLs herdadas não representam uma publicação oficial da Nara.
