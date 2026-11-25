@@ -2,7 +2,7 @@
 
 Every surface reads and writes the same two keys in the profile's config.yaml:
 ``telemetry.shared_metrics.enabled`` (collect) and ``.send`` (upload daily). The offer has two
-answers, and each sets both keys: "Share with Nous" turns both on, "No thanks" turns both off. The
+answers: "Collect locally" enables collection only, and "No thanks" turns both off. The
 question counts as answered once either key is written explicitly; the shipped defaults are not an
 answer. Every answer also writes ``offer_version``. A "No thanks" without it predates the type-ahead
 fix (an Enter pressed during startup could save it unseen), so that profile is asked once more, with
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 # (label, enabled, send): the offer's two answers, in the order every surface shows them.
 OFFER_CHOICES = (
-    ("Share with Nous", True, True),
+    ("Collect locally", True, False),
     ("No thanks", False, False),
 )
 _NO_THANKS = len(OFFER_CHOICES) - 1
@@ -35,9 +35,9 @@ _OFFER_DESCRIPTION = "\n".join((
     "Shared metrics are bounded counters: activity, outcomes, error classes (with a",
     "fixed-list reason when a memory write, compression, update or install fails),",
     "model routes, token totals, feature use and coarse machine facts. Never prompts,",
-    "files, paths, setting values or error text. Sharing sends them to Nous once a",
-    "day. Apart from a one-time install note, data from before you opt in is never",
-    "sent.",
+    "files, paths, setting values or error text. This choice stores counters",
+    "on this device and sends nothing. Sending requires a separately configured",
+    "endpoint and explicit send setting.",
     f"Details: {DOCS_URL}",
     "Change it any time: nara setup telemetry",
 ))
@@ -130,7 +130,7 @@ def offer_consent(config: dict | None = None, *, reask: bool = False) -> bool:
     # answer it ("No thanks") before it was ever on screen, so the user was never really asked.
     flush_stdin()
     idx = curses_radiolist(
-        "Help improve Nara?", [label for label, _, _ in OFFER_CHOICES], selected=_NO_THANKS, cancel_returns=-1,
+        "Collect usage stats locally?", [label for label, _, _ in OFFER_CHOICES], selected=_NO_THANKS, cancel_returns=-1,
         description=f"{_REASK_NOTE}\n{_OFFER_DESCRIPTION}" if reask else _OFFER_DESCRIPTION,
     )
     if idx < 0 and reask:
@@ -142,7 +142,7 @@ def offer_consent(config: dict | None = None, *, reask: bool = False) -> bool:
         return False
     _, enabled, send = OFFER_CHOICES[idx]
     save_consent(enabled, send, config)
-    outcome = "sent to Nous once a day" if send else "off"
+    outcome = "collected locally" if enabled else "off"
     print_success(f"Shared metrics {outcome}. Change it any time with `nara setup telemetry`.")
     return True
 

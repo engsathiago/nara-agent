@@ -1,5 +1,5 @@
 export const frSharedMetrics = {
-  consentTitle: 'Partager les statistiques d’utilisation ?',
+  consentTitle: 'Collecter les statistiques d’utilisation localement ?',
   dialogTitle: 'Statistiques d’utilisation',
   consentBody:
     'Nara peut compter la façon dont vous l’utilisez : durée des sessions, modèles et outils utilisés, et moments où quelque chose échoue. Il n’enregistre jamais vos messages, fichiers, chemins ni textes d’erreur.',
@@ -16,18 +16,18 @@ export const frSharedMetrics = {
   collectedMachine:
     'Machine : système d’exploitation, plage de RAM, type de GPU, version de Nara, utilisation de modèles locaux',
   sending:
-    'Si vous partagez, Nara envoie les statistiques à Nous une fois par jour avec un identifiant aléatoire propre à ce profil. Hormis une note unique indiquant que Nara a été installé, les statistiques d’avant votre accord ne sont jamais envoyées. Modifiez ce choix à tout moment dans les Paramètres.',
+    'Ce choix conserve les compteurs sur cet appareil et n’envoie rien. Un envoi exige une adresse de destination et un réglage distincts dans config.yaml. Modifiez la collecte locale à tout moment dans les Paramètres.',
   readDocs: 'Lire tous les détails',
-  share: 'Partager avec Nous',
+  share: 'Collecter localement',
   off: 'Non merci',
   saveFailed: 'Impossible d’enregistrer votre choix',
-  sendLabel: 'Partager les statistiques d’utilisation avec Nous',
+  sendLabel: 'Collecter les statistiques sur cet appareil',
   sendDesc:
-    'Uniquement des comptages, envoyés une fois par jour avec un identifiant aléatoire pour ce profil. Jamais vos messages, fichiers, chemins ni textes d’erreur.',
+    'Stocke uniquement des compteurs sur cet appareil et n’envoie rien. Aucun message, fichier, chemin ou texte d’erreur n’est enregistré.',
   unavailable: 'Mettez à jour le backend Nara pour modifier ce réglage.',
   stripBody: 'Uniquement des comptages. Jamais vos messages ni vos fichiers.',
   stripReaskBody:
     'Nouvelle demande : une version précédente pouvait enregistrer « Non merci » avant que vous ne voyiez cette question.',
-  stripChoices: { share: 'Partager avec Nous', off: 'Non merci' },
+  stripChoices: { share: 'Collecter localement', off: 'Non merci' },
   stripDetails: 'Détails'
 }

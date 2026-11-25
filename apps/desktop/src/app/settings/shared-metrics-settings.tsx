@@ -21,9 +21,8 @@ import { ToggleRow } from './primitives'
 
 /**
  * Settings › Safety › Privacy: one switch for the answer the first-run offer and
- * `nara setup` write, for the profile this page applies to. On sets both
- * opt-ins (collect and send), off clears both. A collect-only answer from
- * before the offer dropped it reads off here: nothing is shared. Optimistic,
+ * `nara setup` write, for the profile this page applies to. On enables local
+ * collection only; off clears collection and sending. Optimistic,
  * rolled back on failure.
  */
 export function SharedMetricsSettings() {
@@ -90,18 +89,18 @@ export function SharedMetricsSettings() {
 
   // An older backend has no shared_metrics.* methods: keep the control, disabled and explained.
   const unavailable = loaded && consent === null
-  const sharing = consent?.send ?? false
+  const collecting = consent?.enabled ?? false
 
   return (
     <div className="grid gap-1" id="setting-shared-metrics">
       <ToggleRow
         below={<DocsLink href={SHARED_METRICS_DOCS_URL}>{copy.whatIsCollected}</DocsLink>}
-        checked={sharing}
+        checked={collecting}
         description={copy.sendDesc}
         disabled={!consent || busy}
         hint={unavailable ? copy.unavailable : undefined}
         label={copy.sendLabel}
-        onChange={on => void save({ enabled: on, send: on })}
+        onChange={on => void save({ enabled: on, send: false })}
       />
     </div>
   )

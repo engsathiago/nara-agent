@@ -1,5 +1,5 @@
 export const esSharedMetrics = {
-  consentTitle: '¿Compartir estadísticas de uso?',
+  consentTitle: '¿Recopilar estadísticas de uso localmente?',
   dialogTitle: 'Estadísticas de uso',
   consentBody:
     'Nara puede contar cómo lo usas: duración de las sesiones, qué modelos y herramientas se ejecutan y cuándo algo falla. Nunca registra tus mensajes, archivos, rutas ni textos de error.',
@@ -15,18 +15,18 @@ export const esSharedMetrics = {
     'Calidad del agente: ediciones fallidas, llamadas a herramientas rotas, bucles atascados, coste por tarea',
   collectedMachine: 'Equipo: sistema operativo, rango de RAM, tipo de GPU, versión de Nara, uso de modelos locales',
   sending:
-    'Si compartes, Nara envía las estadísticas a Nous una vez al día con un ID aleatorio para este perfil. Salvo un aviso único de que Nara se instaló, las estadísticas de antes de aceptar nunca se envían. Puedes cambiarlo cuando quieras en Configuración.',
+    'Esta opción guarda los contadores en este dispositivo y no envía nada. El envío requiere un destino y una opción de envío configurados por separado en config.yaml. Puedes cambiar la recopilación local en Configuración.',
   readDocs: 'Leer todos los detalles',
-  share: 'Compartir con Nous',
+  share: 'Recopilar localmente',
   off: 'No, gracias',
   saveFailed: 'No se pudo guardar tu elección',
-  sendLabel: 'Compartir estadísticas de uso con Nous',
+  sendLabel: 'Recopilar estadísticas en este dispositivo',
   sendDesc:
-    'Solo recuentos, enviados una vez al día con un ID aleatorio para este perfil. Nunca tus mensajes, archivos, rutas ni textos de error.',
+    'Guarda solo recuentos en este dispositivo y no envía nada. Nunca registra tus mensajes, archivos, rutas ni textos de error.',
   unavailable: 'Actualiza el backend de Nara para cambiar este ajuste.',
   stripBody: 'Solo recuentos. Nunca tus mensajes ni archivos.',
   stripReaskBody:
     'Te lo preguntamos de nuevo: una versión anterior podía guardar «No, gracias» antes de que vieras esta pregunta.',
-  stripChoices: { share: 'Compartir con Nous', off: 'No, gracias' },
+  stripChoices: { share: 'Recopilar localmente', off: 'No, gracias' },
   stripDetails: 'Detalles'
 }

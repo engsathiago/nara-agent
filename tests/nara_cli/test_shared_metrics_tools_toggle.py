@@ -32,9 +32,14 @@ class TestState:
 class TestMenuLabel:
 
 
-    def test_sending_state_names_the_destination(self):
-        label = _shared_metrics_menu_label(_config(enabled=True, send=True))
-        assert "(sending to Nous)" in label
+    def test_sending_state_names_configured_destination(self):
+        label = _shared_metrics_menu_label(_config(
+            enabled=True, send=True, endpoint="https://receiver.example/v1/telemetry",
+        ))
+        assert "(sending to configured endpoint)" in label
+
+    def test_send_without_endpoint_is_collecting_locally(self):
+        assert "(collecting locally)" in _shared_metrics_menu_label(_config(enabled=True, send=True))
 
     def test_retired_collect_only_answer_is_named_rather_than_read_off(self):
         label = _shared_metrics_menu_label(_config(enabled=True, send=False))
@@ -45,8 +50,8 @@ class TestMenuLabel:
 
 
 class TestToggle:
-    def test_enabling_send_persists(self, monkeypatch):
-        config = _config(enabled=True)
+    def test_enabling_local_collection_persists(self, monkeypatch):
+        config = _config(enabled=False)
         saved = {}
         monkeypatch.setattr(
             "nara_cli.setup.prompt_yes_no", lambda *_a, **_k: True
@@ -59,7 +64,7 @@ class TestToggle:
             lambda cfg: saved.update({"cfg": cfg}),
         )
         _configure_shared_metrics_interactive(config)
-        assert config["telemetry"]["shared_metrics"]["send"] is True
+        assert config["telemetry"]["shared_metrics"]["send"] is False
         assert saved, "a consent change must be written to disk"
 
     def test_no_write_when_nothing_changed(self, monkeypatch):

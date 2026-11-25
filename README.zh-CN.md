@@ -185,4 +185,4 @@ PM 引导、Python 3.14 测试环境和规范验证命令见
 
 MIT — 详见 [LICENSE](LICENSE)。
 
-由 [Nous Research](https://nousresearch.com) 构建。
+Nara Agent 由 Nara 项目维护。原始代码的署名见 [UPSTREAM_PROVENANCE.md](UPSTREAM_PROVENANCE.md)。

@@ -74,6 +74,8 @@ def runtime():
 
 
 def _config(**shared):
+    if shared.get("send") is True:
+        shared.setdefault("endpoint", "https://receiver.example/v1/telemetry")
     return {"telemetry": {"shared_metrics": shared}}
 
 

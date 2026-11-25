@@ -14,7 +14,7 @@ def test_shared_metrics_are_registered_disabled_by_default():
 
 
 def test_setup_telemetry_one_answer_sets_both_keys(monkeypatch):
-    """One question: yes collects and sends, no turns both off. Collect-only is not offered."""
+    """One question: yes collects locally, no turns both off."""
     asked = []
     monkeypatch.setattr(
         "nara_cli.setup.prompt_yes_no",
@@ -24,17 +24,16 @@ def test_setup_telemetry_one_answer_sets_both_keys(monkeypatch):
 
     setup_telemetry(config)
     assert config["telemetry"]["shared_metrics"]["enabled"] is True
-    assert config["telemetry"]["shared_metrics"]["send"] is True
+    assert config["telemetry"]["shared_metrics"]["send"] is False
 
     setup_telemetry(config)
     assert config["telemetry"]["shared_metrics"]["enabled"] is False
     assert config["telemetry"]["shared_metrics"]["send"] is False
-    assert asked == ["Send shared metrics to Nous?"] * 2
+    assert asked == ["Collect shared metrics locally?"] * 2
 
 
-def test_setup_telemetry_defaults_a_collect_only_profile_to_no(monkeypatch):
-    """A retired collect-only answer is not sharing: the question defaults to no, and no turns
-    collection off too."""
+def test_setup_telemetry_defaults_a_collect_only_profile_to_yes(monkeypatch):
+    """An existing collect-only choice remains on without enabling sending."""
     defaults = []
     monkeypatch.setattr(
         "nara_cli.setup.prompt_yes_no",
@@ -44,8 +43,9 @@ def test_setup_telemetry_defaults_a_collect_only_profile_to_no(monkeypatch):
 
     setup_telemetry(config)
 
-    assert defaults == [False]
-    assert config["telemetry"]["shared_metrics"]["enabled"] is False
+    assert defaults == [True]
+    assert config["telemetry"]["shared_metrics"]["enabled"] is True
+    assert config["telemetry"]["shared_metrics"]["send"] is False
 
 
 def test_disabling_collection_closes_the_send_consent_window(monkeypatch, tmp_path):
@@ -135,8 +135,8 @@ def test_chat_offer_asks_an_undecided_profile_once(monkeypatch):
     consent.offer_consent_before_chat(argparse.Namespace())
 
     assert len(asked) == 1
-    assert asked[0][1] == ["Share with Nous", "No thanks"]
-    assert consent.consent_state(read_raw_config()) == {"enabled": True, "send": True, "decided": True, "reask": False}
+    assert asked[0][1] == ["Collect locally", "No thanks"]
+    assert consent.consent_state(read_raw_config()) == {"enabled": True, "send": False, "decided": True, "reask": False}
 
 
 def test_offer_drops_keys_typed_before_it_appeared(monkeypatch):
@@ -179,14 +179,13 @@ def test_unseen_no_thanks_is_asked_once_more_and_then_settled(monkeypatch):
     assert consent.consent_state(read_raw_config()) == {"enabled": False, "send": False, "decided": True, "reask": False}
 
 
-def test_every_cli_promise_that_pre_opt_in_data_stays_local_names_the_install_note():
-    """Invariant: the fresh-install note is the one record kept from before the consent answer and
-    counted after it, so each CLI surface stating the pre-opt-in promise names that exception, and
-    the explainer still fits an 80-column terminal (print_info indents by two)."""
+def test_cli_local_collection_promises_no_transmission():
+    """Both CLI explanations describe local collection and fit a terminal."""
     from nara_cli.observability.shared_metrics_consent import _OFFER_DESCRIPTION
     from nara_cli.setup import _SEND_CONSENT_EXPLAINER
 
     explainer = " ".join(_SEND_CONSENT_EXPLAINER)
     for text in (explainer, " ".join(_OFFER_DESCRIPTION.split())):
-        assert "before you opt in" in text and "install note" in text.split("before you opt in")[0], text
+        assert "sends nothing" in text
+        assert "endpoint" in text
     assert max(len(line) for line in _SEND_CONSENT_EXPLAINER) + 2 <= 80

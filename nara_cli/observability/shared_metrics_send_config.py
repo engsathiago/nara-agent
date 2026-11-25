@@ -8,11 +8,10 @@ from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
-#: Production ingest endpoint. Overridable through config only — deliberately NOT by an
-#: environment variable: AGENTS.md reserves NARA_* for secrets, and an inherited variable
-#: could silently redirect consented metrics to any host with nothing visible in config.
-#: Tests and the staging E2E write this key into a throwaway profile instead.
-DEFAULT_ENDPOINT = "https://telemetry.nousresearch.com/v1/telemetry"
+#: No telemetry service is operated by this project. Sending requires an explicit
+#: endpoint in the profile config; an inherited environment variable cannot set it.
+DEFAULT_ENDPOINT = ""
+_LEGACY_UPSTREAM_HOST = "telemetry.nousresearch.com"
 
 _LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1", "[::1]"})
 
@@ -39,13 +38,13 @@ def _endpoint_is_safe(endpoint: str) -> bool:
         parsed = urlparse(endpoint)
     except ValueError:
         return False
-    if parsed.scheme == "https":
+    if parsed.scheme == "https" and parsed.hostname:
         return True
     return parsed.scheme == "http" and (parsed.hostname or "") in _LOCAL_HOSTS
 
 
 def resolve_send_config(config: dict | None) -> SendConfig:
-    """Resolve transmission settings from config (endpoint: config > production default).
+    """Resolve transmission settings from explicit profile configuration.
 
     ``send`` is False whenever transmission cannot legitimately happen, so callers never
     have to re-check the combination.
@@ -74,9 +73,19 @@ def resolve_send_config(config: dict | None) -> SendConfig:
         return SendConfig(enabled=False, send=False, endpoint=DEFAULT_ENDPOINT)
 
     endpoint = shared.get("endpoint")
-    if not isinstance(endpoint, str) or not endpoint.strip():
-        endpoint = DEFAULT_ENDPOINT
-    endpoint = endpoint.strip()
+    endpoint = endpoint.strip() if isinstance(endpoint, str) else DEFAULT_ENDPOINT
+
+    if send_requested and not endpoint:
+        logger.error("Shared metrics sending requires telemetry.shared_metrics.endpoint in config.yaml.")
+        return SendConfig(enabled=enabled, send=False, endpoint=endpoint)
+
+    try:
+        endpoint_host = urlparse(endpoint).hostname
+    except ValueError:
+        endpoint_host = None
+    if send_requested and endpoint_host == _LEGACY_UPSTREAM_HOST:
+        logger.error("The legacy upstream shared-metrics endpoint is no longer supported.")
+        return SendConfig(enabled=enabled, send=False, endpoint=endpoint)
 
     if send_requested and not _endpoint_is_safe(endpoint):
         logger.error(

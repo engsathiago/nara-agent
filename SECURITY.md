@@ -6,8 +6,8 @@ scope for vulnerability reports.
 
 ## 1. Reporting a Vulnerability
 
-Report privately via [GitHub Security Advisories](https://github.com/engsathiago/nara-agent/security/advisories/new)
-or **security@nousresearch.com**. Do not open public issues for
+Report privately via [GitHub Security Advisories](https://github.com/engsathiago/nara-agent/security/advisories/new).
+Do not open public issues for
 security vulnerabilities. **Nara Agent does not operate a bug
 bounty program.**
 
@@ -327,9 +327,8 @@ that:
 
 ## 5. Disclosure
 
-- **Coordinated disclosure window:** 90 days from report, or until a
-  fix is released, whichever comes first.
-- **Channel:** the GHSA thread or email correspondence with
-  security@nousresearch.com.
+- **Coordinated disclosure:** maintainers and the reporter agree on timing in
+  the private GHSA thread. No fixed response or release deadline is promised.
+- **Channel:** the private GHSA thread in this repository.
 - **Credit:** reporters are credited in release notes unless
   anonymity is requested.

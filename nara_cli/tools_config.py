@@ -990,15 +990,18 @@ def _shared_metrics_state(config: dict) -> tuple[bool, bool]:
 
 
 def _shared_metrics_menu_label(config: dict) -> str:
-    """Menu row for shared metrics. Collect-only is an answer the offer no longer has; a profile
-    that chose it earlier keeps it, and the row names it rather than reading "off" while it collects."""
-    enabled, send = _shared_metrics_state(config)
-    state = "off" if not enabled else ("sending to Nous" if send else "collecting locally")
+    """Show effective collection and sending state for this profile."""
+    from nara_cli.observability.shared_metrics_send_config import resolve_send_config
+
+    resolved = resolve_send_config(config)
+    state = "off" if not resolved.enabled else (
+        "sending to configured endpoint" if resolved.send else "collecting locally"
+    )
     return f"Configure shared metrics  ({state})"
 
 
 def _configure_shared_metrics_interactive(config: dict) -> None:
-    """Toggle shared-metrics collection/sending via the setup wizard prompt (single home for the consent rules)."""
+    """Toggle local shared-metrics collection via the setup wizard prompt."""
     from nara_cli.setup import setup_telemetry
 
     before = _shared_metrics_state(config)

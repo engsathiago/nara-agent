@@ -208,12 +208,13 @@ capabilities:
   requires_env: []
 ```
 
-`tier` says who stands behind an entry. `official`: maintained by NousResearch.
-`verified`: verified by the Nous team to come from the company that makes what
-the plugin integrates into Nara, and that company is well known or reputable.
-`community`: everything else. Only Nous maintainers set `official` or
-`verified`; a contributor PR that sets either is changed to `community` in
-review (maintainer review is the gate; no CI check inspects the tier value).
+`tier` is inherited catalog metadata, not a new Nara endorsement.
+`official` marks entries maintained by the original catalog's owner;
+`verified` marks entries reviewed there as coming from the company behind an
+integration; `community` covers the rest. Check each entry's `maintainer`,
+`repo` and pinned `sha` to see who supplies the code. New entries in this fork
+start as `community` until Nara maintainers establish and apply their own
+review standard. No CI check currently inspects the tier value.
 
 `version`, `image`, `screenshots` and `readme` are cosmetic: none is parsed or
 used to pick what installs. The sha stays the release; bump `version` in the
@@ -223,7 +224,7 @@ so the Desktop catalog and the docs site never fetch from third-party hosts;
 pin the raw URL to the entry's commit and the picture is as immutable as the
 code.
 
-Every entry gets a page at `https://nara-agent.nousresearch.com/docs/plugins/<name>`
+Every entry gets a page at `https://engsathiago.github.io/nara-agent/docs/plugins/<name>`
 and every maintainer a page at `/docs/plugins/by/<maintainer>`, both generated
 from these files at docs build time. `screenshots:` fills the page's gallery;
 the build fetches the README (from `subdir` if set, else the repo root) **at the

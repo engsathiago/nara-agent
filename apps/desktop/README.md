@@ -260,7 +260,6 @@ Remove-Item -Recurse -Force "$env:LOCALAPPDATA\nara\nara-agent\venv"
 
 ## Community
 
-- 💬 [Discord](https://discord.gg/NousResearch)
 - 📖 [Documentation](https://engsathiago.github.io/nara-agent/docs/)
 - 🐛 [Issues](https://github.com/engsathiago/nara-agent/issues)
 
@@ -270,4 +269,4 @@ Remove-Item -Recurse -Force "$env:LOCALAPPDATA\nara\nara-agent\venv"
 
 MIT — see [LICENSE](../../LICENSE).
 
-Built by [Nous Research](https://nousresearch.com).
+Nara Agent is maintained by the Nara project. See [UPSTREAM_PROVENANCE.md](../../UPSTREAM_PROVENANCE.md) for upstream attribution.
