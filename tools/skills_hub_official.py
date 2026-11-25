@@ -281,9 +281,9 @@ class OptionalSkillSource(SkillSource):
 
 class NaraIndexSource(SkillSource):
     """Skill source backed by the centralized Nara Skills Index: a JSON catalog on the docs site,
-    rebuilt daily by CI, with metadata + resolved GitHub paths for every skill — search and path
-    discovery cost zero GitHub API calls. When unavailable every method returns empty/None so
-    downstream sources take over transparently."""
+    rebuilt twice daily by CI. Search costs zero GitHub API calls; installation can discover a
+    missing path on demand when the quota-bounded index build deferred tree scans. When the index
+    is unavailable every method returns empty/None so downstream sources take over transparently."""
 
     SOURCE_ID = "nara-index"
 

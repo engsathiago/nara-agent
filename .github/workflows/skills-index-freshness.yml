@@ -1,11 +1,11 @@
 name: Skills Index Freshness Check
 
-# Belt-and-suspenders for the twice-daily build_skills_index pipeline.
+# Independent monitor for the twice-daily build_skills_index pipeline.
 # If the live /docs/api/skills-index.json ever goes more than 26 hours
 # stale OR the file disappears entirely OR a major source has collapsed,
 # this workflow opens a GitHub issue so we hear about it before users do.
 #
-# Triggered every 4 hours so we catch a stuck cron within one tick.
+# Triggered every 4 hours after GitHub Pages has been enabled.
 #
 # The check-catalog-cors job watches the same host from Nara Desktop's side:
 # it fetches /docs/api/plugins.json with a browser's Origin header and files
@@ -21,19 +21,30 @@ permissions:
   issues: write
 
 jobs:
-  check-freshness:
-    if: github.repository == 'NousResearch/nara-agent'
-    runs-on: blacksmith-4vcpu-ubuntu-2404
-    timeout-minutes: 10
-    environment: trusted-automation
+  pages-enabled:
+    if: github.repository == 'engsathiago/nara-agent'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      enabled: ${{ steps.pages.outputs.enabled }}
     steps:
-      # `Get GitHub App token` below is a LOCAL composite action
-      # (./.github/actions/get-app-token), so the repository must be on disk
-      # before it can be resolved. Without this checkout the job dies with
-      # "Can't find 'action.yml' ... under .github/actions/get-app-token"
-      # every time the probe is non-ok — i.e. exactly when the watchdog is
-      # supposed to file its issue.
-      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a  # v1
+      - name: Check whether Nara Pages is enabled
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          enabled="$(gh api "repos/$GITHUB_REPOSITORY" --jq '.has_pages')"
+          echo "enabled=$enabled" >> "$GITHUB_OUTPUT"
+
+  check-freshness:
+    needs: pages-enabled
+    if: needs.pages-enabled.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Probe live index
         id: probe
@@ -58,18 +69,10 @@ jobs:
             echo "Summary:      ${{ steps.probe.outputs.summary }}"
           fi
 
-      - name: Get GitHub App token
-        if: steps.probe.outputs.status != 'ok'
-        id: app-token
-        uses: ./.github/actions/get-app-token
-        with:
-          client-id: ${{ vars.APP_CLIENT_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
       - name: Open issue on degraded / failed probe
         if: steps.probe.outputs.status != 'ok'
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
           STATUS: ${{ steps.probe.outputs.status }}
           DETAIL: ${{ steps.probe.outputs.detail }}
         run: python3 scripts/ci/skills_index_watchdog_issue.py skills-index
@@ -79,12 +82,14 @@ jobs:
     # cross-origin. A browser rejects that fetch when any response in the redirect
     # chain lacks Access-Control-Allow-Origin (#136483). The probe above uses
     # curl -L, which never checks CORS, so it stays green while Desktop is blocked.
-    if: github.repository == 'NousResearch/nara-agent'
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    needs: pages-enabled
+    if: needs.pages-enabled.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
     timeout-minutes: 5
-    environment: trusted-automation
     steps:
-      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a  # v1
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Fetch the plugin catalog the way Desktop does
         id: probe
@@ -100,18 +105,10 @@ jobs:
             *) echo "status=unreachable" >> "$GITHUB_OUTPUT" ;;
           esac
 
-      - name: Get GitHub App token
-        if: steps.probe.outputs.status != 'ok'
-        id: app-token
-        uses: ./.github/actions/get-app-token
-        with:
-          client-id: ${{ vars.APP_CLIENT_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
       - name: Open issue when Desktop cannot read the catalog
         if: steps.probe.outputs.status != 'ok'
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
           STATUS: ${{ steps.probe.outputs.status }}
           DETAIL: ${{ steps.probe.outputs.detail }}
         run: python3 scripts/ci/skills_index_watchdog_issue.py plugin-catalog-cors

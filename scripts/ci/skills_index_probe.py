@@ -18,7 +18,8 @@ from datetime import UTC, datetime
 
 MAX_AGE_HOURS = 26
 MIN_TOTAL = 1500
-# Same as build_skills_index.py EXPECTED_FLOORS.
+# The live watchdog uses lower floors than the strict build gate, so ordinary
+# source fluctuations do not repeatedly open an issue after publication.
 SOURCE_FLOORS = {
     "skills.sh": 100,
     "lobehub": 100,
