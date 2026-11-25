@@ -20,7 +20,7 @@ The simplest path: a one-click installer with a guided, point-and-click setup. N
 
 ### 1. Download and install
 
-[Download the Nara Desktop installer](https://nara-agent.nousresearch.com/) for macOS or Windows, then open it. On first launch it finishes setting itself up (usually under a minute).
+[Download the Nara Desktop installer](https://engsathiago.github.io/nara-agent/) for macOS or Windows, then open it. On first launch it finishes setting itself up (usually under a minute).
 
 ### 2. Connect Nous Portal
 
@@ -49,16 +49,16 @@ Prefer the terminal?
 On macOS/Linux/WSL2/Android, run
 
 ```bash
-curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
 ```
 
 On Windows, run
 
 ```powershell
-iex (irm https://nara-agent.nousresearch.com/install.ps1)
+iex (irm https://engsathiago.github.io/nara-agent/install.ps1)
 ```
 
-Prefer to review first? Download [`install.sh`](https://nara-agent.nousresearch.com/install.sh), inspect it, then run it.
+Prefer to review first? Download [`install.sh`](https://engsathiago.github.io/nara-agent/install.sh), inspect it, then run it.
 
 After it finishes, reload your shell:
 

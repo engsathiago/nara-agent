@@ -314,8 +314,8 @@ The CLI uses argparse, so `--help` is a good first probe for "did my new flag re
 
 ## See also
 
-- User-facing setup + troubleshooting: [Egress proxy](https://nara-agent.nousresearch.com/docs/user-guide/egress/iron-proxy)
-- Docker backend internals: [Docker](https://nara-agent.nousresearch.com/docs/user-guide/docker)
-- Bitwarden Secrets Manager integration: [`nara secrets bitwarden`](https://nara-agent.nousresearch.com/docs/user-guide/secrets/bitwarden)
-- CLI command reference: [`nara egress`](https://nara-agent.nousresearch.com/docs/reference/cli-commands#nara-egress)
-- Sandbox-injected environment variables: [Egress proxy (sandbox-injected)](https://nara-agent.nousresearch.com/docs/reference/environment-variables#egress-proxy-sandbox-injected)
+- User-facing setup + troubleshooting: [Egress proxy](https://engsathiago.github.io/nara-agent/docs/user-guide/egress/iron-proxy)
+- Docker backend internals: [Docker](https://engsathiago.github.io/nara-agent/docs/user-guide/docker)
+- Bitwarden Secrets Manager integration: [`nara secrets bitwarden`](https://engsathiago.github.io/nara-agent/docs/user-guide/secrets/bitwarden)
+- CLI command reference: [`nara egress`](https://engsathiago.github.io/nara-agent/docs/reference/cli-commands#nara-egress)
+- Sandbox-injected environment variables: [Egress proxy (sandbox-injected)](https://engsathiago.github.io/nara-agent/docs/reference/environment-variables#egress-proxy-sandbox-injected)

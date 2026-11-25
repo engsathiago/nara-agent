@@ -31,10 +31,7 @@ import CatalogFeatured from "../../components/CatalogFeatured";
 import { groupCatalogPlugins, sortCatalogPlugins } from "../../../../apps/shared/src/catalog-browse";
 import { pickFeatured } from "../../../../apps/shared/src/catalog-featured";
 
-// Routes Docusaurus serves the static API JSON from. `baseUrl` is `/docs/`,
-// `static/api/` ends up at `/docs/api/` — same pattern as the Skills Hub.
-const PLUGINS_URL = "/docs/api/plugins.json";
-const META_URL = "/docs/api/plugins-meta.json";
+// The static catalog follows the configured Docusaurus baseUrl.
 /** Mirrors the `max-width: 600px` blocks in styles.module.css. */
 const MOBILE_PANEL_QUERY = "(max-width: 600px)";
 
@@ -366,6 +363,8 @@ function buildSearchHaystack(p: CatalogPlugin): string {
 }
 
 export default function PluginCatalogPage() {
+  const pluginsUrl = useBaseUrl('/api/plugins.json');
+  const metaUrl = useBaseUrl('/api/plugins-meta.json');
   // Picker embed mode (?embed=picker): the page is iframed by a host app
   // (Nara desktop's Capabilities > Plugins tab) as a one-click catalog
   // picker. Site chrome is hidden via CSS and every card gains an
@@ -413,11 +412,11 @@ export default function PluginCatalogPage() {
     (async () => {
       try {
         const [pl, mt] = await Promise.all([
-          fetch(PLUGINS_URL).then((r) => {
+          fetch(pluginsUrl).then((r) => {
             if (!r.ok) throw new Error(`plugins.json HTTP ${r.status}`);
             return r.json();
           }),
-          fetch(META_URL).then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
+          fetch(metaUrl).then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
         ]);
         if (cancelled) return;
         const arr = Array.isArray(pl) ? (pl as CatalogPlugin[]) : [];
@@ -431,7 +430,7 @@ export default function PluginCatalogPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pluginsUrl, metaUrl]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

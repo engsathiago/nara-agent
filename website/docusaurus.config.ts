@@ -8,10 +8,10 @@ const config: Config = {
   tagline: 'The self-improving AI agent',
   favicon: 'img/favicon.ico',
 
-  url: 'https://nara-agent.nousresearch.com',
-  baseUrl: '/docs/',
+  url: 'https://engsathiago.github.io',
+  baseUrl: '/nara-agent/docs/',
 
-  organizationName: 'NousResearch',
+  organizationName: 'engsathiago',
   projectName: 'nara-agent',
 
   onBrokenLinks: 'warn',
@@ -39,6 +39,14 @@ const config: Config = {
 
   themes: [
     '@docusaurus/theme-mermaid',
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        docsRouteBasePath: '/',
+        language: ['en', 'zh'],
+      },
+    ],
   ],
 
   plugins: [
@@ -48,7 +56,7 @@ const config: Config = {
       '@docusaurus/plugin-client-redirects',
       {
         // Static-host redirects for renamed doc pages (GitHub Pages can't
-        // do server-side redirects). Paths are relative to baseUrl (/docs/).
+        // do server-side redirects). Paths are relative to baseUrl (/nara-agent/docs/).
         redirects: [
           {
             // Renamed in #44470 (Automation Blueprints terminology rebrand)
@@ -98,20 +106,6 @@ const config: Config = {
 
   themeConfig: {
     image: 'img/nara-wordmark.svg',
-    // Algolia DocSearch (replaces @easyops-cn/docusaurus-search-local).
-    // The local plugin shipped a ~16 MB client-side lunr index that every
-    // visitor downloaded and hydrated before their first result; DocSearch
-    // answers from Algolia's servers with no client index at all. These are
-    // public search-only credentials — safe to commit (the admin key is not
-    // in the repo). Index is populated by the Algolia Crawler configured at
-    // crawler.algolia.com; contextualSearch scopes results to the active
-    // locale via the docusaurus_tag/lang facets the crawler records carry.
-    algolia: {
-      appId: '2JLBVEYZN5',
-      apiKey: '9629ec26628d1a126535fd5ef408990d',
-      indexName: 'nara docs',
-      contextualSearch: true,
-    },
     colorMode: {
       defaultMode: 'dark',
       respectPrefersColorScheme: true,
@@ -147,7 +141,7 @@ const config: Config = {
           position: 'left',
         },
         {
-          href: 'https://nara-agent.nousresearch.com/',
+          href: 'https://github.com/engsathiago/nara-agent',
           label: 'Download',
           position: 'left',
         },
@@ -156,18 +150,13 @@ const config: Config = {
           position: 'right',
         },
         {
-          href: 'https://nara-agent.nousresearch.com',
+          href: 'https://engsathiago.github.io/nara-agent/',
           label: 'Home',
           position: 'right',
         },
         {
           href: 'https://github.com/engsathiago/nara-agent',
           label: 'GitHub',
-          position: 'right',
-        },
-        {
-          href: 'https://discord.gg/NousResearch',
-          label: 'Discord',
           position: 'right',
         },
       ],
@@ -187,7 +176,7 @@ const config: Config = {
         {
           title: 'Community',
           items: [
-            { label: 'Discord', href: 'https://discord.gg/NousResearch' },
+            { label: 'GitHub Issues', href: 'https://github.com/engsathiago/nara-agent/issues' },
             { label: 'GitHub Issues', href: 'https://github.com/engsathiago/nara-agent/issues' },
             { label: 'Skills Hub', href: 'https://agentskills.io' },
           ],
@@ -195,13 +184,13 @@ const config: Config = {
         {
           title: 'More',
           items: [
-            { label: 'Desktop Download', href: 'https://nara-agent.nousresearch.com/' },
+            { label: 'Source installation', href: 'https://github.com/engsathiago/nara-agent' },
             { label: 'GitHub', href: 'https://github.com/engsathiago/nara-agent' },
-            { label: 'Nous Research', href: 'https://nousresearch.com' },
+            { label: 'Upstream provenance', href: 'https://github.com/engsathiago/nara-agent/blob/main/UPSTREAM_PROVENANCE.md' },
           ],
         },
       ],
-      copyright: `Built by <a href="https://nousresearch.com">Nous Research</a> · MIT License · ${new Date().getFullYear()}`,
+      copyright: `Nara Agent · MIT License · ${new Date().getFullYear()}`,
     },
     prism: {
       theme: prismThemes.github,

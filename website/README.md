@@ -3,7 +3,7 @@
 This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
 
 > **Reading the docs on GitHub?** The Markdown under `docs/` is authored for the rendered site at
-> <https://nara-agent.nousresearch.com/docs/>. Cross-page links are relative Markdown paths, so they
+> <https://engsathiago.github.io/nara-agent/docs/>. Cross-page links are relative Markdown paths, so they
 > follow through on GitHub's file viewer too. Every page on the site has an **Edit this page** link
 > that opens the source file here.
 
@@ -24,13 +24,13 @@ This website is built using [Docusaurus](https://docusaurus.io/), a modern stati
 ## Installation
 
 ```bash
-yarn
+npm ci
 ```
 
 ## Local Development
 
 ```bash
-yarn start
+npm start
 ```
 
 This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
@@ -38,26 +38,18 @@ This command starts a local development server and opens up a browser window. Mo
 ## Build
 
 ```bash
-yarn build
+npm run build
 ```
 
 This command generates static content into the `build` directory and can be served using any static contents hosting service.
 
 ## Deployment
 
-Using SSH:
-
-```bash
-USE_SSH=true yarn deploy
-```
-
-Not using SSH:
-
-```bash
-GIT_USER=<Your GitHub username> yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+The owner workflow [Nara Pages](../.github/workflows/nara-pages.yml) builds the site and
+publishes it to `https://engsathiago.github.io/nara-agent/docs/` on changes to the website,
+skills, plugin catalog, or installers. GitHub Pages must use the GitHub Actions publishing
+source. The site uses Docusaurus `baseUrl: '/nara-agent/docs/'`; the workflow stages the
+installer scripts at the project root.
 
 ## Diagram Linting
 

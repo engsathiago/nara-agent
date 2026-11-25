@@ -1,76 +1,40 @@
 ---
 sidebar_position: 2
 title: "Installation"
-description: "Install Nara Agent with desktop bundles, source installers, Docker, Nix, or the Termux APT package"
+description: "Install the public Nara source checkout on macOS, Linux, or Windows"
 ---
 
 <head>
-  <title>Install Nara Agent: Official Guide | Nous Research</title>
-  <meta property="og:title" content="Install Nara Agent: Official Guide | Nous Research" />
+  <title>Install Nara Agent from Source</title>
+  <meta property="og:title" content="Install Nara Agent from Source" />
 </head>
 
 # Installation
 
-Get Nara Agent up and running in under two minutes!
+Install Nara from the public source repository. The first setup may download pinned tools and take several minutes.
 
 :::tip Platform Support
 For the full platform support matrix (which OSes, distribution methods, and
 platform-gated features are supported), see **[Platform Support](./platform-support.md)**.
 :::
 
-## Quick Install
-### Desktop packages on macOS or Windows
+## Source installation
 
-Download the package for your platform from the
-[Nara website](https://nara-agent.nousresearch.com/).
+The Nara project currently publishes source code and scripts from its own repository. A signed desktop package, Termux APT repository, Docker image, and versioned stable release have not been published under this project's identity. See [Official Nara sources](./official-domains.md).
 
-- **Windows:** open the `.appinstaller` download with Windows App Installer.
-  It installs the signed MSIX bundle and records its update source.
-  Microsoft Store packages have separate Store ownership.
-- **macOS:** open the DMG, then copy `Nara.app` to Applications. The ZIP
-  artifact carries the signed app used by the automatic updater.
+### Linux, macOS, or WSL2
 
-Bundled packages contain the agent, Python, supported dependencies, and prebuilt
-interfaces. First launch does not build that base runtime. Provider access and
-optional integrations can still require network access.
-
-A `Nara-Setup` bootstrap installer is different: it downloads a source
-installation and builds the desktop app. See [Nara Desktop](../user-guide/desktop.md).
-
-There is no separate remote-only Desktop download. To use Desktop with a Nara
-backend on another machine, install one of the packages above and connect it
-from **Settings → Gateways**; see
-[Connecting to a remote backend](../user-guide/desktop.md#connecting-to-a-remote-backend).
-
-:::note
-The macOS installer is **Apple Silicon only**. macOS on x86 (Intel) processors is [not a supported platform](./platform-support.md#unsupported).
-:::
-
-### Without Nara Desktop:
-For a command-line only install without Nara Desktop, run:
-
-#### Linux / macOS / WSL2
 ```bash
-curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
 ```
 
-#### Windows (native)
+### Windows
 
-Run in powershell:
 ```powershell
-iex (irm https://nara-agent.nousresearch.com/install.ps1)
+iex (irm https://engsathiago.github.io/nara-agent/install.ps1)
 ```
 
-If you want to install & run Nara Desktop after a command-line only install, simply run
-```bash
-nara desktop
-```
-
-### Android / Termux
-
-Use the [Termux APT package](./termux.md) on aarch64 Android devices.
-Configure its signed repository before running `pkg install nara-agent`.
-The desktop/server scripts are not the Termux installation path.
+You can also clone [engsathiago/nara-agent](https://github.com/engsathiago/nara-agent) directly, run `source ./activate` (PowerShell: `. ./activate.ps1`), then start `nara`. The source installer offers an optional desktop build; `nara desktop` starts the installed desktop path when its dependencies are present.
 
 ### What the source installer does
 
@@ -87,10 +51,8 @@ app included, already has it. Where PM has no Chromium build (Android/Termux,
 musl Linux), Nara uses a system `chromium` on `PATH` instead.
 Other optional tools use their feature-specific installation paths.
 
-A new install lands on the latest stable release, the channel `nara update`
-follows from then on (see [Updating](./updating.md)). To install the tip of
-`main` instead, pass `--channel main` on POSIX or `-Channel main` on Windows
-(or set `NARA_INSTALL_CHANNEL=main` first, for the one-liners).
+A new source install follows `main` until this repository publishes a versioned
+stable release. `nara update` follows that channel (see [Updating](./updating.md)).
 
 To leave the browser tools out, pass `--skip-browser` on POSIX or `-SkipBrowser`
 on Windows; for the computer-use driver, `--skip-computer-use` /
@@ -115,9 +77,7 @@ directory; a failed step prints its last lines and the log path. CI (`CI` or
 |---|---|---|---|
 | POSIX source script | `~/.nara/nara-agent/` | `~/.local/bin/nara` wrapper | `~/.nara/` |
 | Windows source script | `%LOCALAPPDATA%\nara\nara-agent\` | `%LOCALAPPDATA%\nara\bin\` | `%LOCALAPPDATA%\nara\` |
-| Desktop bundle | Inside the installed app package | Packaged launchers; Windows execution aliases | Platform default Nara data directory |
-| Docker | `/opt/nara/` | Image entrypoint and `nara` shim | Mounted `/opt/data/` |
-| Termux APT | `$PREFIX/lib/nara-agent/` | Symlinks in `$PREFIX/bin/` | `~/.nara/` |
+| Local desktop build | Inside the locally built app package | Packaged launcher | Platform default Nara data directory |
 
 `NARA_HOME` selects user data. The POSIX script's `--dir` selects its source
 checkout independently. Windows provides `-NaraHome` and `-InstallDir`.
@@ -147,16 +107,6 @@ nara config set     # Set individual config values
 nara config get     # Inspect individual config values
 nara setup          # Or run the full setup wizard to configure everything at once
 ```
-
-:::tip Fastest path: Nous Portal
-One subscription covers 300+ models plus the [Tool Gateway](../user-guide/features/tool-gateway.md) (web search, image generation, TTS, cloud browser). Skip the per-tool key juggling:
-
-```bash
-nara setup --portal
-```
-
-That logs you in, sets Nous as your provider, and turns on the Tool Gateway in one command.
-:::
 
 :::tip Already running Nara on another machine?
 You don't need to rebuild your setup from scratch. Restore a full backup with `nara import` (see [Exporting Nara to another machine](../reference/faq.md#exporting-nara-to-another-machine)), or bring over a single agent with `nara profile import` (see [Moving a single profile to another machine](../reference/faq.md#moving-a-single-profile-to-another-machine)). Note that a profile export excludes credentials by design, so an export alone is not a full backup — [`nara backup` vs `nara profile export`](../reference/faq.md#nara-backup-vs-nara-profile-export) explains which to use.
@@ -217,7 +167,7 @@ configuration, and launcher must belong to that user.
 2. As the service user, run the regular installer:
 
    ```bash
-   curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
+   curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
    ```
 
 3. Add the actual launcher directory to the service user's shell environment:

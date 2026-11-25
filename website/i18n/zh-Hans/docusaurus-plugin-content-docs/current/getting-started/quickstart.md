@@ -1,7 +1,7 @@
 ---
 sidebar_position: 1
 title: "快速入门"
-description: "与 Nara Agent 的第一次对话——从安装到开始聊天，5 分钟内完成"
+description: "从公开仓库安装 Nara，并验证第一次对话"
 ---
 
 # 快速入门
@@ -10,21 +10,6 @@ description: "与 Nara Agent 的第一次对话——从安装到开始聊天，
 依赖变更后，请重新激活该 checkout 并重启 Nara。
 
 本指南带你从零开始搭建一个能够应对实际使用的 Nara 环境。完成安装、选择 provider（服务提供商）、验证对话正常运行，并了解出现问题时的处理方法。
-
-## 更喜欢看视频？
-
-**Onchain AI Garage** 制作了一套涵盖安装、配置和基本命令的 Masterclass 演示视频——如果你更习惯跟着视频操作，这是本页的绝佳补充。更多内容请查看完整的 [Nara Agent 教程与使用案例](https://www.youtube.com/channel/UCqB1bhMwGsW-yefBxYwFCCg) 播放列表。
-
-<div style={{position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', maxWidth: '100%', marginBottom: '1.5rem'}}>
-  <iframe
-    style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}}
-    src="https://www.youtube-nocookie.com/embed/R3YOGfTBcQg"
-    title="Nara Agent Masterclass: Installation, Setup, Basic Commands"
-    frameBorder="0"
-    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowFullScreen
-  ></iframe>
-</div>
 
 ## 适用人群
 
@@ -51,32 +36,19 @@ description: "与 Nara Agent 的第一次对话——从安装到开始聊天，
 
 ## 1. 安装 Nara Agent
 
-### 在 macOS 或 Windows 上使用 Nara Desktop 安装器（推荐）
-
-如需同时安装命令行与桌面应用，请从我们的官网[下载 Nara Desktop 安装器](https://nara-agent.nousresearch.com/)并运行。
-
-### 不使用 Nara Desktop：
-
-仅安装命令行版本（跟踪 main 分支）：
+目前从[官方 Nara 来源](./official-domains.md)安装 `main` 分支的源码。正式签名的桌面安装包和稳定版本尚未发布。
 
 ```bash
 # Linux / macOS / WSL2
-curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
 ```
 
-源码脚本通过 PM 准备运行时。桌面软件包、Docker、Nix 和 Termux APT 是独立的安装方式。
-请勿使用 `pip install nara-agent` 替代受管理的安装。
-
-Windows 原生安装可在 PowerShell 中运行 `iex (irm https://nara-agent.nousresearch.com/install.ps1)`，无需 WSL。
-aarch64 Android 设备请使用 [Termux APT 指南](./termux.md)，而非上述脚本。
-
-安装完成后，重新加载 shell：
-
-```bash
-source ~/.bashrc   # 或 source ~/.zshrc
+```powershell
+# Windows PowerShell
+iex (irm https://engsathiago.github.io/nara-agent/install.ps1)
 ```
 
-详细的安装选项、前置条件和故障排查，请参阅 [安装指南](./installation.md)。
+源码脚本通过 PM 准备运行时。首次安装需要下载固定版本的工具，可能需要几分钟。
 
 ## 2. 选择 Provider
 

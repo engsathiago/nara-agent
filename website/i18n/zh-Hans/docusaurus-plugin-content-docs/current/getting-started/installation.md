@@ -6,7 +6,7 @@ description: "在 Linux、macOS、WSL2 或原生 Windows 上安装 Nara Agent"
 
 # 安装
 
-使用一行安装命令，两分钟内即可启动并运行 Nara Agent。
+从公开源码仓库安装 Nara。首次安装需要下载固定版本的工具，可能需要几分钟。
 
 ## 快速安装
 
@@ -15,7 +15,7 @@ description: "在 Linux、macOS、WSL2 或原生 Windows 上安装 Nara Agent"
 基于 git 的安装方式，跟踪 `main` 分支，可立即获取最新变更：
 
 ```bash
-curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
 ```
 
 ### Windows（原生，PowerShell）
@@ -25,7 +25,7 @@ curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
 打开 PowerShell 并运行：
 
 ```powershell
-iex (irm https://nara-agent.nousresearch.com/install.ps1)
+iex (irm https://engsathiago.github.io/nara-agent/install.ps1)
 ```
 
 源码安装脚本克隆仓库，再由 PM 准备 Python 3.14、Node.js、npm、pnpm、ripgrep、FFmpeg 和 Python 依赖。
@@ -33,17 +33,7 @@ iex (irm https://nara-agent.nousresearch.com/install.ps1)
 它不替换系统 Git，也不再使用 MinGit 或 `nara\node` 的旧布局。
 安装完成后，打开新终端以读取用户 PATH。
 
-**桌面软件包：** MSIX/App Installer 是自包含的软件包，与源码脚本不同。
-它要求 Windows 11 22H2 或更新版本，首次启动无需克隆源码或编译基础运行时。
-打开 `.appinstaller` 文件安装并登记更新源。Microsoft Store 版本由商店更新。
-`Nara-Setup.exe` 则是下载并配置源码的引导安装程序。
-
-macOS 的 DMG 包含应用；将它复制到 Applications 后启动。
-其自动更新使用包含已签名应用的 ZIP。详情见 [桌面指南](../user-guide/desktop.md)。
-
-### Android / Termux
-
-aarch64 Android 设备可通过 Termux 安装预发布的 APT 软件包。软件包包含 Python、Node.js 和 TUI，无需在手机上编译核心依赖。请按照 [Termux 指南](./termux.md)配置签名仓库，然后运行 `pkg install nara-agent`。桌面和服务器的安装脚本不支持 Termux。
+**当前发行状态：** 本项目尚未发布正式签名的桌面包、Termux APT 仓库、Docker 镜像或稳定版本。桌面应用可在本地从源码构建；参见[官方来源](./official-domains.md)。
 
 ### 功能与安装目录
 
@@ -55,9 +45,6 @@ Dashboard 终端使用 `pywinpty`/ConPTY，不再是尚未实现的 POSIX-only �
 |---|---|---|---|
 | POSIX 源码脚本 | `~/.nara/nara-agent/` | `~/.local/bin/nara` 包装器 | `~/.nara/` |
 | Windows 源码脚本 | `%LOCALAPPDATA%\nara\nara-agent\` | `%LOCALAPPDATA%\nara\bin\` | `%LOCALAPPDATA%\nara\` |
-| 桌面软件包 | 应用包内部 | 包内启动器；Windows 执行别名 | 平台默认数据目录 |
-| Docker | `/opt/nara/` | 镜像入口和 `nara` | 挂载的 `/opt/data/` |
-| Termux APT | `$PREFIX/lib/nara-agent/` | `$PREFIX/bin/` 符号链接 | `~/.nara/` |
 
 `NARA_HOME` 选择数据目录。POSIX 的 `--dir` 单独选择源码目录。
 以 root 身份运行不再自动选择 `/usr/local/lib` 的 FHS 布局。
@@ -83,15 +70,7 @@ nara config set     # 设置单个配置项
 nara setup          # 或运行完整的设置向导一次性配置所有内容
 ```
 
-:::tip 最快路径：Nous Portal
-一个订阅涵盖 300+ 个模型以及 [Tool Gateway](../user-guide/features/tool-gateway.md)（网络搜索、图像生成、TTS、云端浏览器）。无需逐一管理各工具的密钥：
 
-```bash
-nara setup --portal
-```
-
-该命令一次性完成登录、设置 Nous 为提供商并开启 Tool Gateway。
-:::
 
 ---
 

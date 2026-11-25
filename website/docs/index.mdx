@@ -2,7 +2,7 @@
 slug: /
 sidebar_position: 0
 title: "Nara Agent Documentation"
-description: "The self-improving AI agent built by Nous Research. A built-in learning loop that creates skills from experience, improves them during use, and remembers across sessions."
+description: "Nara is a personal AI agent with persistent missions, tools, memory, and multimodel execution. Its source is public and its upstream provenance is documented."
 hide_table_of_contents: true
 displayed_sidebar: docs
 ---
@@ -10,13 +10,13 @@ displayed_sidebar: docs
 import Link from "@docusaurus/Link";
 
 <head>
-  <title>Nara Agent Docs (Official) | Nous Research</title>
-  <meta property="og:title" content="Nara Agent Docs (Official) | Nous Research" />
+  <title>Nara Agent Documentation</title>
+  <meta property="og:title" content="Nara Agent Documentation" />
 </head>
 
 # Nara Agent
 
-The self-improving AI agent built by [Nous Research](https://nousresearch.com). The only agent with a built-in learning loop — it creates skills from experience, improves them during use, nudges itself to persist knowledge, and builds a deepening model of who you are across sessions.
+Nara is a personal AI agent built on an [MIT-licensed upstream foundation](https://github.com/engsathiago/nara-agent/blob/main/UPSTREAM_PROVENANCE.md). It coordinates persistent missions, tools, memory, and specialist workers across its CLI, gateway, and desktop surfaces. Experimental learning and evolution paths are promoted only after their evaluation gates pass.
 
 <div
   style={{
@@ -53,7 +53,7 @@ The self-improving AI agent built by [Nous Research](https://nousresearch.com). 
     Explore Bot Mode
   </Link>
   <a
-    href="https://nara-agent.nousresearch.com/"
+    href="https://engsathiago.github.io/nara-agent/"
     style={{
       display: "inline-block",
       padding: "0.6rem 1.2rem",
@@ -82,7 +82,7 @@ The self-improving AI agent built by [Nous Research](https://nousresearch.com). 
 
 ### Windows or macOS
 
-To easily install the command-line and desktop applications, [download the Nara Desktop installer](https://nara-agent.nousresearch.com/) from our website and run it.
+To easily install the command-line and desktop applications, [download the Nara Desktop installer](https://engsathiago.github.io/nara-agent/) from our website and run it.
 
 ### Without Nara Desktop:
 
@@ -93,7 +93,7 @@ For aarch64 Android devices, use the separate [Termux APT guide](./getting-start
 #### Linux / macOS / WSL2
 
 ```bash
-curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
 ```
 
 #### Windows (native)
@@ -101,7 +101,7 @@ curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
 Run in powershell:
 
 ```powershell
-iex (irm https://nara-agent.nousresearch.com/install.ps1)
+iex (irm https://engsathiago.github.io/nara-agent/install.ps1)
 ```
 
 See the full **[Installation Guide](./getting-started/installation.md)** for what the installer does, installation ownership and data locations, and Windows-specific notes. For the complete platform support matrix, see **[Platform Support](./getting-started/platform-support.md)**.
@@ -140,23 +140,23 @@ It's not a coding copilot tethered to an IDE or a chatbot wrapper around a singl
 
 ## Key Features
 
-- **A closed learning loop** — Agent-curated memory with periodic nudges, autonomous skill creation, skill self-improvement during use, FTS5 cross-session recall with LLM summarization, and [Honcho](https://github.com/plastic-labs/honcho) dialectic user modeling
-- **Runs anywhere, not just your laptop** — 6 built-in terminal backends (local, Docker, SSH, Daytona, Modal, Vercel Sandbox) plus plugin backends such as Singularity. Daytona and Modal offer serverless persistence — your environment hibernates when idle, costing nearly nothing
+- **Persistent learning paths** — Memory, skill curation, and evaluated evolution preserve provenance and require explicit promotion before new behavior becomes a default
+- **Terminal backends** — Local, Docker, SSH, and optional cloud backends use the same agent runtime; remote services require their own credentials and validation
 - **Lives where you do** — CLI, Telegram, Discord, Slack, WhatsApp, Signal, Matrix, Mattermost, Email, SMS, DingTalk, Feishu, WeCom, Weixin, QQ Bot, Yuanbao, BlueBubbles, Home Assistant, Microsoft Teams, Google Chat, and more — 20+ platforms from one gateway
-- **Built by model trainers** — Created by [Nous Research](https://nousresearch.com), the lab behind Nara, Nomos, and Psyche. Works with [Nous Portal](https://portal.nousresearch.com), [OpenRouter](https://openrouter.ai), OpenAI, or any endpoint
+- **Model choice** — Connect a provider or compatible endpoint, then route specialist work to models available in your configuration
 - **Scheduled automations** — Built-in cron with delivery to any platform
 - **[Bot Mode](./user-guide/bot-mode.md)** — Build a durable team of specialist Bots that work together in group chats and through `@mentions`
 - **Delegates & parallelizes** — Spawn isolated subagents for parallel workstreams. Programmatic Tool Calling via `execute_code` collapses multi-step pipelines into single inference calls
 - **Open standard skills** — Compatible with [agentskills.io](https://agentskills.io). Skills are portable, shareable, and community-contributed via the Skills Hub
-- **Full web control** — Search, extract, browse, vision, image generation, TTS — one subscription via [Nous Portal](./integrations/nous-portal.md) bundles all of them
+- **Web and media tools** — Browse, search, image, and speech features are available through configured local or external providers
 - **MCP support** — Connect to any MCP server for extended tool capabilities
-- **Research-ready** — Batch processing, trajectory export, RL training with Atropos. Built by [Nous Research](https://nousresearch.com) — the lab behind Nara, Nomos, and Psyche models
+- **Research tools** — Export trajectories and evaluate changes before promoting them into the agent
 
 ## For LLMs and coding agents
 
 Machine-readable entry points to this documentation:
 
-- **[`/llms.txt`](/llms.txt)** — curated index of every doc page with short descriptions. ~17 KB, safe to load into an LLM context.
-- **[`/llms-full.txt`](/llms-full.txt)** — every doc page concatenated into a single markdown file for one-shot ingestion. ~1.8 MB.
+- **[llms.txt](https://engsathiago.github.io/nara-agent/docs/llms.txt)** — short documentation index.
+- **[llms-full.txt](https://engsathiago.github.io/nara-agent/docs/llms-full.txt)** — combined documentation for long-context tools.
 
-Both files also resolve at `/docs/llms.txt` and `/docs/llms-full.txt`. Generated fresh on every deploy.
+Both files are regenerated on each docs build.

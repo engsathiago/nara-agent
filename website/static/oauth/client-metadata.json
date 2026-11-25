@@ -1,8 +1,8 @@
 {
-  "client_id": "https://nousresearch.github.io/nara-agent/docs/oauth/client-metadata.json",
+  "client_id": "https://engsathiago.github.io/nara-agent/docs/oauth/client-metadata.json",
   "client_name": "Nara Agent",
-  "client_uri": "https://nara-agent.nousresearch.com",
-  "logo_uri": "https://nousresearch.github.io/nara-agent/docs/img/logo.png",
+  "client_uri": "https://engsathiago.github.io/nara-agent",
+  "logo_uri": "https://engsathiago.github.io/nara-agent/docs/img/logo.png",
   "application_type": "native",
   "grant_types": ["authorization_code", "refresh_token"],
   "response_types": ["code"],

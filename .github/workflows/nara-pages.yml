@@ -1,0 +1,103 @@
+name: Nara Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - 'skills/**'
+      - 'optional-skills/**'
+      - 'plugin-catalog/**'
+      - 'scripts/install.sh'
+      - 'scripts/install.ps1'
+      - '.github/workflows/nara-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: nara-pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'engsathiago/nara-agent'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Set up locked site toolchain
+        uses: ./.github/actions/setup-pm
+        with:
+          toolchain: all
+          extras: '[]'
+          node-package-manager: npm
+          node-cache-dependency-path: website/package-lock.json
+
+      - name: Install catalog extraction dependencies
+        run: python -m scripts.ci.python_packages ruamel.yaml==0.18.17 httpx==0.28.1
+
+      - name: Install website dependencies
+        run: just docs-install
+
+      - name: Generate owned catalog pages
+        run: just docs-generate
+
+      - name: Build website
+        run: npm run build --prefix website
+
+      - name: Verify and stage Pages artifact
+        run: |
+          set -euo pipefail
+          test -s website/build/index.html
+          test -s website/build/api/skills.json
+          test -s website/build/api/plugin-catalog.json
+          test -s website/build/search-index.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          api = Path('website/build/api')
+          skills = json.loads((api / 'skills.json').read_text())
+          catalog = json.loads((api / 'plugin-catalog.json').read_text())
+          search = json.loads(Path('website/build/search-index.json').read_text())
+          if len(skills) < 100 or len(catalog.get('entries', [])) < 100:
+              raise SystemExit('Catalog extraction collapsed; refusing to publish empty Pages data')
+          documents = search[0]['documents'] if search else []
+          if len(documents) < 100 or any(not row['u'].startswith('/nara-agent/docs/') for row in documents):
+              raise SystemExit('Local search index is empty or points outside Nara Pages')
+          print(f"Pages catalogs: {len(skills)} skills, {len(catalog['entries'])} plugins")
+          print(f"Pages local search: {len(documents)} documents")
+          PY
+          mkdir -p _site/docs
+          cp -R website/build/. _site/docs/
+          cp scripts/install.sh _site/install.sh
+          cp scripts/install.ps1 _site/install.ps1
+          touch _site/.nojekyll
+          cat > _site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="pt-BR"><meta charset="utf-8"><title>Nara Agent</title>
+          <meta http-equiv="refresh" content="0;url=/nara-agent/docs/">
+          <a href="/nara-agent/docs/">Abrir documentação da Nara</a></html>
+          HTML
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _site
+
+      - name: Deploy Pages
+        id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

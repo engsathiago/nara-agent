@@ -101,8 +101,8 @@ nara skills uninstall <skill-name>
 |-------|-------------|
 | [**actual-setup**](../user-guide/skills/optional/devops/devops-actual-setup.md) | Set up Actual Computer (actual.inc) inference in Nara. |
 | [**docker-management**](../user-guide/skills/optional/devops/devops-docker-management.md) | Manage Docker containers, images, volumes, and Compose. |
-| [**nara-s6-container-supervision**](../user-guide/skills/optional/devops/devops-nara-s6-container-supervision.md) | Modify or debug s6 services in the Nara Docker image. |
 | [**inference-sh-cli**](../user-guide/skills/optional/devops/devops-inference-sh-cli.md) | Run 150+ AI apps (image, video, LLM) via inference.sh CLI. |
+| [**nara-s6-container-supervision**](../user-guide/skills/optional/devops/devops-nara-s6-container-supervision.md) | Modify or debug s6 services in the Nara Docker image. |
 | [**pinggy-tunnel**](../user-guide/skills/optional/devops/devops-pinggy-tunnel.md) | Zero-install localhost tunnels over SSH via Pinggy. |
 | [**setup-wizard-generator**](../user-guide/skills/optional/devops/devops-setup-wizard-generator.md) | Generate a bash wizard guiding a human through manual setup. |
 | [**watchers**](../user-guide/skills/optional/devops/devops-watchers.md) | Poll RSS, JSON APIs, and GitHub with watermark dedup. |
@@ -260,8 +260,8 @@ nara skills uninstall <skill-name>
 | [**ast-grep**](../user-guide/skills/optional/software-development/software-development-ast-grep.md) | AST-aware structural code search and rewrite via ast-grep. |
 | [**code-wiki**](../user-guide/skills/optional/software-development/software-development-code-wiki.md) | Generate wiki docs + Mermaid diagrams for any codebase. |
 | [**grill-me**](../user-guide/skills/optional/software-development/software-development-grill-me.md) | Adversarial plan interview before implementation. |
-| [**nara-agent-skill-authoring**](../user-guide/skills/optional/software-development/software-development-nara-agent-skill-authoring.md) | Author in-repo SKILL.md files: frontmatter and structure. |
 | [**inspecting-nara-desktop-dom**](../user-guide/skills/optional/software-development/software-development-inspecting-nara-desktop-dom.md) | Read the live Nara desktop DOM/CSS over CDP. |
+| [**nara-agent-skill-authoring**](../user-guide/skills/optional/software-development/software-development-nara-agent-skill-authoring.md) | Author in-repo SKILL.md files: frontmatter and structure. |
 | [**node-inspect-debugger**](../user-guide/skills/optional/software-development/software-development-node-inspect-debugger.md) | Debug Node.js via --inspect + Chrome DevTools Protocol CLI. |
 | [**pr-lens**](../user-guide/skills/optional/software-development/software-development-pr-lens.md) | Draw code changes as animated architecture/data-flow SVGs. |
 | [**python-debugpy**](../user-guide/skills/optional/software-development/software-development-python-debugpy.md) | Debug Python: pdb REPL + debugpy remote (DAP). |

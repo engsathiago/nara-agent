@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
+import useBaseUrl from "@docusaurus/useBaseUrl";
 import styles from "./styles.module.css";
 import CatalogFeatured from "../../components/CatalogFeatured";
 import { isOfficialSkillSource, pickFeatured } from "../../../../apps/shared/src/catalog-featured";
@@ -356,6 +357,7 @@ function SkillCard({
   const src = SOURCE_CONFIG[skill.source] || SOURCE_CONFIG["optional"];
   const icon = CATEGORY_ICONS[skill.category] || "\u{1F4E6}";
   const installUrl = skillCatalogInstallUrl(skill);
+  const skillDocsBase = useBaseUrl('/user-guide/skills/');
 
   return (
     <div
@@ -506,7 +508,7 @@ function SkillCard({
               {skill.docsPath ? (
                 <a
                   className={styles.docsLink}
-                  href={`/docs/user-guide/skills/${skill.docsPath}`}
+                  href={`${skillDocsBase}${skill.docsPath}`}
                   onClick={(e) => e.stopPropagation()}
                 >
                   View full documentation →
@@ -543,12 +545,7 @@ function StatCard({ value, label, color }: { value: number; label: string; color
 
 const PAGE_SIZE = 60;
 
-// Routes Docusaurus serves the static API JSON from. `baseUrl` is `/docs/`,
-// `static/api/` ends up at `/docs/api/`. Hardcoding here is fine because the
-// same `baseUrl` is enforced repo-wide; if it ever changes, this is the only
-// place that needs to follow.
-const SKILLS_URL = "/docs/api/skills.json";
-const META_URL = "/docs/api/skills-meta.json";
+// The static catalog follows the configured Docusaurus baseUrl.
 // Idle timeout for the catalog fetch — abort only when the transfer has
 // produced no bytes for this long, so slow-but-alive downloads survive.
 const CATALOG_STALL_TIMEOUT_MS = 45_000;
@@ -573,6 +570,8 @@ function buildSearchHaystack(s: Skill): string {
 }
 
 export default function SkillsDashboard() {
+  const skillsUrl = useBaseUrl('/api/skills.json');
+  const metaUrl = useBaseUrl('/api/skills-meta.json');
   // Picker embed mode (?embed=picker): the page is being iframed by a host
   // app (Nara desktop's Bot Mode agent editor) as a skill PICKER. Site
   // chrome is hidden via a CSS class and every card gains an
@@ -662,8 +661,8 @@ export default function SkillsDashboard() {
       try {
         armStallTimer();
         const [sk, mt] = await Promise.all([
-          readJson(SKILLS_URL),
-          readJson(META_URL).catch(() => ({})),
+          readJson(skillsUrl),
+          readJson(metaUrl).catch(() => ({})),
         ]);
         if (cancelled) return;
         const skillsArr = Array.isArray(sk) ? (sk as Skill[]) : [];
@@ -686,7 +685,7 @@ export default function SkillsDashboard() {
       ctrl.abort();
       if (stallTimer) clearTimeout(stallTimer);
     };
-  }, [reloadKey]);
+  }, [reloadKey, skillsUrl, metaUrl]);
 
   const retryCatalogLoad = () => {
     setLoadError(null);

@@ -211,7 +211,7 @@ source ~/.bashrc
 # If you previously installed with sudo, clean up:
 sudo rm /usr/local/bin/nara
 # Then re-run the standard installer
-curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
 ```
 
 ---
@@ -651,11 +651,9 @@ If an MCP server crashes mid-request, Nara will report a timeout. Check the serv
 
 ### Skills Issues
 
-#### The Skills Hub page won't load in the desktop app (403 / blocked)
+#### The Skills Hub page won't load in the desktop app
 
-**Cause:** The docs site (`nara-agent.nousresearch.com`) is served through Vercel, whose WAF denies some residential IP ranges it considers flagged. If your network is on such a range, every request to the domain returns a 403 block page.
-
-**Solution:** The Skills Hub picker probes the primary domain and automatically falls back to the equivalent GitHub Pages deployment (`nousresearch.github.io/nara-agent`), which serves the same catalog. If the page still fails on both origins, check whether a proxy, DNS filter, or firewall is blocking both hosts — and report the affected range to the maintainers so it can be reviewed on the deployment side.
+The Skills Hub is served from [Nara Pages](https://engsathiago.github.io/nara-agent/docs/skills/). Check that this page loads in a browser, then retry in the desktop app. If Pages is unavailable, the in-app search uses the installed skill sources; check the network connection and the [GitHub deployment status](https://github.com/engsathiago/nara-agent/actions/workflows/nara-pages.yml).
 
 ---
 
@@ -802,7 +800,7 @@ Skills with very long descriptions are truncated to 40 characters in the Telegra
 
 1. Install Nara Agent on the new machine:
    ```bash
-   curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
+   curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
    ```
 
 2. On the **source machine**, create a full backup:

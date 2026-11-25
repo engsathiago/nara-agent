@@ -1,7 +1,7 @@
 ---
 sidebar_position: 1
 title: "Nara Agent Quickstart"
-description: "Your first conversation with Nara Agent — from install to chatting in under 5 minutes"
+description: "Install Nara from the public repository and verify your first conversation"
 ---
 
 # Nara Agent Quickstart
@@ -11,21 +11,6 @@ Python dependency commands on this page use a
 After a dependency change, reactivate the checkout and restart Nara.
 
 This guide gets you from zero to a working Nara setup that survives real use. Install, choose a provider, verify a working chat, and know exactly what to do when something breaks.
-
-## Prefer to watch?
-
-**Onchain AI Garage** put together a Masterclass walkthrough of installation, setup, and basic commands — a good companion to this page if you'd rather follow along on video. For more, see the full [Nara Agent Tutorials & Use Cases](https://www.youtube.com/playlist?list=PLmpUb_PWAkDxewld5ZYyKifuHxgIbiq2d) playlist.
-
-<div style={{position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', maxWidth: '100%', marginBottom: '1.5rem'}}>
-  <iframe
-    style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}}
-    src="https://www.youtube-nocookie.com/embed/R3YOGfTBcQg"
-    title="Nara Agent Masterclass: Installation, Setup, Basic Commands"
-    frameBorder="0"
-    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowFullScreen
-  ></iframe>
-</div>
 
 ## Who this is for
 
@@ -51,24 +36,19 @@ Pick the row that matches your goal:
 ---
 
 ## 1. Install Nara Agent
-### With the Nara Desktop installer on macOS or Windows (recommended)
-To easily install the command-line and desktop applications, [download the Nara Desktop installer](https://nara-agent.nousresearch.com/) from our website and run it.
 
-### Without Nara Desktop:
-For a command-line only install without Nara Desktop, run:
+Install the current source channel from the [official Nara Pages](./official-domains.md). Signed desktop installers and a versioned stable release are not published yet.
 
-For aarch64 Android devices, use the separate [Termux APT guide](./termux.md).
+### Linux, macOS, or WSL2
 
-#### Linux / macOS / WSL2
 ```bash
-curl -fsSL https://nara-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://engsathiago.github.io/nara-agent/install.sh | bash
 ```
 
-#### Windows (native)
+### Windows (PowerShell)
 
-Run in powershell:
 ```powershell
-iex (irm https://nara-agent.nousresearch.com/install.ps1)
+iex (irm https://engsathiago.github.io/nara-agent/install.ps1)
 ```
 
 After it finishes, reload your shell:
@@ -87,15 +67,7 @@ The single most important setup step. Use `nara model` to walk through the choic
 nara model
 ```
 
-:::tip Easiest path: Nous Portal
-One subscription covers 300+ models plus the [Tool Gateway](../user-guide/features/tool-gateway.md) (web search, image generation, TTS, cloud browser). On a fresh install:
 
-```bash
-nara setup --portal
-```
-
-That logs you in, sets Nous as your provider, and turns on the Tool Gateway in one command.
-:::
 
 :::info Setup modes
 Coming from OpenClaw, Claude Code, Codex CLI or Cursor? When a fresh `nara setup` finds one of them on your computer it first offers to import your setup (it installs the `agent-importers` plugin for that; see [Import from Other Agents](../user-guide/import-from-other-agents.md)).

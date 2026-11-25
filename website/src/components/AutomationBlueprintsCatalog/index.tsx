@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import useBaseUrl from "@docusaurus/useBaseUrl";
 import styles from "./styles.module.css";
 
 interface BlueprintField {
@@ -22,8 +23,6 @@ interface Blueprint {
   command: string;
   appUrl: string;
 }
-
-const INDEX_URL = "/docs/api/automation-blueprints-index.json";
 
 function CopyButton({ text }: { text: string }): React.JSX.Element {
   const [copied, setCopied] = useState(false);
@@ -79,12 +78,13 @@ function BlueprintCard({ blueprint }: { blueprint: Blueprint }): React.JSX.Eleme
 }
 
 export default function AutomationBlueprintsCatalog(): React.JSX.Element {
+  const indexUrl = useBaseUrl('/api/automation-blueprints-index.json');
   const [blueprints, setBlueprints] = useState<Blueprint[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    fetch(INDEX_URL)
+    fetch(indexUrl)
       .then((r) => r.json())
       .then((data: Blueprint[]) => {
         if (!cancelled) setBlueprints(data);
@@ -95,7 +95,7 @@ export default function AutomationBlueprintsCatalog(): React.JSX.Element {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [indexUrl]);
 
   if (error) {
     return <p>Couldn't load the blueprint catalog: {error}</p>;
