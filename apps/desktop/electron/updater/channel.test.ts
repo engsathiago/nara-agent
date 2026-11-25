@@ -71,7 +71,7 @@ async function fixture(): Promise<{
       artifactNamePascal: 'NaraH1234567890abcdef',
       cliName: 'nara-fresh-preview-29',
       windowsExecutableName: 'NaraH1234567890abcdef.exe',
-      msixAppIdWithOrg: 'NousResearch.NaraH1234567890abcdef'
+      msixAppIdWithOrg: 'Engsathiago.NaraH1234567890abcdef'
     }
   }
 

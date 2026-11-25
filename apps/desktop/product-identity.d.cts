@@ -5,7 +5,7 @@ interface ProductIdentity {
   store: boolean
   /** Display name. e.g. "Nara Light" */
   displayName: string
-  /** OS-level app identity. e.g. "com.nousresearch.nara-light" */
+  /** OS-level app identity. e.g. "io.github.engsathiago.nara-light" */
   appId: string
   /** app name in pascal case. e.g. "NaraLight" */
   appNamePascal: string
@@ -15,7 +15,7 @@ interface ProductIdentity {
   windowsExecutableName: string
   /** Exposed payload CLI command. */
   cliName: string
-  /** OS-level app identity w/ org prefix. e.g. "NousResearch.NaraLight" */
+  /** OS-level app identity w/ org prefix. e.g. "Engsathiago.NaraLight" */
   msixAppIdWithOrg: string
   /** R2 identity token on channel builds; absent on legacy products. */
   readonly token?: string

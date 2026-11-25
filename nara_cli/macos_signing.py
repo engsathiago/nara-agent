@@ -8,7 +8,7 @@ import shutil
 import subprocess
 
 logger = logging.getLogger(__name__)
-_IDENTIFIER = "com.nousresearch.nara.managed-python"
+_IDENTIFIER = "io.github.engsathiago.nara.managed-python"
 
 
 def sign_managed_python(python: Path) -> bool:

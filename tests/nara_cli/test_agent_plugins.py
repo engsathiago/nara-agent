@@ -100,7 +100,7 @@ def test_server_declaration_joins_mcp_and_preserves_liveness(tmp_path: Path) -> 
     _write_json(
         tmp_path / "plugin.json",
         _manifest(extensions={
-            "com.nousresearch.nara": {"servers": {"worker": {
+            "io.github.engsathiago.nara": {"servers": {"worker": {
                 "app": {"darwin": {"presence": "executable", "location": str(app)}},
                 "requires": {"app": True},
                 "liveness": {"kind": "static"},
@@ -123,7 +123,7 @@ def test_orphan_server_declaration_disables_package(tmp_path: Path) -> None:
     _write_json(
         tmp_path / "plugin.json",
         _manifest(extensions={
-            "com.nousresearch.nara": {"servers": {"orphan": {"requires": {"app": False}}}}
+            "io.github.engsathiago.nara": {"servers": {"orphan": {"requires": {"app": False}}}}
         }),
     )
 
@@ -135,7 +135,7 @@ def test_liveness_without_declaration_disables_package(tmp_path: Path) -> None:
     _write_json(
         tmp_path / "plugin.json",
         _manifest(extensions={
-            "com.nousresearch.nara": {"servers": {"worker": {"liveness": {"kind": "static"}}}}
+            "io.github.engsathiago.nara": {"servers": {"worker": {"liveness": {"kind": "static"}}}}
         }),
     )
     _write_json(
@@ -149,7 +149,7 @@ def test_liveness_without_declaration_disables_package(tmp_path: Path) -> None:
 
 def _remote_package(root: Path, trust: object | None = None) -> None:
     servers = {} if trust is None else {"trade": {"trust": trust}}
-    _write_json(root / "plugin.json", _manifest(extensions={"com.nousresearch.nara": {"servers": servers}}))
+    _write_json(root / "plugin.json", _manifest(extensions={"io.github.engsathiago.nara": {"servers": servers}}))
     _write_json(root / "mcp.json", {"$schema": MCP_SCHEMA_V1, "mcpServers": {
         "trade": {"type": "streamable-http", "url": "https://mcp.example.com/mcp"}}})
 
@@ -182,7 +182,7 @@ def test_server_timeout_is_opt_in_and_scoped_to_its_server(tmp_path: Path, trans
         "$schema": MCP_SCHEMA_V1, "mcpServers": {"slow": server, "ordinary": server}})
     for settings in ({}, {"timeout": 1000, "trust": "untrusted"}, {}):
         _write_json(tmp_path / "plugin.json", _manifest(extensions={
-            "com.nousresearch.nara": {"servers": {"slow": settings}}} if settings else {}))
+            "io.github.engsathiago.nara": {"servers": {"slow": settings}}} if settings else {}))
         package = load_agent_plugin(tmp_path, tmp_path / "data")
         assert "timeout" not in package.mcp_servers["ordinary"]
         assert "slow" not in package.server_declarations
@@ -197,7 +197,7 @@ def test_server_timeout_is_opt_in_and_scoped_to_its_server(tmp_path: Path, trans
 def test_server_timeout_rejects_invalid_deadlines(tmp_path: Path, timeout: object) -> None:
     _remote_package(tmp_path)
     _write_json(tmp_path / "plugin.json", _manifest(extensions={
-        "com.nousresearch.nara": {"servers": {"trade": {"timeout": timeout}}}}))
+        "io.github.engsathiago.nara": {"servers": {"trade": {"timeout": timeout}}}}))
     with pytest.raises(AgentPluginError, match="timeout must be"):
         load_agent_plugin(tmp_path, tmp_path / "data")
 
@@ -217,7 +217,7 @@ def test_unknown_server_declaration_key_is_ignored_and_known_keys_still_apply(tm
     # `timeout` broke every v0.22.2 install); the keys this release knows, trust included, still hold.
     _remote_package(tmp_path)
     _write_json(tmp_path / "plugin.json", _manifest(extensions={
-        "com.nousresearch.nara": {"servers": {"trade": declared}}}))
+        "io.github.engsathiago.nara": {"servers": {"trade": declared}}}))
     package = load_agent_plugin(tmp_path, tmp_path / "data")
     assert package.mcp_servers["trade"].get("trust") == declared.get("trust")
     assert "trade" not in package.server_declarations

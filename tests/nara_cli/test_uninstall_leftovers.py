@@ -80,11 +80,11 @@ def test_remove_desktop_app_leftovers_removes_nara_library_entries(fake_home):
     library = fake_home / "Library"
     ours = []
     for parent, name in (
-        ("Caches", "com.nousresearch.nara"),
+        ("Caches", "io.github.engsathiago.nara"),
         ("Logs", "Nara"),
-        ("WebKit", "com.nousresearch.nara"),
-        ("HTTPStorages", "com.nousresearch.nara"),
-        ("Saved Application State", "com.nousresearch.nara.savedState"),
+        ("WebKit", "io.github.engsathiago.nara"),
+        ("HTTPStorages", "io.github.engsathiago.nara"),
+        ("Saved Application State", "io.github.engsathiago.nara.savedState"),
     ):
         d = library / parent / name
         d.mkdir(parents=True)

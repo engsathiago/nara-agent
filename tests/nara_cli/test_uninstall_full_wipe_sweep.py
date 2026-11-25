@@ -80,8 +80,8 @@ def test_full_uninstall_sweeps_macos_caches_and_dashboard_launchd(monkeypatch, t
 
     removed_caches, removed_jobs = [], []
     cache_dirs = [tmp_path / "caches" / name for name in
-                  ("Nara", "com.nousresearch.nara", "nara-setup",
-                   "com.nousresearch.nara.setup")]
+                  ("Nara", "io.github.engsathiago.nara", "nara-setup",
+                   "io.github.engsathiago.nara.setup")]
     for d in cache_dirs:
         d.mkdir(parents=True)
         (d / "Cache").write_text("x", encoding="utf-8")

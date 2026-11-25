@@ -21,10 +21,10 @@ def channel_request(commit: str, sequence: int = 65536) -> dict:
         "windowsVersion": f"0.{sequence // 65536}.{sequence % 65536}.0",
         "identity": {
             "token": token, "displayName": "Nara unregistered-preview",
-            "appId": f"com.nousresearch.nara-channel-{token}",
+            "appId": f"io.github.engsathiago.nara-channel-{token}",
             "appNamePascal": f"NaraChannel{token}", "artifactNamePascal": "NaraBundled",
             "cliName": "nara-unregistered-preview", "windowsExecutableName": "nara-unregistered-preview",
-            "msixAppIdWithOrg": f"NousResearch.NaraChannel{token}",
+            "msixAppIdWithOrg": f"Engsathiago.NaraChannel{token}",
         },
         "bundleEnv": {"NARA_PREVIEW_FULL_CONNECTORS": "1", "NARA_HOME": None},
         "publicBase": "https://builds.example.test",

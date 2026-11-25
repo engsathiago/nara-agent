@@ -101,7 +101,7 @@ foreach ($asset in @(@('Square44x44Logo.png',44,44), @('Square150x150Logo.png',1
     identity: { token: 'ab12cd34ef56ab78', displayName: 'Nara sdk-preview',
       appId: 'ai.nara.channel.hab12cd34ef56ab78', appNamePascal: 'NaraChannelab12cd34ef56ab78',
       artifactNamePascal: 'NaraChannelab12cd34ef56ab78', cliName: 'nara-sdk-preview',
-      windowsExecutableName: 'NaraChannelab12cd34ef56ab78', msixAppIdWithOrg: 'NousResearch.NaraChannelab12cd34ef56ab78' },
+      windowsExecutableName: 'NaraChannelab12cd34ef56ab78', msixAppIdWithOrg: 'Engsathiago.NaraChannelab12cd34ef56ab78' },
     bundleEnv: {}, publicBase: 'https://example.invalid'
   })
   const cases = [
