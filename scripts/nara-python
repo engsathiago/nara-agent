@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Run Python in this checkout's environment: `scripts/nara-python ARGS...`.
+#
+# A GitHub Actions job runs the interpreter setup-pm exported as NARA_PYTHON,
+# so a recipe never re-runs setup on a runner. Anywhere else NARA_PYTHON may
+# be inherited from a wrapped `nara` (a release venv without the dev tools),
+# so scripts/run-in-nara-env applies (and if stale, syncs) the environment
+# `source ./activate` gives a shell.
+set -euo pipefail
+
+if [ "${GITHUB_ACTIONS:-}" = true ] && [ -z "${__NARA_ACTIVATED:-}" ] && [ -n "${NARA_PYTHON:-}" ] \
+    && [ -x "$NARA_PYTHON" ]; then
+    exec "$NARA_PYTHON" "$@"
+fi
+exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/run-in-nara-env" python "$@"

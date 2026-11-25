@@ -1,0 +1,14 @@
+{
+  "name": "mission-control",
+  "label": "Nara Office",
+  "description": "Live office projection of missions, workers, evidence, competence, learning and fleet",
+  "icon": "Building2",
+  "version": "0.1.0",
+  "tab": {
+    "path": "/nara-office",
+    "position": "after:kanban"
+  },
+  "entry": "dist/index.js",
+  "css": "dist/style.css",
+  "api": "plugin_api.py"
+}

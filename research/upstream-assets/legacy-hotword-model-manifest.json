@@ -1,0 +1,10 @@
+{
+  "artifact": "legacy_hotword.tflite",
+  "trained_phrase": "Hey Hermes",
+  "product_phrase": "Ei, Nara",
+  "status": "legacy_development_detector",
+  "nara_acoustic_validation": "pending",
+  "source_base_commit": "3b421578588243f920886e6fe79a6faa87ea026e",
+  "source_path": "tools/wakewords/hey_hermes.tflite",
+  "sha256": "744fdd81fedc28ff1b9268baee20876cdf9bf1bc6f06bc2ed5c9cbebc1a44b1d"
+}

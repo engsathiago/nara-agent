@@ -1,0 +1,200 @@
+{
+  "status": "proposta para implementação",
+  "date": "2026-11-17",
+  "tasks": [
+    {
+      "id": "A01",
+      "priority": "P0",
+      "title": "Verificar e corrigir identidade do detector",
+      "consumer": "tools/wake_word_engines.py e tools/wakewords",
+      "depends_on": [],
+      "references": [
+        "pyopen-wakeword",
+        "sherpa-onnx"
+      ],
+      "acceptance": "Manifesto do modelo com frase real, hash, origem e idioma; treino da frase final somente após escolha do nome."
+    },
+    {
+      "id": "A02",
+      "priority": "P0",
+      "title": "Ligar missão durável ao substrato existente",
+      "consumer": "goals, Kanban, SessionDB e plugin Mission Control",
+      "depends_on": [],
+      "references": [
+        "Hermes",
+        "Temporal como comparação"
+      ],
+      "acceptance": "Cair após efeito externo e antes do recibo; reiniciar, reconciliar e não duplicar efeito quando o destino permitir."
+    },
+    {
+      "id": "A03",
+      "priority": "P0",
+      "title": "Verificar efeitos e artefatos independentemente",
+      "consumer": "agent/verify/runner.py e conclusão de goals",
+      "depends_on": [
+        "A02"
+      ],
+      "references": [
+        "Anthropic long-running harness"
+      ],
+      "acceptance": "Relato convincente sem resultado observado não aprova; comando de verificação e artefato real ficam vinculados ao critério."
+    },
+    {
+      "id": "V01",
+      "priority": "P1",
+      "title": "Criar bancada comparativa de áudio PT-BR",
+      "consumer": "serviço de voz e fixtures",
+      "depends_on": [
+        "A01"
+      ],
+      "references": [
+        "Pipecat",
+        "Smart Turn",
+        "Silero",
+        "MLX Audio"
+      ],
+      "acceptance": "Medir wake word, falsos disparos, ASR, fim de turno, primeira fala, interrupção, eco, memória e CPU no M4."
+    },
+    {
+      "id": "V02",
+      "priority": "P1",
+      "title": "Comparar caminho herdado e Pipecat",
+      "consumer": "tools/voice_mode.py e Desktop voice modules",
+      "depends_on": [
+        "V01"
+      ],
+      "references": [
+        "Pipecat",
+        "LiveKit como alternativa"
+      ],
+      "acceptance": "Mesma tarefa e frases; escolher uma camada de mídia preservando a sessão e sem duplicar o loop de agente."
+    },
+    {
+      "id": "V03",
+      "priority": "P1",
+      "title": "Ligar presença a missão e interrupções",
+      "consumer": "Desktop wake/client capture, gateway e voz",
+      "depends_on": [
+        "A02",
+        "A03",
+        "V02"
+      ],
+      "references": [
+        "código herdado"
+      ],
+      "acceptance": "Nome inicia uma sessão; interrupção da fala mantém a missão; cancelamento explícito propaga; reconexão não duplica pedidos."
+    },
+    {
+      "id": "L01",
+      "priority": "P1",
+      "title": "Provar aprendizado mínimo entre sessões",
+      "consumer": "skills, Experience Ledger e memory provider",
+      "depends_on": [
+        "A03"
+      ],
+      "references": [
+        "PAST-Bench",
+        "Letta"
+      ],
+      "acceptance": "Tarefa A gera skill; nova sessão B reservada melhora frente ao controle sem experiência sob condições iguais."
+    },
+    {
+      "id": "L02",
+      "priority": "P1",
+      "title": "Registrar lacunas e prática autônoma",
+      "consumer": "competence registry e scheduler",
+      "depends_on": [
+        "L01"
+      ],
+      "references": [
+        "OpenMAIC como método"
+      ],
+      "acceptance": "Falha observada vira estudo, prática e prova nova; sem ganho a competência não é promovida."
+    },
+    {
+      "id": "L03",
+      "priority": "P1",
+      "title": "Otimizar e exportar o artefato correto",
+      "consumer": "Evolution Lab como serviço ou plugin",
+      "depends_on": [
+        "L01"
+      ],
+      "references": [
+        "GEPA",
+        "Agent Lightning Skill"
+      ],
+      "acceptance": "Candidato exportado corresponde ao avaliado, muda o procedimento esperado e preserva baseline/rollback ao ser recarregado."
+    },
+    {
+      "id": "M01",
+      "priority": "P2",
+      "title": "Comparar memória atual com candidatos",
+      "consumer": "API memory provider",
+      "depends_on": [
+        "L01"
+      ],
+      "references": [
+        "Hindsight",
+        "Graphiti",
+        "Mem0 como baselines"
+      ],
+      "acceptance": "Benchmark de fatos temporais, correções e consultas reais; escolher uma autoridade por tipo de informação."
+    },
+    {
+      "id": "V04",
+      "priority": "P2",
+      "title": "Experimentar full duplex local Haru",
+      "consumer": "adapter opcional de voz",
+      "depends_on": [
+        "V03"
+      ],
+      "references": [
+        "Haru"
+      ],
+      "acceptance": "PT-BR, latência sustentada, consumo e resposta fiel ao backend; não anunciar ação que o backend não concluiu."
+    },
+    {
+      "id": "C01",
+      "priority": "P2",
+      "title": "Comparar operadores de computador",
+      "consumer": "Capability Router",
+      "depends_on": [
+        "A03"
+      ],
+      "references": [
+        "agent-browser",
+        "Browser Use",
+        "agent-desktop",
+        "Cua",
+        "CLI-Anything"
+      ],
+      "acceptance": "Resultado observado e recuperável em apps reais com menor custo e retrabalho; escolher por capacidade."
+    },
+    {
+      "id": "S01",
+      "priority": "P2",
+      "title": "Escalar para equipes e frota",
+      "consumer": "dispatcher existente",
+      "depends_on": [
+        "A02",
+        "A03",
+        "L01"
+      ],
+      "references": [
+        "Paperclip",
+        "Buzz",
+        "OpenHands"
+      ],
+      "acceptance": "Ganho frente ao executor único; queda de worker recuperada com versões e artefatos, sem repetir efeitos confirmados."
+    },
+    {
+      "id": "P01",
+      "priority": "Posterior",
+      "title": "Especificar segurança e políticas próprias",
+      "consumer": "módulo posterior",
+      "depends_on": [],
+      "references": [],
+      "acceptance": "Trabalho separado; esta auditoria não modifica regras ou configurações ativas."
+    }
+  ]
+}

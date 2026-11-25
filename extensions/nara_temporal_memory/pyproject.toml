@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nara-temporal-memory"
+version = "0.1.0"
+description = "Profile-scoped temporal memory provider for Nara"
+requires-python = ">=3.11,<3.15"
+license = "MIT"
+dependencies = []
+
+[project.entry-points."nara_agent.memory_providers"]
+nara_temporal = "nara_temporal:register"
+
+[tool.setuptools.packages.find]
+include = ["nara_temporal*"]
+
+[tool.setuptools.package-data]
+nara_temporal = ["plugin.yaml"]

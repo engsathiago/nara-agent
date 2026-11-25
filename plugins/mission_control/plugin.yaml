@@ -1,0 +1,45 @@
+name: mission_control
+version: 0.1.0
+description: "Durable missions, effect receipts, artifacts, competence gaps, verified learning, Kanban links, and reconstruction CLI for Nara."
+author: Nara Project
+kind: standalone
+platforms:
+  - linux
+  - macos
+  - windows
+provides_hooks:
+  - kanban_task_completed
+  - kanban_task_blocked
+  - pre_tool_call
+  - post_tool_call
+  - kanban_task_claimed
+  - on_kanban_worker_exited
+  - on_kanban_worker_stale_claim
+  - post_llm_call
+  - voice_wake_detected
+  - voice_transcript
+  - pre_llm_call
+provides_tools:
+  - nara_competence_status
+  - nara_gap_record
+  - nara_evolution_status
+  - nara_learning_ingest
+  - nara_specialist_resolve
+  - nara_specialist_get
+  - nara_fleet_status
+  - nara_voice_presence
+  - nara_trading_init
+  - nara_trading_backtest
+  - nara_trading_status
+  - nara_rea_route
+  - nara_rea_status
+  - nara_policy_status
+  - nara_policy_explain
+  - nara_policy_confirm
+  - nara_policy_stage
+  - nara_policy_promote
+  - nara_policy_rollback
+  - nara_privacy_status
+  - nara_privacy_configure
+  - nara_privacy_export
+

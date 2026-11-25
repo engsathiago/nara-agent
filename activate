@@ -1,0 +1,205 @@
+#!/usr/bin/env bash
+# ============================================================================
+# venv-style activation of the Nara dev environment for an interactive shell.
+#
+#   source ./activate       (bash / zsh, repo root)
+#   source ./activate.fish  (fish)
+#   .\activate.ps1          (PowerShell)
+#
+# Applies the composed pm env (PATH + tool vars) to the CURRENT shell, with
+# save/restore: `deactivate` undoes exactly what activation changed.
+#
+# `nara` becomes a shell function for this checkout. It runs only while the
+# shell is inside this worktree and refuses outside it, so a sibling worktree
+# keeps its own command. A prompt prefix names the worktree.
+#
+# Scripts and other processes do not source this: they run under
+# `scripts/run-in-nara-env`. Both build on scripts/_activation.sh.
+#
+# Sync through setup before selecting the environment. PM owns freshness;
+# activation does not maintain a second dependency stamp. It trusts the
+# recorded tool digest instead of re-hashing every entry. `nara pm
+# install` and `nara update` keep that check.
+# ============================================================================
+if [ -n "${BASH_VERSION:-}" ]; then
+    _NARA_ACTIVATE_SOURCE="${BASH_SOURCE[0]}"
+elif [ -n "${ZSH_VERSION:-}" ]; then
+    _NARA_ACTIVATE_SOURCE="${(%):-%x}"
+else
+    _NARA_ACTIVATE_SOURCE="$0"
+fi
+_NARA_REPO="$(cd "$(dirname "$_NARA_ACTIVATE_SOURCE")" && pwd)"
+# Options: `--test-extras a,b` selects the test environment's runtime extras
+# (default: [all]); `--` ends options.
+# A bare `source ./activate` inherits the caller's positional parameters.
+# Ignore unrelated words so scripts with their own arguments can source it.
+_nara_test_env="--test-environment"
+_nara_expect_extras=""
+for _nara_arg in "$@"; do
+    if [ -n "$_nara_expect_extras" ]; then
+        _nara_test_env="--test-environment=$_nara_arg"
+        _nara_expect_extras=""
+        continue
+    fi
+    case "$_nara_arg" in
+        --) break ;;
+        --test-extras) _nara_expect_extras=1 ;;
+        --test-extras=*) _nara_test_env="--test-environment=${_nara_arg#--test-extras=}" ;;
+        *) : ;;
+    esac
+done
+if [ -n "$_nara_expect_extras" ]; then
+    printf '%s\n' 'activate: --test-extras needs a comma-separated list' >&2
+    unset _nara_arg _nara_test_env _nara_expect_extras
+    return 2 2>/dev/null || exit 2
+fi
+unset _nara_arg _nara_expect_extras
+
+# shellcheck source=scripts/_activation.sh
+. "$_NARA_REPO/scripts/_activation.sh"
+
+if ! nara_sync "$_NARA_REPO" "$_nara_test_env"; then
+    printf '%s\n' 'activate: setup failed; shell environment unchanged' >&2
+    unset _nara_test_env
+    return 1 2>/dev/null || exit 1
+fi
+unset _nara_test_env
+
+# Guard against double-sourcing: venv activate precedent (re-activating is a
+# no-op re-save; we keep it idempotent by deactivating first). Key on the
+# function, not the sentinel: child shells inherit __NARA_ACTIVATED from an
+# activated parent but never the function, and there is nothing to undo there.
+if [ "$(type -t deactivate 2>/dev/null)" = "function" ]; then
+    deactivate
+fi
+
+_nara_script="$(nara_compose_env "$_NARA_REPO" sh)" || {
+    echo "activate: could not compose the environment (see above)" >&2
+    unset _nara_script
+    return 1 2>/dev/null || exit 1
+}
+_nara_keys="$(printf '%s\n' "$_nara_script" | sed -n 's/^export \([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p' | tr '\n' ' ')"
+
+# --- snapshot what we are about to change (deactivate restores this) ---
+# __NARA_ACTIVATED is part of the composed env below (it carries the
+# installed-state path this environment was built from), so it is snapshotted
+# and exported with every other key — no separate assignment here.
+__NARA_SAVED_PATH="$PATH"
+_nara_remaining="$_nara_keys"
+while [ -n "$_nara_remaining" ]; do
+    _nara_k="${_nara_remaining%% *}"
+    if [ "$_nara_remaining" = "$_nara_k" ]; then
+        _nara_remaining=""
+    else
+        _nara_remaining="${_nara_remaining#* }"
+    fi
+    [ -n "$_nara_k" ] || continue
+    eval "__NARA_SAVED_$_nara_k=\"\${$_nara_k+set}\""
+    eval "__NARA_PRIOR_$_nara_k=\${$_nara_k-__NARA_UNSET__}"
+done
+nara_apply_env "$_nara_script"
+
+# This checkout, not whichever `nara` PATH finds. A function beats PATH, an
+# alias, and a hashed command, including the MSIX execution alias.
+__NARA_WORKTREE="$_NARA_REPO"
+# The branch names the worktree. A checkout cannot share a branch with another.
+__NARA_WORKTREE_NAME="$(git -C "$_NARA_REPO" rev-parse --abbrev-ref HEAD 2>/dev/null || :)"
+if [ -z "$__NARA_WORKTREE_NAME" ] || [ "$__NARA_WORKTREE_NAME" = HEAD ]; then
+    __NARA_WORKTREE_NAME="$(basename "$_NARA_REPO")"
+fi
+__NARA_SAVED_PS1="${PS1-__NARA_UNSET__}"
+__NARA_SAVED_PROMPT_COMMAND="${PROMPT_COMMAND-__NARA_UNSET__}"
+
+_nara_worktree_here() {
+    _nara_top="$(git rev-parse --show-toplevel 2>/dev/null)" || return 1
+    [ "$(cd "$_nara_top" && pwd -P)" = "$(cd "$__NARA_WORKTREE" && pwd -P)" ]
+}
+
+nara() {
+    _nara_worktree_here || {
+        printf '%s\n' "nara: $(pwd) is outside $__NARA_WORKTREE; refusing (the installed command is hidden while this checkout is active)" >&2
+        return 1
+    }
+    (
+        cd "$__NARA_WORKTREE" || exit 1
+        if [ -n "${PYTHON-}" ]; then
+            exec "$PYTHON" nara "$@"
+        elif [ -x .venv/Scripts/python.exe ]; then
+            exec .venv/Scripts/python.exe nara "$@"
+        elif [ -x .venv/bin/python ]; then
+            exec .venv/bin/python nara "$@"
+        elif [ -x venv/Scripts/python.exe ]; then
+            exec venv/Scripts/python.exe nara "$@"
+        elif [ -x venv/bin/python ]; then
+            exec venv/bin/python nara "$@"
+        else
+            exec python nara "$@"
+        fi
+    )
+}
+
+_nara_prompt() {
+    if [ "$__NARA_SAVED_PS1" = "__NARA_UNSET__" ]; then
+        _nara_base_ps1=""
+    else
+        _nara_base_ps1="$__NARA_SAVED_PS1"
+    fi
+    if _nara_worktree_here; then
+        PS1="($__NARA_WORKTREE_NAME) $_nara_base_ps1"
+    else
+        PS1="$_nara_base_ps1"
+    fi
+}
+
+if [ -n "${PROMPT_COMMAND-}" ]; then
+    PROMPT_COMMAND="_nara_prompt; ${PROMPT_COMMAND}"
+else
+    PROMPT_COMMAND=_nara_prompt
+fi
+_nara_prompt
+
+deactivate() {
+    export PATH="$__NARA_SAVED_PATH"
+    _nara_remaining="$__NARA_KEY_LIST"
+    while [ -n "$_nara_remaining" ]; do
+        _nara_k="${_nara_remaining%% *}"
+        if [ "$_nara_remaining" = "$_nara_k" ]; then
+            _nara_remaining=""
+        else
+            _nara_remaining="${_nara_remaining#* }"
+        fi
+        [ -n "$_nara_k" ] || continue
+        eval "_nara_was=\"\$__NARA_SAVED_$_nara_k\""
+        eval "_nara_old=\"\$__NARA_PRIOR_$_nara_k\""
+        if [ "$_nara_was" != "set" ]; then
+            unset "$_nara_k"
+        else
+            export "$_nara_k=$_nara_old"
+        fi
+        unset "__NARA_SAVED_$_nara_k" "__NARA_PRIOR_$_nara_k"
+    done
+    if [ "$__NARA_SAVED_PS1" = "__NARA_UNSET__" ]; then
+        unset PS1
+    else
+        PS1="$__NARA_SAVED_PS1"
+    fi
+    if [ "$__NARA_SAVED_PROMPT_COMMAND" = "__NARA_UNSET__" ]; then
+        unset PROMPT_COMMAND
+    else
+        PROMPT_COMMAND="$__NARA_SAVED_PROMPT_COMMAND"
+    fi
+    unset __NARA_SAVED_PATH __NARA_KEY_LIST __NARA_ACTIVATED \
+          __NARA_WORKTREE __NARA_WORKTREE_NAME \
+          __NARA_SAVED_PS1 __NARA_SAVED_PROMPT_COMMAND
+    unset -f deactivate nara _nara_worktree_here _nara_prompt
+    unset _nara_k _nara_remaining _nara_was _nara_old _nara_top
+}
+
+# remember the key list for deactivate (kept out of the loop vars above)
+__NARA_KEY_LIST="$_nara_keys"
+
+# The composition library is not part of the user's shell.
+unset -f nara_sync nara_bootstrap_python nara_compose_env nara_apply_env \
+         nara_activation_current nara_ensure_env
+unset _NARA_ACTIVATE_SOURCE _NARA_REPO _nara_script _nara_keys \
+      _nara_k _nara_remaining _nara_top

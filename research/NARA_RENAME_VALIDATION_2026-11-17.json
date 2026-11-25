@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-17",
+  "project": "/Users/fate/Desktop/Nara",
+  "branch": "codex/nara-identity",
+  "specification": "NARA_DATASHEET.md",
+  "spec_version": "1.0",
+  "python_syntax_files": 11148,
+  "python_tests_passed_unique": 402,
+  "python_tests_platform_skipped": 14,
+  "desktop_tests_passed": 56,
+  "guards_passed": 13,
+  "ruff": "passed",
+  "workspace_js_lint": "passed_with_warnings",
+  "global_complexity_ratchet": "interrupted_due_to_excessive_runtime_after_mass_rename",
+  "ui": {
+    "desktop-types": 0,
+    "desktop-tests": 0,
+    "tui-types": 0,
+    "desktop-build": 0,
+    "tui-build": 0,
+    "web-build": 0
+  },
+  "nara_hotword_training": "pending",
+  "policy_behavior": "preserved",
+  "public_release": "not_performed"
+}

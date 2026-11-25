@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "fixture_id": "continuity-file-effect-v1",
+  "title": "Durable file effect with crash reconciliation",
+  "objective": "Create a content-addressed report, survive a crash after the file write, reconcile the effect, and finish only after independent verification.",
+  "required_capabilities": [
+    "runtime.command",
+    "mission.control",
+    "mission.event_log",
+    "mission.receipt_store",
+    "mission.artifact_store",
+    "mission.verifier",
+    "tools.file"
+  ],
+  "steps": [
+    {
+      "id": "mission-create",
+      "action": "create_mission",
+      "checkpoint": "mission_created"
+    },
+    {
+      "id": "intent-persist",
+      "action": "persist_intent",
+      "checkpoint": "effect_intent_persisted"
+    },
+    {
+      "id": "file-write",
+      "action": "delegate_file_write_to_worker_process",
+      "fault_after": "effect_applied_before_receipt"
+    },
+    {
+      "id": "effect-reconcile",
+      "action": "reconcile_file_by_hash",
+      "checkpoint": "effect_confirmed"
+    },
+    {
+      "id": "artifact-register",
+      "action": "register_content_addressed_artifact",
+      "checkpoint": "artifact_registered"
+    },
+    {
+      "id": "controlled-browser-observe",
+      "action": "observe_local_report_through_controlled_browser_probe",
+      "checkpoint": "browser_observation_confirmed"
+    },
+    {
+      "id": "independent-verify",
+      "action": "verify_artifact_outside_executor",
+      "checkpoint": "verification_passed"
+    }
+  ],
+  "acceptance": [
+    "The mission is reconstructed with the same stable ID after restart.",
+    "The file effect occurs exactly once when the destination supports hash reconciliation.",
+    "The receipt records persisted intent before execution and confirmed observation after reconciliation.",
+    "The artifact is recoverable by SHA-256 without carrying its full contents in active context.",
+    "A separate worker process applies the effect and exits at the injected crash boundary.",
+    "A controlled browser probe observes the recovered report and records its own receipt.",
+    "A verifier distinct from the executor observes the file and approves every completion criterion."
+  ]
+}
+
