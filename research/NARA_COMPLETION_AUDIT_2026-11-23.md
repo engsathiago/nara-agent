@@ -93,3 +93,8 @@ identifiers now use the project's own namespace. See `research/NARA_PUBLICATION_
 for run IDs, counts and focused validation. The attempted full Python suite on the published
 snapshot was interrupted after file timeouts under load, so its current verdict is still open.
 The VPS, acoustic, external-account, future paper-feed and signed-release gates above remain open.
+After the product-identity update, a clean local macOS bundle was rebuilt from published commit
+`3c02ec2a3765587701c8c89122e432ee534c40f8`. The DMG and ZIP passed integrity checks and
+both contain the project's own bundle identifier. The unpacked app passed ad-hoc code-signature
+verification after packaging; the archives themselves remain unsigned and unnotarized. The
+current hashes and manifest are recorded in `research/NARA_PUBLICATION_2026-11-25.md`.
