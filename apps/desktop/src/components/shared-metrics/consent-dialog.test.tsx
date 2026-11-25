@@ -85,7 +85,6 @@ describe('SharedMetricsConsentDialog', () => {
     $sharedMetricsDetailsOpen.set(true)
     const noThanks = await screen.findByRole('button', { name: copy.off })
     expect(screen.getByRole('button', { name: copy.share })).toBeTruthy()
-    expect(screen.queryByRole('button', { name: /computer|local/i })).toBeNull()
     // Nothing is preselected: no choice holds focus when the details open.
     expect(noThanks.ownerDocument.activeElement).not.toBe(noThanks)
     fireEvent.click(noThanks)

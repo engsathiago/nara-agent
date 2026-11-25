@@ -8,11 +8,11 @@ export const SHARED_METRICS_DOCS_URL = 'https://engsathiago.github.io/nara-agent
 
 export type SharedMetricsConsent = SharedMetricsConsentResult
 
-/** The first-run answers, as the two config opt-ins `nara setup` writes: each sets both. */
+/** The first-run answers. Collection stays on device; sending needs separate configuration. */
 export type SharedMetricsChoice = 'off' | 'share'
 
 export const SHARED_METRICS_CHOICES: Record<SharedMetricsChoice, { enabled: boolean; send: boolean }> = {
-  share: { enabled: true, send: true },
+  share: { enabled: true, send: false },
   off: { enabled: false, send: false }
 }
 

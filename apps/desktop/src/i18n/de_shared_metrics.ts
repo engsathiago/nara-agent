@@ -1,5 +1,5 @@
 export const deSharedMetrics = {
-  consentTitle: 'Nutzungsstatistiken teilen?',
+  consentTitle: 'Nutzungsstatistiken lokal erfassen?',
   dialogTitle: 'Nutzungsstatistiken',
   consentBody:
     'Nara kann zählen, wie Sie es nutzen: Sitzungsdauer, welche Modelle und Tools laufen und wann etwas fehlschlägt. Ihre Nachrichten, Dateien, Pfade oder Fehlertexte werden nie aufgezeichnet.',
@@ -15,18 +15,18 @@ export const deSharedMetrics = {
     'Agentenqualität: verfehlte Bearbeitungen, fehlerhafte Tool-Aufrufe, festgefahrene Schleifen, Kosten pro Aufgabe',
   collectedMachine: 'Gerät: Betriebssystem, RAM-Bereich, GPU-Typ, Nara-Version, Nutzung lokaler Modelle',
   sending:
-    'Wenn Sie teilen, sendet Nara Statistiken einmal täglich mit einer zufälligen ID für dieses Profil an Nous. Abgesehen von einem einmaligen Hinweis, dass Nara installiert wurde, werden Statistiken von vor Ihrer Zustimmung nie gesendet. Sie können das jederzeit in den Einstellungen ändern.',
+    'Diese Option speichert Zählwerte nur auf diesem Gerät und sendet nichts. Zum Senden müssen Zieladresse und Sendeeinstellung separat in config.yaml gesetzt werden. Die lokale Erfassung können Sie jederzeit in den Einstellungen ändern.',
   readDocs: 'Alle Details lesen',
-  share: 'Mit Nous teilen',
+  share: 'Lokal erfassen',
   off: 'Nein, danke',
   saveFailed: 'Ihre Auswahl konnte nicht gespeichert werden',
-  sendLabel: 'Nutzungsstatistiken mit Nous teilen',
+  sendLabel: 'Nutzungsstatistiken auf diesem Gerät erfassen',
   sendDesc:
-    'Nur Zählwerte, einmal täglich mit einer zufälligen ID für dieses Profil gesendet. Niemals Ihre Nachrichten, Dateien, Pfade oder Fehlertexte.',
+    'Speichert nur Zählwerte lokal und sendet nichts. Nachrichten, Dateien, Pfade und Fehlertexte werden nicht erfasst.',
   unavailable: 'Aktualisieren Sie das Nara-Backend, um diese Einstellung zu ändern.',
   stripBody: 'Nur Zählwerte. Niemals Ihre Nachrichten oder Dateien.',
   stripReaskBody:
     'Wir fragen noch einmal: Eine frühere Version konnte „Nein danke“ speichern, bevor Sie diese Frage gesehen haben.',
-  stripChoices: { share: 'Mit Nous teilen', off: 'Nein danke' },
+  stripChoices: { share: 'Lokal erfassen', off: 'Nein danke' },
   stripDetails: 'Details'
 }

@@ -200,4 +200,4 @@ de verificación están en [Development Setup](CONTRIBUTING.md#development-setup
 
 MIT — ver [LICENSE](LICENSE).
 
-Creado por [Nous Research](https://nousresearch.com).
+Nara Agent es mantenido por el proyecto Nara. Consulta [UPSTREAM_PROVENANCE.md](UPSTREAM_PROVENANCE.md) para la atribución del código original.

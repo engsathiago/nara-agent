@@ -45,7 +45,7 @@ afterEach(() => {
 })
 
 describe('SharedMetricsSettings', () => {
-  it('is one switch: on shares (both opt-ins), off clears both', async () => {
+  it('is one switch: on collects locally, off clears both', async () => {
     backend({ enabled: false, send: false, decided: true })
 
     render(<SharedMetricsSettings />)
@@ -62,18 +62,18 @@ describe('SharedMetricsSettings', () => {
     await waitFor(() => expect(share.getAttribute('aria-checked')).toBe('false'))
 
     expect(setCalls()).toEqual([
-      { enabled: true, send: true },
+      { enabled: true, send: false },
       { enabled: false, send: false }
     ])
   })
 
-  it('reads a retired collect-only answer as not sharing', async () => {
+  it('reads an existing collect-only answer as enabled', async () => {
     backend({ enabled: true, send: false, decided: true })
 
     render(<SharedMetricsSettings />)
 
     const share = await screen.findByRole('switch', { name: copy.sendLabel })
     await waitFor(() => expect(share.hasAttribute('disabled')).toBe(false))
-    expect(share.getAttribute('aria-checked')).toBe('false')
+    expect(share.getAttribute('aria-checked')).toBe('true')
   })
 })

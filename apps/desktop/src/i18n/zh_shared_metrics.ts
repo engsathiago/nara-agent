@@ -1,5 +1,5 @@
 export const zhSharedMetrics = {
-  consentTitle: '分享使用统计？',
+  consentTitle: '在本机收集使用统计？',
   dialogTitle: '使用统计',
   consentBody:
     'Nara 可以统计你的使用情况：会话时长、运行了哪些模型和工具，以及何时出错。它绝不会记录你的消息、文件、路径或错误文本。',
@@ -12,16 +12,16 @@ export const zhSharedMetrics = {
   collectedUsage: '代理质量：未成功的编辑、出错的工具调用、卡住的循环、每个任务的成本',
   collectedMachine: '机器：操作系统、内存范围、GPU 类型、Nara 版本、本地模型使用情况',
   sending:
-    '如果你选择分享，Nara 每天向 Nous 发送一次统计数据，并附带此配置文件的随机 ID。除了一条 Nara 已安装的一次性记录之外，你同意之前的统计数据永远不会被发送。你可以随时在设置中更改。',
+    '此选项仅在本机保存计数，不发送数据。发送需要在 config.yaml 中另行设置接收地址和发送选项。你可以随时在设置中更改本地收集选项。',
   readDocs: '查看完整说明',
-  share: '分享给 Nous',
+  share: '在本机收集',
   off: '不用了',
   saveFailed: '无法保存你的选择',
-  sendLabel: '与 Nous 分享使用统计',
-  sendDesc: '仅包含计数，每天发送一次，并附带此配置文件的随机 ID。绝不包含你的消息、文件、路径或错误文本。',
+  sendLabel: '在本机收集使用统计',
+  sendDesc: '仅在本机保存计数，不发送数据。不会记录你的消息、文件、路径或错误文本。',
   unavailable: '请更新 Nara 后端以更改此设置。',
   stripBody: '仅包含计数，绝不包含你的消息或文件。',
   stripReaskBody: '再次询问：旧版本可能在你看到此问题之前就已保存了“不用了”。',
-  stripChoices: { share: '分享给 Nous', off: '不用了' },
+  stripChoices: { share: '在本机收集', off: '不用了' },
   stripDetails: '详情'
 }

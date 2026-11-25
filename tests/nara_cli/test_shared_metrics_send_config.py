@@ -23,10 +23,10 @@ class TestDefaults:
         assert shared["enabled"] is False
         assert shared["send"] is False
 
-    def test_default_endpoint_is_production(self):
+    def test_no_default_endpoint_is_published(self):
         shared = DEFAULT_CONFIG["telemetry"]["shared_metrics"]
         assert shared["endpoint"] == DEFAULT_ENDPOINT
-        assert DEFAULT_ENDPOINT.startswith("https://")
+        assert DEFAULT_ENDPOINT == ""
 
     def test_empty_config_sends_nothing(self):
         resolved = resolve_send_config({})
@@ -43,9 +43,10 @@ class TestSendRequiresCollection:
         assert resolved.enabled is True
         assert resolved.send is False
 
-    def test_send_with_collection_sends(self):
+    def test_send_with_collection_requires_an_explicit_endpoint(self):
         resolved = resolve_send_config(_config(enabled=True, send=True))
-        assert resolved.send is True
+        assert resolved.send is False
+        assert resolved.enabled is True
 
     def test_send_without_collection_is_refused(self):
         resolved = resolve_send_config(_config(enabled=False, send=True))
@@ -77,9 +78,20 @@ class TestEndpointPrecedence:
         resolved = resolve_send_config(_config(enabled=True, send=True))
         assert resolved.endpoint == DEFAULT_ENDPOINT
 
-    def test_blank_endpoint_falls_back_to_production(self):
+    def test_blank_endpoint_does_not_send(self):
         resolved = resolve_send_config(_config(enabled=True, send=True, endpoint="   "))
         assert resolved.endpoint == DEFAULT_ENDPOINT
+        assert resolved.send is False
+
+    @pytest.mark.parametrize("endpoint", [
+        "https://telemetry.nousresearch.com/v1/telemetry",
+        "https://telemetry.nousresearch.com/v1/telemetry?legacy=1",
+    ])
+    def test_legacy_upstream_endpoint_is_refused(self, endpoint):
+        resolved = resolve_send_config(_config(
+            enabled=True, send=True, endpoint=endpoint,
+        ))
+        assert resolved.send is False
 
     def test_endpoint_is_stripped(self):
         resolved = resolve_send_config(

@@ -515,21 +515,15 @@ def setup_tools(config: dict, first_install: bool = False):
 
 
 _SEND_CONSENT_EXPLAINER = (
-    "", "Sharing uploads each daily package to the Nous telemetry",
-    "service. Packages carry your profile-scoped install ID, a",
-    "stable random UUID that identifies this profile across days",
-    "(it contains no personal information and is reset by deleting",
-    "the shared-metrics directory). Only packages whose entire",
-    "collection period falls inside a recorded consent window are",
-    "ever sent. Apart from the fresh-install note (noted on this",
-    "machine and counted only once you opt in), data from before",
-    "you opt in is never sent. Sharing can be turned off again at",
-    "any time.",
+    "", "Local collection stores bounded counters on this device and sends",
+    "nothing. To transmit packages, configure an explicit receiver in",
+    "telemetry.shared_metrics.endpoint and enable send separately in",
+    "config.yaml. No receiver is configured by default.",
 )
 
 
 def setup_telemetry(config: dict):
-    """Turn shared metrics on (collect and send to Nous) or off: one answer sets both keys."""
+    """Turn local metrics collection on or off without enabling transmission."""
     print_header("Shared Metrics")
     _info("Shared metrics contain only bounded counters: activity, session length,",
           "outcomes, error classes (with a fixed-list reason when a memory write or",
@@ -550,12 +544,12 @@ def setup_telemetry(config: dict):
     from nara_cli.observability.shared_metrics_consent import save_consent
 
     shared_metrics = _sub_dict(_sub_dict(config, "telemetry"), "shared_metrics")
-    sharing = shared_metrics.get("enabled") is True and shared_metrics.get("send") is True
-    # One answer for both keys: off also withdraws send consent and stops collection.
-    share = prompt_yes_no("Send shared metrics to Nous?", default=sharing)
-    save_consent(share, share, config)
-    if share:
-        print_success("Shared metrics sent to Nous once a day.")
+    collecting = shared_metrics.get("enabled") is True
+    # This setup choice never enables sending, including on profiles that used an old default.
+    collect = prompt_yes_no("Collect shared metrics locally?", default=collecting)
+    save_consent(collect, False, config)
+    if collect:
+        print_success("Shared metrics collected locally. Nothing is sent.")
     else:
         print_info("Shared metrics off.")
 

@@ -42,7 +42,7 @@ afterEach(() => {
 })
 
 describe('SharedMetricsConsentStrip', () => {
-  it('offers two answers, and sharing sets both opt-ins on the focused profile', async () => {
+  it('offers two answers, and collection keeps sending off on the focused profile', async () => {
     installGatewayMock({ enabled: false, send: false, decided: false })
 
     render(<SharedMetricsConsentStrip />)
@@ -59,7 +59,7 @@ describe('SharedMetricsConsentStrip', () => {
     await waitFor(() =>
       expect(requestGateway).toHaveBeenCalledWith('shared_metrics.set', {
         enabled: true,
-        send: true,
+        send: false,
         first_run: true,
         profile: 'havoc'
       })

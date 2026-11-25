@@ -6,8 +6,8 @@ alcance para los informes de vulnerabilidades.
 
 ## 1. Reportar una Vulnerabilidad
 
-Reporta de forma privada a través de [GitHub Security Advisories](https://github.com/engsathiago/nara-agent/security/advisories/new)
-o **security@nousresearch.com**. No abras issues públicos para
+Reporta de forma privada a través de [GitHub Security Advisories](https://github.com/engsathiago/nara-agent/security/advisories/new).
+No abras issues públicos para
 vulnerabilidades de seguridad. **Nara Agent no opera un programa de
 recompensas por errores.**
 
@@ -318,9 +318,8 @@ La decisión de fortalecimiento más importante es hacer coincidir el aislamient
 
 ## 5. Divulgación
 
-- **Ventana de divulgación coordinada:** 90 días desde el informe, o hasta que se
-  publique una corrección, lo que ocurra primero.
-- **Canal:** el hilo GHSA o correspondencia por email con
-  security@nousresearch.com.
+- **Divulgación coordinada:** los mantenedores y quien reporta acuerdan los
+  tiempos en el hilo privado de GHSA. No se promete un plazo fijo de respuesta o publicación.
+- **Canal:** el hilo privado de GHSA en este repositorio.
 - **Crédito:** los reportadores reciben crédito en las notas de versión a menos que
   se solicite anonimato.

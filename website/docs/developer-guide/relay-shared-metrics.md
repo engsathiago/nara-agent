@@ -1,9 +1,16 @@
 ---
 title: "Relay Shared Metrics"
-description: "NeMo Relay shared metrics: what is exported, consent and retention, staging validation"
+description: "NeMo Relay shared metrics: local collection, optional configured transmission and retention"
 ---
 
 # NeMo Relay Shared Metrics
+
+> Nara has no default telemetry receiver. The first-run choice and Settings
+> switch collect bounded counters locally and send nothing. Transmission is an
+> advanced configuration that requires an explicit `endpoint` and `send: true`
+> in the profile's `config.yaml`. The inherited Nous telemetry endpoint is
+> blocked. Sections below describing an ingest service document the inherited
+> sender protocol; they do not indicate a Nara-operated service.
 
 Nara includes NeMo Relay as a normal runtime dependency on platforms for
 which Relay publishes a native wheel. The shared-metrics integration is built
@@ -789,10 +796,9 @@ records what was decided and why, so the reasoning survives the implementation.
 Sending is off by default and requires both `telemetry.shared_metrics.enabled`
 and `telemetry.shared_metrics.send`.
 
-The exporter sends the package files already written under
-`$NARA_HOME/telemetry/shared_metrics/outbox/` to the Nara telemetry ingest
-service. That service validates only the envelope (`schema_version` plus a UUID
-`package_id`) and stores the body verbatim in S3.
+The optional sender sends package files already written under
+`$NARA_HOME/telemetry/shared_metrics/outbox/` to the endpoint configured by the
+profile owner. Nara does not run an ingest service for these packages.
 
 ### A.1 Consent
 
@@ -802,21 +808,23 @@ Transmission is a **separate opt-in** from collection, under a new config key:
 telemetry:
   shared_metrics:
     enabled: false   # collect locally
-    send: false      # NEW: transmit to the Nous telemetry service
+    send: false      # optional transmission; requires endpoint below
+    endpoint: ""     # no default receiver
 ```
 
 - `send` defaults to **false**. Collection alone never transmits.
+- An empty endpoint prevents transmission even if `send` is set to `true`.
+- The inherited `telemetry.nousresearch.com` endpoint is refused.
 - `send` requires `enabled`. It does **not** imply it: a transmission flag must
   not silently switch on collection. `send: true` with `enabled: false` warns
   and does nothing.
 - Like `enabled`, `send` is profile-owned and is not overridden by
   managed-scope configuration.
 
-Both keys are asked once per profile, with the same two answers everywhere
-(Share with Nous / No thanks). Each answer sets both keys: "Share with Nous"
-writes `enabled: true, send: true`, "No thanks" writes both false. The keys stay
-separate so the sender keeps its own gate. Collecting without sending is no
-longer offered; a hand-edited config can still set it.
+The first-run choice offers "Collect locally" and "No thanks". The first writes
+`enabled: true, send: false`; the second writes both false. Desktop Settings
+and `nara setup telemetry` also control local collection only. Sending remains
+a separate, explicit profile configuration.
 
 | Surface | Where the offer appears |
 | --- | --- |
@@ -838,9 +846,8 @@ recorded without `offer_version` is therefore offered once more on every surface
 with a note saying why. Any response settles it for good, including Esc or the
 banner's ✕, which keep "No thanks". Answers that opted in are never re-asked.
 
-The offer used to have a third answer that collected without sending ("Local
-only" / "Keep on this computer"). Profiles that chose it keep it and are not
-asked again; nothing is sent. Desktop's switch reads off for them and the
+Profiles that previously chose collect-only keep it and are not asked again;
+nothing is sent. Desktop's switch reads on for them and the
 `nara tools` row reads "collecting locally". To change the answer
 later, use `nara setup telemetry`, `nara tools`, or Desktop's Settings ›
 Safety › Privacy & network; each offers the same single on/off choice.
