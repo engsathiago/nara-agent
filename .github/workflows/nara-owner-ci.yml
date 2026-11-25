@@ -34,7 +34,8 @@ jobs:
           test-environment: 'true'
 
       - name: Check active product identity
-        run: "$NARA_PYTHON" scripts/check_product_identity.py
+        run: |
+          "$NARA_PYTHON" scripts/check_product_identity.py
 
       - name: Test mission control, voice, and process cleanup
         env:
