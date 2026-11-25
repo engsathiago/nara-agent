@@ -1,8 +1,7 @@
-"""A new or rerun install of the official repository lands on the latest stable release.
+"""An unchosen source install follows main; stable remains an explicit choice.
 
-`nara update` already follows stable for an official checkout that never chose a channel;
-the installer has to put a fresh install there too, or new users start on main's tip. The
-official URL is redirected to a local origin and `curl` answers the release lookup.
+The repository has no published stable release yet, so default installation must work from main.
+The official URL is redirected to a local origin and `curl` answers explicit release lookups.
 """
 from pathlib import Path
 import os
@@ -11,7 +10,7 @@ import subprocess
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-OFFICIAL = "https://github.com/NousResearch/nara-agent.git"
+OFFICIAL = "https://github.com/engsathiago/nara-agent.git"
 
 pytestmark = pytest.mark.platforms("posix")
 
@@ -25,19 +24,21 @@ def _git(cwd, *args, env=None):
 
 
 @pytest.mark.parametrize("side,start,args,tagged,lands", [
-    (False, None, [], True, "release"),                 # fresh install: the release, not main's tip
-    (False, None, ["--channel", "main"], True, "tip"),  # explicit opt-out: main's tip
-    (False, "before", [], True, "release"),             # rerun behind the release: moves forward to it
-    (False, "tip", [], True, "tip"),                    # rerun already containing it: never moves back
-    (False, None, [], False, None),                     # release tag unreachable: fail, publish nothing
-    (False, "before", [], False, "before"),             # ... a rerun keeps its checkout instead
+    (False, None, [], True, "tip"),                     # fresh install: main's tip
+    (False, None, ["--channel", "main"], True, "tip"),  # explicit main
+    (False, "before", [], True, "tip"),                 # rerun advances along main
+    (False, "tip", [], True, "tip"),                    # already current
+    (False, None, [], False, "tip"),                    # no release exists yet
+    (False, "before", [], False, "tip"),                # rerun still advances
+    (False, None, ["--channel", "stable"], True, "release"),
+    (False, None, ["--channel", "stable"], False, None),
     # The release cut on a release branch, main past the fork point (v0.22.2's shape): main moves
     # back only through `nara update`, whose downgrade guard the installer cannot run.
     (True, "tip", [], True, "tip"),
     (True, "tip", ["--channel", "stable"], True, "tip"),
-    (True, "before", [], True, "release"),
+    (True, "before", [], True, "tip"),
 ])
-def test_install_lands_on_the_latest_stable_release(tmp_path, side, start, args, tagged, lands):
+def test_install_defaults_to_main_and_stable_is_explicit(tmp_path, side, start, args, tagged, lands):
     origin, home, bin_dir = tmp_path / "origin", tmp_path / "home", tmp_path / "bin"
     install = home / ".nara" / "nara-agent"
     for d in (origin, home, bin_dir):

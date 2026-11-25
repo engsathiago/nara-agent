@@ -109,7 +109,7 @@ export function VersionDetails({ version, channelAction }: { version: DesktopVer
           <dd className="break-all text-right">
             <ExternalLink
               className="break-all font-mono text-xs"
-              href={`https://github.com/NousResearch/nara-agent/commit/${version.commit}`}
+              href={`https://github.com/engsathiago/nara-agent/commit/${version.commit}`}
               native
             >
               {version.commit.slice(0, 14)}

@@ -25,7 +25,7 @@ import {
   type UpdateTarget
 } from '@/store/updates'
 
-const RELEASE_NOTES_URL = 'https://github.com/NousResearch/nara-agent/releases'
+const RELEASE_NOTES_URL = 'https://github.com/engsathiago/nara-agent/releases'
 const INSTALLER_URL = 'https://nara-agent.nousresearch.com/'
 
 export type UpdateStatusTone = 'idle' | 'available' | 'error' | 'unsupported'

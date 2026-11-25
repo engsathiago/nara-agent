@@ -20,11 +20,11 @@ set -u
 # hygiene can't break the locked sync the way it used to before pm owned it.
 export UV_NO_CONFIG=1
 
-REPO_URL="${NARA_REPO_URL:-https://github.com/NousResearch/nara-agent.git}"
+REPO_URL="${NARA_REPO_URL:-https://github.com/engsathiago/nara-agent.git}"
 BRANCH="main"
 INSTALL_COMMIT=""
-# The update channel to install: stable (the latest published release, the default for the
-# official repository's main line) or main (every commit). An explicit choice is persisted.
+# The update channel to install: main until this repository publishes its first
+# stable release; --channel stable opts in to a published release when available.
 CHANNEL="${NARA_INSTALL_CHANNEL:-}"
 INSTALL_DIR="${NARA_INSTALL_DIR:-}"
 NARA_HOME="${NARA_HOME:-$HOME/.nara}"
@@ -648,7 +648,7 @@ chosen_channel() {
 # nara_cli.update_channel.default_channel decides.
 is_official_repo() {
     printf '%s' "$1" | tr '[:upper:]' '[:lower:]' \
-        | grep -Eq '^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)nousresearch/nara-agent(\.git)?/?$'
+        | grep -Eq '^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)engsathiago/nara-agent(\.git)?/?$'
 }
 
 # The latest published stable release (vX.Y.Z), the release `nara update` resolves for the
@@ -658,11 +658,11 @@ is_official_repo() {
 latest_stable_release() {
     local tag
     tag="$(curl -fsSL --connect-timeout 5 --max-time 20 -H 'Accept: application/vnd.github+json' \
-        https://api.github.com/repos/NousResearch/nara-agent/releases/latest 2>/dev/null \
+        https://api.github.com/repos/engsathiago/nara-agent/releases/latest 2>/dev/null \
         | sed -n 's/^[[:space:]]*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
     if ! valid_stable_tag "$tag"; then
         tag="$(curl -fsSI --connect-timeout 5 --max-time 20 \
-            https://github.com/NousResearch/nara-agent/releases/latest 2>/dev/null \
+            https://github.com/engsathiago/nara-agent/releases/latest 2>/dev/null \
             | tr -d '\r' | sed -n 's#^[Ll]ocation:.*/releases/tag/\([^/]*\)$#\1#p' | tail -n 1)"
     fi
     if ! valid_stable_tag "$tag"; then
@@ -677,10 +677,11 @@ valid_stable_tag() {
 }
 
 # The stable release this run installs, nothing to follow the branch, or "-" when stable applies
-# but no release could be looked up: an explicit --channel, else stable for the official
-# repository's main line. $1 is the origin URL.
+# but no release could be looked up: only an explicit --channel stable selects it
+# until this repository publishes its first stable release. $1 is the origin URL.
 stable_target() {
     [ -z "$INSTALL_COMMIT" ] || return 0
+    [ -n "$CHANNEL" ] || return 0
     case "$CHANNEL" in
         main) return 0 ;;
         stable) ;;

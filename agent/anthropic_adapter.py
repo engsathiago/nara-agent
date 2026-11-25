@@ -580,7 +580,7 @@ _OAUTH_SYSTEM_REPLACEMENTS = (
 )
 # The slug is rewritten only as a standalone prose word. Joined to a host, path, repo, mailbox
 # or quoted as an identifier (``nara-agent.nousresearch.com``, ``~/.nara/nara-agent/venv``,
-# ``NousResearch/nara-agent``, ``skill_view(name='nara-agent')``) it is an address the model
+# ``engsathiago/nara-agent``, ``skill_view(name='nara-agent')``) it is an address the model
 # dereferences, and the rewritten form does not exist (#48860). The OPENING quote marks an
 # identifier; a sentence-final ``.`` or a possessive ``'s`` is prose.
 _OAUTH_SLUG_PATTERN = re.compile(r"""(?<![\w./:@'"`-])nara-agent(?![\w/@-]|\.\w)""")

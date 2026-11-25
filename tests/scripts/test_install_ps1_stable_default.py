@@ -1,4 +1,4 @@
-"""install.ps1 lands a new or rerun official install on the latest stable release.
+"""install.ps1 follows main by default and a release when stable is explicit.
 
 The Windows twin of test_install_sh_stable_default: real Windows PowerShell runs
 Stage-Repository against a local origin the official URL is redirected to, with the
@@ -12,7 +12,7 @@ import subprocess
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-OFFICIAL = "https://github.com/NousResearch/nara-agent.git"
+OFFICIAL = "https://github.com/engsathiago/nara-agent.git"
 
 pytestmark = pytest.mark.platforms("windows")
 
@@ -26,19 +26,21 @@ def _git(cwd, *args, env=None):
 
 
 @pytest.mark.parametrize("side,start,channel,tagged,lands", [
-    (False, None, "", True, "release"),        # fresh install: the release, not main's tip
-    (False, None, "main", True, "tip"),        # explicit opt-out: main's tip
-    (False, "before", "", True, "release"),    # rerun behind the release: moves forward to it
+    (False, None, "", True, "tip"),            # fresh install: main's tip
+    (False, None, "main", True, "tip"),        # explicit main
+    (False, "before", "", True, "tip"),        # rerun advances along main
     (False, "tip", "", True, "tip"),           # rerun already containing it: never moves back
-    (False, None, "", False, None),            # release tag unreachable: fail, publish nothing
-    (False, "before", "", False, "before"),    # ... a rerun keeps its checkout instead
+    (False, None, "", False, "tip"),           # no release exists yet
+    (False, "before", "", False, "tip"),       # rerun still advances
+    (False, None, "stable", True, "release"),
+    (False, None, "stable", False, None),
     # The release cut on a release branch, main past the fork point (v0.22.2's shape): main moves
     # back only through `nara update`, whose downgrade guard the installer cannot run.
     (True, "tip", "", True, "tip"),
     (True, "tip", "stable", True, "tip"),
-    (True, "before", "", True, "release"),
+    (True, "before", "", True, "tip"),
 ])
-def test_install_ps1_lands_on_the_latest_stable_release(tmp_path, side, start, channel, tagged, lands):
+def test_install_ps1_defaults_to_main_and_stable_is_explicit(tmp_path, side, start, channel, tagged, lands):
     powershell = shutil.which("powershell")
     if not powershell:
         pytest.skip("Windows PowerShell is required")

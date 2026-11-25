@@ -55,7 +55,7 @@ Good verification targets, cheapest first:
 
 - **Every shipped feature, one line each: https://nara-agent.nousresearch.com/docs/llms.txt.** Start here for any "can Nara do X?" or "how do I do X?" — it indexes the entire documentation set with a link to the page that answers. It is generated from the docs tree on every build, so it is never behind the product. Fetch it with `web_extract`, or `curl -s https://nara-agent.nousresearch.com/docs/llms.txt` when web tools are off. The whole documentation set in one file is at `/docs/llms-full.txt`.
 - CLI commands: `nara --help`, `nara <command> --help`, and `nara_cli/main.py`
-- Source tree: https://github.com/NousResearch/nara-agent
+- Source tree: https://github.com/engsathiago/nara-agent
 
 Never answer "Nara can't do that" from memory. Nara ships far more than this skill body describes, and the index exists so a negative answer is always checkable.
 

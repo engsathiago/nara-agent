@@ -6,7 +6,7 @@ Usage (via cron with --no-agent):
     nara cron create nara-issues \\
       --schedule "*/5 * * * *" --no-agent \\
       --script "$NARA_HOME/skills/devops/watchers/scripts/watch_github.py" \\
-      --script-args "--name nara-issues --repo NousResearch/nara-agent --scope issues"
+      --script-args "--name nara-issues --repo engsathiago/nara-agent --scope issues"
 
 Set GITHUB_TOKEN (or GH_TOKEN) in the Nara .env file
 (``${NARA_HOME:-~/.nara}/.env``) to avoid the 60 req/hr

@@ -6,7 +6,7 @@ scope for vulnerability reports.
 
 ## 1. Reporting a Vulnerability
 
-Report privately via [GitHub Security Advisories](https://github.com/NousResearch/nara-agent/security/advisories/new)
+Report privately via [GitHub Security Advisories](https://github.com/engsathiago/nara-agent/security/advisories/new)
 or **security@nousresearch.com**. Do not open public issues for
 security vulnerabilities. **Nara Agent does not operate a bug
 bounty program.**

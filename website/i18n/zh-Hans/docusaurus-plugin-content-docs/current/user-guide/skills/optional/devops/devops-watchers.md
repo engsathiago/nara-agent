@@ -81,7 +81,7 @@ python $NARA_HOME/skills/devops/watchers/scripts/watch_rss.py \
 
 ```bash
 python $NARA_HOME/skills/devops/watchers/scripts/watch_github.py \
-  --name nara-issues --repo NousResearch/nara-agent --scope issues
+  --name nara-issues --repo engsathiago/nara-agent --scope issues
 ```
 
 轮询任意 JSON API：

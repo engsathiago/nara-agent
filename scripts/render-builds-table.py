@@ -58,7 +58,7 @@ from scripts.releases.desktop_targets import TARGETS as DESKTOP_TARGETS
 
 MARKER = "<!-- NARA_BUILDS_TABLE -->"
 END_MARKER = "<!-- /NARA_BUILDS_TABLE -->"
-DEFAULT_REPO = "NousResearch/nara-agent"
+DEFAULT_REPO = "engsathiago/nara-agent"
 
 # Asset name shapes (electron-builder artifactName in
 # apps/desktop/electron-builder.config.cjs):

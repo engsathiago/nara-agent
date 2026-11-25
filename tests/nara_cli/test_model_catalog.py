@@ -248,7 +248,7 @@ class TestFallbackChain:
 
     PRIMARY = "https://nara-agent.nousresearch.com/docs/api/model-catalog.json"
     FALLBACK = (
-        "https://raw.githubusercontent.com/NousResearch/nara-agent"
+        "https://raw.githubusercontent.com/engsathiago/nara-agent"
         "/main/website/static/api/model-catalog.json"
     )
 

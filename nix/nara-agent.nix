@@ -455,7 +455,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = with lib; {
     description = "AI agent with advanced tool-calling capabilities";
-    homepage = "https://github.com/NousResearch/nara-agent";
+    homepage = "https://github.com/engsathiago/nara-agent";
     mainProgram = "nara";
     license = licenses.mit;
     platforms = platforms.unix;

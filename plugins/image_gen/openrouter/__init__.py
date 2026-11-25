@@ -172,7 +172,7 @@ _IMAGE_API_INTS = (
 _ATTRIBUTION_HEADERS = {
     "Content-Type": "application/json",
     # OpenRouter attribution headers (harmless against Nous Portal).
-    "HTTP-Referer": "https://github.com/NousResearch/nara-agent",
+    "HTTP-Referer": "https://github.com/engsathiago/nara-agent",
     "X-Title": "Nara Agent",
 }
 

@@ -326,7 +326,7 @@ def is_nix_install_method(method: str) -> bool:
 
 
 _UPDATE_COMMAND_BY_METHOD = {
-    "docker": "docker pull nousresearch/nara-agent:latest",
+    "docker": "docker build -t nara-agent:local .",
     "apt": "pkg upgrade nara-agent",  # "apt" == Termux APT by contract; uses Termux's `pkg`.
 }
 
@@ -347,36 +347,32 @@ def recommended_update_command() -> str:
 
 
 # Shared by ``cmd_update`` and ``_cmd_update_check`` (nara_cli/main.py) so the wording never
-# forks. The published image excludes ``.git``, so the git update path can never succeed there
+# forks. A container image excludes ``.git``, so the git update path can never succeed there
 # and the generic "reinstall via install.sh" fallback would install a NEW host-side Nara.
 _DOCKER_UPDATE_MESSAGE = """\
 ✗ ``nara update`` doesn't apply inside the Docker container.
 
-Nara Agent runs as a published image (nousresearch/nara-agent), not a
-git checkout — the container has no working tree to pull into.  Update by
-pulling a fresh image and restarting your container instead:
+Nara Agent runs as an image, not a git checkout — the container has no
+working tree to pull into. Until a Nara registry image is published, update
+the source checkout on the host, rebuild its image, and recreate the container:
 
-  docker pull nousresearch/nara-agent:latest
+  git -C /path/to/nara-agent pull --ff-only
+  docker build -t nara-agent:local /path/to/nara-agent
   # then restart whatever started the container, e.g.:
   docker compose up -d --force-recreate nara-agent
   # or, for ad-hoc runs, exit the current container and `docker run` again
 
 Verify the new version after restart:
-  docker run --rm nousresearch/nara-agent:latest --version
+  docker run --rm nara-agent:local --version
 
 Notes:
-  • If you pinned a specific tag (e.g. ``:v0.14.0``) the ``:latest`` tag
-    won't move your container — pull the newer tag you actually want, or
-    switch to ``:latest`` / ``:main`` for rolling updates.  See available
-    tags at https://hub.docker.com/r/nousresearch/nara-agent/tags
-  • On a ``-desktop`` tag (the one carrying Bot Screen)?  Keep the suffix:
-    the unsuffixed image has no Xvnc/Xfce and no sudo to add them, so
-    pulling it stops the bots' screens from starting.
+  • Use the image tag configured in your Compose file when rebuilding; the
+    ``nara-agent:local`` tag above is an example for a local source build.
+  • A desktop variant needs the corresponding Docker build target and its
+    Xvnc/Xfce dependencies; keep the variant when recreating containers.
   • Your config and session history live under ``$NARA_HOME`` (``/opt/data``
     in the container, typically bind-mounted from the host) and persist
-    across image upgrades — re-pulling doesn't lose any state.
-  • Running a fork?  Build your own image with this repo's ``Dockerfile``
-    and replace the ``docker pull`` step with your build/push pipeline."""
+    across image upgrades when the same volume is retained."""
 
 
 def format_docker_update_message() -> str:

@@ -63,17 +63,17 @@ No clone needed. Nix fetches, builds, and runs everything:
 
 ```bash
 # Run the desktop app
-nix run github:NousResearch/nara-agent#desktop
+nix run github:engsathiago/nara-agent#desktop
 
 # Or install persistently
-nix profile install github:NousResearch/nara-agent#desktop
+nix profile install github:engsathiago/nara-agent#desktop
 
 # run the tui
-nix run github:NousResearch/nara-agent -- setup
-nix run github:NousResearch/nara-agent -- --tui
+nix run github:engsathiago/nara-agent -- setup
+nix run github:engsathiago/nara-agent -- --tui
 
 # or install it in your profile
-nix profile install github:NousResearch/nara-agent
+nix profile install github:engsathiago/nara-agent
 nara setup
 nara --tui
 ```
@@ -91,7 +91,7 @@ The `default` package adds ~700 MB to the closure. If you only need messaging pl
 <summary><strong>Running from a local clone</strong></summary>
 
 ```bash
-git clone https://github.com/NousResearch/nara-agent.git
+git clone https://github.com/engsathiago/nara-agent.git
 cd nara-agent
 nix develop
 nara-checkout setup
@@ -116,7 +116,7 @@ This module needs NixOS. Nara is an agent for one person. If you want an agent f
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nara-agent.url = "github:NousResearch/nara-agent";
+    nara-agent.url = "github:engsathiago/nara-agent";
   };
 
   outputs = { nixpkgs, nara-agent, ... }: {
@@ -637,7 +637,7 @@ The option set is the same set that the NixOS module uses. It is `services.nara-
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    nara-agent.url = "github:NousResearch/nara-agent";
+    nara-agent.url = "github:engsathiago/nara-agent";
   };
 }
 ```
@@ -901,7 +901,7 @@ External flakes can override the package directly:
 
 ```nix
 {
-  inputs.nara-agent.url = "github:NousResearch/nara-agent";
+  inputs.nara-agent.url = "github:engsathiago/nara-agent";
   outputs = { nara-agent, nixpkgs, ... }: {
     nixpkgs.overlays = [ nara-agent.overlays.default ];
     # Then:

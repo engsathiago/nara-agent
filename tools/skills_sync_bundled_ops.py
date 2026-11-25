@@ -60,13 +60,13 @@ def reset_bundled_skill(name: str, restore: bool = False) -> dict:
     return {"ok": True, "action": action, "message": message, "synced": synced}
 
 
-_OWN_REPO_PREFIXES = ("nousresearch/nara-agent/skills/", "skills-sh/nousresearch/nara-agent/")
+_OWN_REPO_PREFIXES = ("engsathiago/nara-agent/skills/", "skills-sh/engsathiago/nara-agent/")
 
 
 def bundled_skill_for_install(identifier: str) -> Optional[str]:
     """Bundled skill name an install identifier means, else None: a bare bundled name, or this
-    repo's own copy of one (``NousResearch/nara-agent/skills/<cat>/<name>``, which the Skills Hub
-    site hands out for built-ins, or its ``skills-sh/nousresearch/nara-agent/<name>`` mirror).
+    repo's own copy of one (``engsathiago/nara-agent/skills/<cat>/<name>``, which the Skills Hub
+    site hands out for built-ins, or its ``skills-sh/engsathiago/nara-agent/<name>`` mirror).
     Fetched from GitHub, that copy is scanned as a community skill and refused — every time."""
     ident = identifier.strip().strip("/")
     lowered = ident.lower()

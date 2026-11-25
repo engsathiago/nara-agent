@@ -81,7 +81,7 @@ def test_promotion_reuses_the_receipt_digest_without_rebuilding():
 
     promote_stable('rc.1-v1.2.3', digest, 'v1.2.3', run=run)
     create = next(argv for argv in calls if argv[3] == 'create')
-    assert create[-1] == f'nousresearch/nara-agent@{digest}'
+    assert create[-1] == f'engsathiago/nara-agent@{digest}'
     assert all('build' not in argv for argv in calls)
 
     with pytest.raises(DockerReleaseError, match='versioned tag'):
@@ -106,16 +106,16 @@ def test_promotion_preserves_independent_desktop_digest():
         raise AssertionError(argv)
 
     promote_stable('rc.1-v1.2.3', slim, 'v1.2.3', run=run)
-    assert 'nousresearch/nara-agent:rc.1-v1.2.3-desktop' in inspected
+    assert 'engsathiago/nara-agent:rc.1-v1.2.3-desktop' in inspected
     assert {tuple(cmd[4:]) for cmd in created} == {
-        ('-t', 'nousresearch/nara-agent:v1.2.3', '-t', 'nousresearch/nara-agent:stable',
-         '-t', 'nousresearch/nara-agent:latest', f'nousresearch/nara-agent@{slim}'),
-        ('-t', 'nousresearch/nara-agent:v1.2.3-desktop', '-t',
-         'nousresearch/nara-agent:stable-desktop', '-t',
-         'nousresearch/nara-agent:latest-desktop', f'nousresearch/nara-agent@{desktop}'),
+        ('-t', 'engsathiago/nara-agent:v1.2.3', '-t', 'engsathiago/nara-agent:stable',
+         '-t', 'engsathiago/nara-agent:latest', f'engsathiago/nara-agent@{slim}'),
+        ('-t', 'engsathiago/nara-agent:v1.2.3-desktop', '-t',
+         'engsathiago/nara-agent:stable-desktop', '-t',
+         'engsathiago/nara-agent:latest-desktop', f'engsathiago/nara-agent@{desktop}'),
     }
-    assert 'nousresearch/nara-agent:stable-desktop' in inspected
-    assert 'nousresearch/nara-agent:latest-desktop' in inspected
+    assert 'engsathiago/nara-agent:stable-desktop' in inspected
+    assert 'engsathiago/nara-agent:latest-desktop' in inspected
 
 
 def test_promotion_requires_desktop_version_before_moving_any_alias():
@@ -146,7 +146,7 @@ def test_published_digest_checks_desktop_tag():
         return 'sha256:' + ('e' if argv[4].endswith('-desktop') else 'd') * 64
 
     assert published_digest('v1.2.3', run=run) == 'sha256:' + 'd' * 64
-    assert inspected == ['nousresearch/nara-agent:v1.2.3',
-                         'nousresearch/nara-agent:v1.2.3-desktop']
+    assert inspected == ['engsathiago/nara-agent:v1.2.3',
+                         'engsathiago/nara-agent:v1.2.3-desktop']
     with pytest.raises(DockerReleaseError, match='desktop'):
         published_digest('v1.2.3', run=lambda argv: 'garbage' if argv[4].endswith('-desktop') else 'sha256:' + 'd' * 64)

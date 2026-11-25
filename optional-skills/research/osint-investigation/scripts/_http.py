@@ -13,7 +13,7 @@ import urllib.request
 
 DEFAULT_UA = (
     "nara-osint-investigation/0.2 "
-    "(+https://github.com/NousResearch/nara-agent; "
+    "(+https://github.com/engsathiago/nara-agent; "
     "set NARA_OSINT_UA env var to identify yourself per "
     "Wikimedia / SEC fair-use guidance)"
 )

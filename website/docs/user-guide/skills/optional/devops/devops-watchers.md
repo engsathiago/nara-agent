@@ -81,7 +81,7 @@ Watch a GitHub repo (set `GITHUB_TOKEN` in `${NARA_HOME:-~/.nara}/.env` to avoid
 
 ```bash
 python $NARA_HOME/skills/devops/watchers/scripts/watch_github.py \
-  --name nara-issues --repo NousResearch/nara-agent --scope issues
+  --name nara-issues --repo engsathiago/nara-agent --scope issues
 ```
 
 Poll an arbitrary JSON API:

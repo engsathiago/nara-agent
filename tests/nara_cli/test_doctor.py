@@ -88,7 +88,7 @@ class TestDoctorPlatformHints:
 
         hint = doctor_platform._sqlite_upgrade_hint()
 
-        assert "docker pull nousresearch/nara-agent:latest" in hint
+        assert "docker build -t nara-agent:local ." in hint
         assert "nara update" not in hint
 
 

@@ -140,8 +140,9 @@ def _package_channel(stamp: dict) -> bool:
 def default_channel(project_root: Optional[Path] = None) -> str:
     """The channel an unconfigured install tracks.
 
-    A source checkout of the official repository follows the latest published
-    stable release. Forks, mirrors and checkout-less trees keep following main.
+    Source checkouts follow main until this repository has a published stable
+    release and its distribution channel is enabled. Stable remains an explicit
+    choice. Forks, mirrors and checkout-less trees also follow main.
     ``electron-updater`` and ``app-installer`` bundles report their artifact
     channel: a canary artifact tracks canary, every other bundle
     tracks stable. The stamp's ``tag`` is the authority, the same fact
@@ -155,7 +156,7 @@ def default_channel(project_root: Optional[Path] = None) -> str:
     root = Path(project_root) if project_root is not None else install_root()
     stamp = _read_stamp(root)
     if not _package_channel(stamp):
-        return CHANNEL_STABLE if _tracks_official_origin(root) else CHANNEL_MAIN
+        return CHANNEL_MAIN
     if stamp.get("source") == "channel-build":
         request = stamp.get("channelBuild")
         if not isinstance(request, dict):

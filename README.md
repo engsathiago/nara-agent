@@ -21,6 +21,8 @@ nara
 
 O comando global `nara` pode ser instalado para apontar a este checkout. Estado por perfil:
 `~/.nara` no macOS/Linux e `%LOCALAPPDATA%\nara` no Windows.
+Instalações de código-fonte seguem `main` por padrão. O canal `stable` será habilitado
+quando houver uma release versionada publicada neste repositório.
 
 ## Construção do produto
 

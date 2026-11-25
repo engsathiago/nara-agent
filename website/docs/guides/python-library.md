@@ -15,7 +15,7 @@ Nara isn't just a CLI tool. You can import `AIAgent` directly and use it program
 Clone Nara and prepare its source environment through PM. The Bash recipe is:
 
 ```bash
-git clone https://github.com/NousResearch/nara-agent.git
+git clone https://github.com/engsathiago/nara-agent.git
 cd nara-agent
 source ./activate
 ```

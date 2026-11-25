@@ -18,7 +18,7 @@ Nara discovers memory providers from four sources, in this precedence order:
 
 | Source | Location | Notes |
 |---|---|---|
-| Bundled | `plugins/memory/<name>/` | Ships with Nara. Closed to new providers — see [CONTRIBUTING](https://github.com/NousResearch/nara-agent/blob/main/CONTRIBUTING.md). |
+| Bundled | `plugins/memory/<name>/` | Ships with Nara. Closed to new providers — see [CONTRIBUTING](https://github.com/engsathiago/nara-agent/blob/main/CONTRIBUTING.md). |
 | User | `$NARA_HOME/plugins/<name>/` | Dropped in by the user, per profile. |
 | Project | `./.nara/plugins/<name>/` | Opt-in via `NARA_ENABLE_PROJECT_PLUGINS=1`. |
 | Package | `nara_agent.memory_providers` entry point | Distribution supplied by the installation owner; nothing to copy. |

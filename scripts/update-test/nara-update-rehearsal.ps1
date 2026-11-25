@@ -61,8 +61,8 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
 
-$OfficialHttps = 'https://github.com/NousResearch/nara-agent.git'
-$OfficialSsh = 'git@github.com:NousResearch/nara-agent.git'
+$OfficialHttps = 'https://github.com/engsathiago/nara-agent.git'
+$OfficialSsh = 'git@github.com:engsathiago/nara-agent.git'
 # Diff-area cap pre sets while the snapshot is alive (post restores the original).
 $ShadowStorageMax = [UInt64]128GB
 

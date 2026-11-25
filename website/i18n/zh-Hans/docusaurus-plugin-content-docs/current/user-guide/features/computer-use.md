@@ -155,6 +155,6 @@ Nara 不会重新注册。
 
 ## 另请参阅
 
-- [通用技能：`macos-computer-use`](https://github.com/NousResearch/nara-agent/blob/main/skills/apple/macos-computer-use/SKILL.md)
+- [通用技能：`macos-computer-use`](https://github.com/engsathiago/nara-agent/blob/main/skills/apple/macos-computer-use/SKILL.md)
 - [cua-driver 源码（trycua/cua）](https://github.com/trycua/cua)
 - 跨平台 Web 任务请参阅[浏览器自动化](./browser.md)。

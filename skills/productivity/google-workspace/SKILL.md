@@ -13,7 +13,7 @@ required_credential_files:
 metadata:
   nara:
     tags: [Google, Gmail, Calendar, Drive, Sheets, Docs, Contacts, Email, OAuth]
-    homepage: https://github.com/NousResearch/nara-agent
+    homepage: https://github.com/engsathiago/nara-agent
     related_skills: [himalaya]
 ---
 

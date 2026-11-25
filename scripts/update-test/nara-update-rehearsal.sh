@@ -29,8 +29,8 @@
 
 set -euo pipefail
 
-OFFICIAL_HTTPS="https://github.com/NousResearch/nara-agent.git"
-OFFICIAL_SSH="git@github.com:NousResearch/nara-agent.git"
+OFFICIAL_HTTPS="https://github.com/engsathiago/nara-agent.git"
+OFFICIAL_SSH="git@github.com:engsathiago/nara-agent.git"
 DEFAULT_SOURCE="https://github.com/ethernet8023/nara-agent.git"
 
 SUBCMD=""

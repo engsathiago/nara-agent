@@ -46,11 +46,11 @@ uv2nix 环境、覆盖包、插件依赖和开发 shell 使用同一个解释器
 
 ```bash
 # 直接运行（首次使用时构建，之后使用缓存）
-nix run github:NousResearch/nara-agent -- setup
-nix run github:NousResearch/nara-agent -- chat
+nix run github:engsathiago/nara-agent -- setup
+nix run github:engsathiago/nara-agent -- chat
 
 # 或持久化安装
-nix profile install github:NousResearch/nara-agent
+nix profile install github:engsathiago/nara-agent
 nara setup
 nara chat
 ```
@@ -61,7 +61,7 @@ nara chat
 <summary><strong>从本地克隆构建</strong></summary>
 
 ```bash
-git clone https://github.com/NousResearch/nara-agent.git
+git clone https://github.com/engsathiago/nara-agent.git
 cd nara-agent
 nix build
 ./result/bin/nara setup
@@ -86,7 +86,7 @@ nix build
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nara-agent.url = "github:NousResearch/nara-agent";
+    nara-agent.url = "github:engsathiago/nara-agent";
   };
 
   outputs = { nixpkgs, nara-agent, ... }: {
@@ -696,7 +696,7 @@ services.nara-agent = {
 
 ```nix
 {
-  inputs.nara-agent.url = "github:NousResearch/nara-agent";
+  inputs.nara-agent.url = "github:engsathiago/nara-agent";
   outputs = { nara-agent, nixpkgs, ... }: {
     nixpkgs.overlays = [ nara-agent.overlays.default ];
     # 然后：

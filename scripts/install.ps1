@@ -15,8 +15,8 @@
 #                         `nara pm install cua-driver`
 #   -Verbose              stream every child command's output (the default
 #                         with redirected output and in CI)
-#   -Channel stable|main  stable (default): the latest published release, then
-#                         release to release; main: every commit. Also
+#   -Channel stable|main  main (default): every commit; stable: the latest
+#                         published release once one exists. Also
 #                         $env:NARA_INSTALL_CHANNEL (the only way under
 #                         `irm | iex`); an explicit choice is saved like
 #                         `nara update --set-channel`
@@ -76,7 +76,7 @@ $script:BoundParams = $PSBoundParameters
 # Under iex, script scope is the caller's session and outlives a run; start
 # each run without the previous run's answer (see Set-LauncherUserPath).
 $script:BinDirOnCallerPath = $null
-$RepoUrl = if ($env:NARA_REPO_URL) { $env:NARA_REPO_URL } else { "https://github.com/NousResearch/nara-agent.git" }
+$RepoUrl = if ($env:NARA_REPO_URL) { $env:NARA_REPO_URL } else { "https://github.com/engsathiago/nara-agent.git" }
 
 # --- BEGIN GENERATED: bootstrap pins (scripts/gen-bootstrap-pins.py) ---
 # Derived from pm/lock.json. DO NOT EDIT BY HAND:
@@ -962,13 +962,13 @@ function Get-LatestStableRelease([string]$Origin) {
     $pattern = '^v(0|[1-9]\d{0,2})\.(0|[1-9]\d*)\.(0|[1-9]\d*)$'  # update_channel.STABLE_TAG_RE
     $tag = ''
     try {
-        $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/NousResearch/nara-agent/releases/latest' `
+        $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/engsathiago/nara-agent/releases/latest' `
             -Headers @{ Accept = 'application/vnd.github+json'; 'User-Agent' = 'nara-installer' } -TimeoutSec 20
         $tag = "$($release.tag_name)"
     } catch { }
     if ($tag -cnotmatch $pattern) {
         try {
-            $request = [Net.HttpWebRequest]::Create('https://github.com/NousResearch/nara-agent/releases/latest')
+            $request = [Net.HttpWebRequest]::Create('https://github.com/engsathiago/nara-agent/releases/latest')
             $request.Method = 'HEAD'
             $request.AllowAutoRedirect = $false
             $request.Timeout = 20000
@@ -988,13 +988,14 @@ function Get-LatestStableRelease([string]$Origin) {
 }
 
 # The stable release this run installs, '' to follow the branch, or '-' when stable applies but no
-# release could be looked up: an explicit -Channel, else stable for the official repository's main line (forks and mirrors publish no official
-# releases; nara_cli.update_channel.default_channel decides the same way).
+# release could be looked up: only an explicit -Channel stable selects it while
+# this repository has not published a stable release.
 function Get-StableTarget([string]$Origin) {
+    if (-not $Channel) { return '' }
     if ($Commit -or $Channel -ceq 'main') { return '' }
     if ($Channel -cne 'stable') {
         if ($Branch -cne 'main') { return '' }
-        if ($Origin -notmatch '^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)NousResearch/nara-agent(\.git)?/?$') { return '' }
+        if ($Origin -notmatch '^(https://github\.com/|git@github\.com:|ssh://git@github\.com/)engsathiago/nara-agent(\.git)?/?$') { return '' }
     }
     $release = Get-LatestStableRelease $Origin
     if ($release) { return $release }

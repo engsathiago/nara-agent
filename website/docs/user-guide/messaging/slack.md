@@ -260,7 +260,7 @@ Nara command with its description.
 
 Under the hood: Nara ships with a generated Slack app manifest (see
 Step 1, Option A) that declares every command in
-[`COMMAND_REGISTRY`](https://github.com/NousResearch/nara-agent/blob/main/nara_cli/commands.py)
+[`COMMAND_REGISTRY`](https://github.com/engsathiago/nara-agent/blob/main/nara_cli/commands.py)
 as a slash command. In Socket Mode, Slack routes the command event
 through the WebSocket regardless of the manifest's `url` field.
 

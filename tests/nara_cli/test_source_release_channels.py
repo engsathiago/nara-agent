@@ -59,13 +59,13 @@ def releases(tmp_path, monkeypatch, request):
         responses[f"/releases/{channel}/index.html"] = (
             f'<meta name="nara-build" content="{tag}">'
         )
-        responses[f"/repos/NousResearch/nara-agent/releases/tags/{tag}"] = {
+        responses[f"/repos/engsathiago/nara-agent/releases/tags/{tag}"] = {
             "tag_name": tag, "draft": False, "prerelease": channel == "canary",
         }
-        responses[f"/repos/NousResearch/nara-agent/commits/{tag}"] = {
+        responses[f"/repos/engsathiago/nara-agent/commits/{tag}"] = {
             "sha": commits[1 if channel == "stable" else 2],
         }
-    responses["/repos/NousResearch/nara-agent/releases/latest"] = {
+    responses["/repos/engsathiago/nara-agent/releases/latest"] = {
         "tag_name": tags["stable"], "draft": False, "prerelease": False,
     }
     responses["/releases/stable/release-candidates.json"] = {
@@ -214,7 +214,7 @@ def test_zip_fallback_keeps_selected_repository_and_commit(releases, monkeypatch
 
 @pytest.mark.parametrize("git_cmd", [["git"], None], ids=["git", "no-git"])
 def test_selected_draft_never_falls_back_to_other_tags(releases, git_cmd):
-    releases.responses[f"/repos/NousResearch/nara-agent/releases/tags/{releases.tags['stable']}"]["draft"] = True
+    releases.responses[f"/repos/engsathiago/nara-agent/releases/tags/{releases.tags['stable']}"]["draft"] = True
     assert resolve_source_release("stable", git_cmd, releases.root) == (None, None)
     assert not any("/tags?" in path for path in releases.requests)
 
@@ -240,9 +240,9 @@ def test_origin_tag_cannot_substitute_a_fork_commit(releases, channel):
 def test_missing_pointers_fall_back_only_to_published_releases(releases, channel):
     releases.responses.pop("/releases/stable/release-candidates.json")
     releases.responses.pop(f"/releases/{channel}/index.html")
-    published = releases.responses[f"/repos/NousResearch/nara-agent/releases/tags/{releases.tags[channel]}"]
-    releases.responses["/repos/NousResearch/nara-agent/releases/latest"] = published
-    releases.responses["/repos/NousResearch/nara-agent/releases?per_page=100&page=1"] = [
+    published = releases.responses[f"/repos/engsathiago/nara-agent/releases/tags/{releases.tags[channel]}"]
+    releases.responses["/repos/engsathiago/nara-agent/releases/latest"] = published
+    releases.responses["/repos/engsathiago/nara-agent/releases?per_page=100&page=1"] = [
         {"tag_name": "v99.0.1+canary.20260912T125822Z", "draft": True, "prerelease": True},
         published,
     ]
@@ -250,11 +250,11 @@ def test_missing_pointers_fall_back_only_to_published_releases(releases, channel
         releases.tags[channel], releases.commits[1 if channel == "stable" else 2],
     )
     assert not any("/tags?" in path for path in releases.requests)
-    assert f"/repos/NousResearch/nara-agent/releases/tags/{releases.tags[channel]}" not in releases.requests
+    assert f"/repos/engsathiago/nara-agent/releases/tags/{releases.tags[channel]}" not in releases.requests
 
 
 def _track_official_origin(releases):
-    official = "https://github.com/NousResearch/nara-agent.git"
+    official = "https://github.com/engsathiago/nara-agent.git"
     git(releases.root, "remote", "set-url", "origin", official)
     git(releases.root, "config", f"url.{releases.origin.as_uri()}.insteadOf", official)
 
@@ -275,14 +275,13 @@ def test_stable_is_the_latest_published_github_release_without_r2(releases):
     assert not any(path.startswith("/releases/") for path in releases.requests)
 
 
-@pytest.mark.parametrize("start,expected", [(0, 1), (3, 3)], ids=["behind-release", "newer-than-release"])
-def test_default_stable_only_moves_forward_until_the_channel_is_chosen(releases, monkeypatch, capsys,
-                                                                       start, expected):
+@pytest.mark.parametrize("start", [0, 3], ids=["behind-release", "newer-than-release"])
+def test_explicit_stable_channel_moves_to_release(releases, monkeypatch, start):
     from nara_cli.update_channel import default_channel
 
     _track_official_origin(releases)
     git(releases.root, "checkout", "--detach", releases.commits[start])
-    assert default_channel(releases.root) == "stable"
+    assert default_channel(releases.root) == "main"
     opts = update_cmd._UpdateOptions(
         pre_update_version=None, gw_input_fn=None,
         assume_yes=True, keep_stash=False, switch_branch=False, discard_local_changes=False,
@@ -293,12 +292,10 @@ def test_default_stable_only_moves_forward_until_the_channel_is_chosen(releases,
     monkeypatch.setattr(main, "_pause_windows_gateways_for_update", lambda: None)
     monkeypatch.setattr(update_cmd, "_prepare_git_command", lambda **_: (False, ["git"], False))
     monkeypatch.setattr(update_cmd, "_complete_source_update", lambda request: None)
-    # The Desktop passes the channel its check reported; naming the default is not a choice.
+    # Stable is an explicit choice while the unpublished source default is main.
     update_cmd._cmd_update_impl(SimpleNamespace(branch=None, channel="stable", force_venv=True), False)
-    assert git(releases.root, "rev-parse", "HEAD") == releases.commits[expected]
-    update_cmd._cmd_update_check()
-    assert ("No newer release" if start > 1 else "Up to date with") in capsys.readouterr().out
-    # Persisting the channel is consent to land exactly on the release.
+    assert git(releases.root, "rev-parse", "HEAD") == releases.commits[1]
+    # The selected release remains the target on the next update.
     set_install_channel("stable", releases.root)
     update_cmd._cmd_update_impl(SimpleNamespace(branch=None, channel=None, force_venv=True), False)
     assert git(releases.root, "rev-parse", "HEAD") == releases.commits[1]

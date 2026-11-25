@@ -215,7 +215,7 @@ stdenv.mkDerivation {
 
   meta = with lib; {
     description = "Native Electron desktop shell for Nara Agent";
-    homepage = "https://github.com/NousResearch/nara-agent";
+    homepage = "https://github.com/engsathiago/nara-agent";
     license = licenses.mit;
     platforms = platforms.unix;
     mainProgram = "nara-desktop";

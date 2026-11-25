@@ -204,7 +204,7 @@ async function locateNara(ssh, remoteNaraPath) {
     //   - version checking: `<python> --version` printed "Python x.y.z" instead of
     //     the Nara version, and
     //   - capability probing: `<python> serve --help` failed entirely.
-    // See https://github.com/NousResearch/nara-agent/issues/74411
+    // See https://github.com/engsathiago/nara-agent/issues/74411
     return candidate
   }
 

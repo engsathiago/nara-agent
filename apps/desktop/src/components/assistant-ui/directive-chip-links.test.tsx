@@ -8,7 +8,7 @@ import { DirectiveContent } from './directive-text'
 
 const desktopWindow = window as unknown as { naraDesktop?: Window['naraDesktop'] }
 
-const PR_URL = 'https://github.com/NousResearch/nara-agent/pull/107950'
+const PR_URL = 'https://github.com/engsathiago/nara-agent/pull/107950'
 
 function installDesktopBridge() {
   const openExternal = vi.fn().mockResolvedValue(undefined)
