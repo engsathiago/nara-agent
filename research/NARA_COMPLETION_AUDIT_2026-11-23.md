@@ -78,10 +78,11 @@ The following requirements cannot be truthfully completed from the current machi
 7. Apple Developer credentials and explicit publication authority for Developer ID signing,
    notarization and release-feed upload.
 
-The owner chose this order: finish the local code, documentation, manifest and package; publish
-the repository on GitHub; then install and validate on the VPS. The active project goal remains
-open through the applicable external gates. They must not be converted to passes by mocks,
-documentation, empty provider rows, or a locally signed package.
+The owner separated VPS installation and validation into a later project step, after local code,
+documentation, manifest and package are finished. The VPS is not a prerequisite for completing
+the local implementation. External gates remain unverified until their own evidence exists;
+they must not be converted to passes by mocks, documentation, empty provider rows, or a locally
+signed package.
 
 ## Subsequent publication evidence (2026-11-25)
 
@@ -98,3 +99,5 @@ After the product-identity update, a clean local macOS bundle was rebuilt from p
 both contain the project's own bundle identifier. The unpacked app passed ad-hoc code-signature
 verification after packaging; the archives themselves remain unsigned and unnotarized. The
 current hashes and manifest are recorded in `research/NARA_PUBLICATION_2026-11-25.md`.
+
+The local bundle was subsequently rebuilt from clean public `main` commit `efcc2b6f846c4b2ecaad85a6df7085b6cb911249`, including the owned metrics/reporting and runtime-guard fixes. Its DMG and ZIP passed integrity checks and both carry the owned bundle identifier. The extracted app passed deep strict verification after a local ad-hoc signature applied after packaging; the archives remain unsigned and unnotarized. The exact hashes, manifest, CI runs and partial full-suite attempts are recorded in the publication report. On this commit, `nara --version`, the product-identity guard and the strict mission-continuity baseline passed. VPS installation remains a separate later step as requested by the owner.
