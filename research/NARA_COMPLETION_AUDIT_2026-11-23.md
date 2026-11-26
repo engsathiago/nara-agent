@@ -144,3 +144,11 @@ moves rolled-back skills under the scanner-excluded `skills/.archive/` directory
 Focused tests first reproduced both failures on the prior `main`, then passed
 against the production Learning Lab and real skill discovery. This closes those
 local lifecycle faults; it does not substitute for varied real-task transfer.
+
+A fresh local macOS package from clean `main` `bacf1a9d33127c17ae463658cd4ad8461f7bcbdb`
+includes both fixes. Its own bundled Python reproduced the correction,
+promotion and rollback behavior in a temporary profile; the DMG and ZIP passed
+integrity checks. Exact artifact hashes and the ad-hoc signature boundary are
+recorded in `research/NARA_PUBLICATION_2026-11-25.md`. The earlier real public
+Instagram extraction remains evidence for that URL; this package was not used
+to repeat the download or to claim transfer from a real Reel.
