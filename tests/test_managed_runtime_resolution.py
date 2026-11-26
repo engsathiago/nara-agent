@@ -67,6 +67,8 @@ _EXEMPT_DIRS = (
     ".venv",
     "venv",
     ".worktrees",
+    "build",
+    "dist",
 )
 
 # Call sites where a bare PATH lookup is the correct answer. Each entry is
@@ -220,11 +222,13 @@ def _source_files() -> list[Path]:
     # subtrees entirely.
     for dirpath, dirnames, filenames in os.walk(REPO_ROOT):
         rel_dir = Path(dirpath).relative_to(REPO_ROOT)
-        if rel_dir == Path("."):
-            dirnames[:] = [
-                d for d in dirnames
-                if d not in _EXEMPT_DIRS and not _is_packaging_copy(d)
-            ]
+        dirnames[:] = [
+            d for d in dirnames
+            if d not in _EXEMPT_DIRS
+            and not (rel_dir == Path(".") and _is_packaging_copy(d))
+            # A packaged Desktop app contains copied Python dependencies, not source.
+            and not (rel_dir == Path("apps/desktop") and d == "release")
+        ]
         for fname in filenames:
             if fname.endswith(".py"):
                 files.append(Path(dirpath) / fname)
