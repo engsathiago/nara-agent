@@ -13,6 +13,7 @@ from plugins.mission_control.learning_fabric import LearningFabric
 from plugins.mission_control.learning_media_fetch import (
     _public_media_url, fetch_public_media, media_fetch_status,
 )
+from plugins.mission_control.learning_media import _duration, _media_binary
 
 
 URL = "https://www.instagram.com/reel/C123abcd/"
@@ -127,3 +128,29 @@ def test_rejects_long_media_before_archiving(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match="duration"):
         fetch_public_media(fabric, URL)
     assert fabric.status()["sources"] == []
+
+
+def test_bundled_ffmpeg_is_found_without_system_path(tmp_path, monkeypatch):
+    payload = tmp_path / "payload"
+    bundled = payload / "tools" / "ffmpeg-9.0.1-darwin-arm64" / "ffmpeg"
+    bundled.parent.mkdir(parents=True)
+    bundled.write_bytes(b"binary")
+    monkeypatch.setattr("plugins.mission_control.learning_media.shutil.which", lambda name: None)
+    monkeypatch.setattr("plugins.mission_control.learning_media.sys.executable",
+                        str(payload / "venv" / "bin" / "python"))
+    assert _media_binary("ffmpeg") == str(bundled)
+
+
+def test_pyav_reads_duration_when_ffprobe_is_absent(monkeypatch, tmp_path):
+    class Container:
+        duration = 2_000_000
+        streams = []
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    monkeypatch.setitem(sys.modules, "av", SimpleNamespace(open=lambda path: Container()))
+    assert _duration(tmp_path / "video.mp4", None) == 2.0

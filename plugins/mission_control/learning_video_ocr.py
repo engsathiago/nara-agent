@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any
 from nara_cli.sqlite_util import transaction
 from plugins.mission_control.contracts import utc_now
 from plugins.mission_control.learning_media import (
-    MAX_MEDIA_BYTES, LearningEvidenceIntegrityError, _duration, extract_local_media,
+    MAX_MEDIA_BYTES, LearningEvidenceIntegrityError, _duration, _media_binary, extract_local_media,
 )
 
 if TYPE_CHECKING:
@@ -110,9 +110,9 @@ def extract_video_screen_text(fabric: LearningFabric, source_id: str) -> dict[st
                 raise LearningEvidenceIntegrityError("archived OCR frame has changed")
         return source
     try:
-        ffmpeg, ffprobe = shutil.which("ffmpeg"), shutil.which("ffprobe")
-        if not ffmpeg or not ffprobe:
-            raise ValueError("ffmpeg and ffprobe are required for local video OCR")
+        ffmpeg, ffprobe = _media_binary("ffmpeg"), _media_binary("ffprobe")
+        if not ffmpeg:
+            raise ValueError("ffmpeg is required for local video OCR")
         duration = _duration(stored, ffprobe)
         with TemporaryDirectory(prefix="nara-learning-frames-") as temp:
             frames, times = _sample_frames(stored, duration, ffmpeg, Path(temp))

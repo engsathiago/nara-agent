@@ -11,7 +11,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING, Any
 
-from plugins.mission_control.learning_media import MAX_MEDIA_BYTES, _duration
+from plugins.mission_control.learning_media import MAX_MEDIA_BYTES, _duration, _media_binary
 
 if TYPE_CHECKING:
     from plugins.mission_control.learning_fabric import LearningFabric
@@ -46,10 +46,12 @@ def _public_media_url(url: str) -> str:
 
 def media_fetch_status() -> dict[str, Any]:
     command = _extractor_command()
-    probe = shutil.which("ffprobe")
+    probe = _media_binary("ffprobe")
+    pyav = find_spec("av") is not None
     return {
-        "status": "available" if command and probe else "unavailable",
-        "provider": "yt-dlp", "command": command, "ffprobe": probe,
+        "status": "available" if command and (probe or pyav) else "unavailable",
+        "provider": "yt-dlp", "command": command,
+        "duration_backend": "ffprobe" if probe else "pyav" if pyav else None,
         "scope": "one public HTTPS video; no browser cookies or user configuration",
         "supported_hosts": sorted(SUPPORTED_HOSTS),
     }
@@ -63,9 +65,7 @@ def fetch_public_media(
     extractor = _extractor_command()
     if not extractor:
         raise ValueError("yt-dlp is unavailable; install the media-fetch extra to fetch public media URLs")
-    ffprobe = shutil.which("ffprobe")
-    if not ffprobe:
-        raise ValueError("ffprobe is unavailable; install ffmpeg to validate media duration")
+    ffprobe = _media_binary("ffprobe")
     with TemporaryDirectory(prefix="nara-learning-fetch-") as temp:
         root = Path(temp)
         command = [

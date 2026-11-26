@@ -6,6 +6,7 @@ import hashlib
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING, Any
@@ -25,18 +26,50 @@ class LearningEvidenceIntegrityError(ValueError):
     """Archived source or extraction evidence no longer matches its recorded hash."""
 
 
-def _duration(source: Path, ffprobe: str) -> float:
-    result = subprocess.run(
-        [ffprobe, "-v", "error", "-show_entries", "format=duration",
-         "-of", "default=noprint_wrappers=1:nokey=1", str(source)],
-        capture_output=True, text=True, check=False, timeout=20,
-    )
-    if result.returncode:
-        raise ValueError(f"ffprobe could not read media: {result.stderr[-300:]}")
-    try:
-        duration = float(result.stdout.strip())
-    except ValueError as exc:
-        raise ValueError("media has no readable duration") from exc
+def _media_binary(name: str) -> str | None:
+    found = shutil.which(name)
+    if found:
+        return found
+    if name == "ffmpeg":
+        # Bundled Desktop venvs have the pinned FFmpeg tool beside the venv,
+        # while a GUI launch may have only /usr/bin on PATH.
+        payload = Path(sys.executable).absolute().parents[2]
+        for candidate in sorted((payload / "tools").glob("ffmpeg-*/ffmpeg")):
+            if candidate.is_file():
+                return str(candidate)
+    return None
+
+
+def _duration(source: Path, ffprobe: str | None) -> float:
+    if ffprobe:
+        result = subprocess.run(
+            [ffprobe, "-v", "error", "-show_entries", "format=duration",
+             "-of", "default=noprint_wrappers=1:nokey=1", str(source)],
+            capture_output=True, text=True, check=False, timeout=20,
+        )
+        if result.returncode:
+            raise ValueError(f"ffprobe could not read media: {result.stderr[-300:]}")
+        try:
+            duration = float(result.stdout.strip())
+        except ValueError as exc:
+            raise ValueError("media has no readable duration") from exc
+    else:
+        try:
+            import av
+
+            with av.open(str(source)) as container:
+                if container.duration is not None:
+                    duration = float(container.duration) / 1_000_000
+                else:
+                    durations = [
+                        float(stream.duration * stream.time_base)
+                        for stream in container.streams if stream.duration is not None
+                    ]
+                    duration = max(durations) if durations else 0.0
+        except ImportError as exc:
+            raise ValueError("media duration needs ffprobe or the optional PyAV backend") from exc
+        except Exception as exc:
+            raise ValueError(f"PyAV could not read media duration: {exc}") from exc
     if not 0 < duration <= MAX_MEDIA_SECONDS:
         raise ValueError(f"media duration must be between 0 and {MAX_MEDIA_SECONDS:g} seconds")
     return duration
@@ -78,9 +111,9 @@ def extract_local_media(
         raise LearningEvidenceIntegrityError("stored transcript has changed")
     metadata = dict(source["metadata"])
     try:
-        ffmpeg, ffprobe = shutil.which("ffmpeg"), shutil.which("ffprobe")
-        if not ffmpeg or not ffprobe:
-            raise ValueError("ffmpeg and ffprobe are required for local media extraction")
+        ffmpeg, ffprobe = _media_binary("ffmpeg"), _media_binary("ffprobe")
+        if not ffmpeg:
+            raise ValueError("ffmpeg is required for local media extraction")
         duration = _duration(stored, ffprobe)
         with TemporaryDirectory(prefix="nara-learning-media-") as temp:
             audio = Path(temp) / "audio.wav"
