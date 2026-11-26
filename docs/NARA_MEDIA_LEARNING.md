@@ -8,6 +8,7 @@ nara mission learn-media-ingest /absolute/path/lesson.mp4 --modality video --ext
 nara mission learn-media-show SOURCE_ID
 nara mission learn-media-propose SOURCE_ID "The lesson recommends X" --quote "exact words in transcript"
 nara mission learn-media-frames SOURCE_ID
+nara mission learn-repo-verify SOURCE_ID --quote "github.com/OWNER/REPOSITORY"
 ```
 
 The `nara_learning_ingest` agent tool accepts the same `path`, `modality`,
@@ -17,6 +18,18 @@ agent can call `nara_learning_claim_propose` with an exact source quote. The
 `nara_learning_frame_extract` tool retries video screen OCR separately. A claim
 stays a **candidate**; transcription or a plausible quote never counts as
 independent verification or a promoted memory.
+
+If the transcript or screen OCR contains an exact GitHub repository URL, the
+`learn-repo-verify` command or `nara_learning_repo_verify` tool checks that
+repository against GitHub's public REST API, pins the current commit SHA, and
+archives both official responses by hash. The resulting verified claim says
+only that the repository identity exists at that commit. It does **not** verify
+the video's claims about features, quality or safety and does not install or
+activate a skill. A missing repo, mismatched identity, API limit or changed
+archived response produces an explicit error. The caller can inspect the
+`primary_sources` record on the source and the returned evidence hash. This
+uses GitHub's documented [repository](https://docs.github.com/en/rest/repos/repos)
+and [commit](https://docs.github.com/en/rest/commits/commits) endpoints.
 
 Extraction uses local `ffprobe` and `ffmpeg` to decode mono 16 kHz WAV, then
 Nara's installed local STT backend. It never falls through to a cloud STT

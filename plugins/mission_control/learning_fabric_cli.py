@@ -6,6 +6,7 @@ import argparse
 from typing import Any
 
 from plugins.mission_control.learning_fabric import LearningFabric
+from plugins.mission_control.learning_github_source import verify_quoted_repository
 from plugins.mission_control.learning_media import extract_local_media
 from plugins.mission_control.learning_video_ocr import extract_video_local, extract_video_screen_text
 
@@ -26,6 +27,10 @@ def register_media_cli(actions: Any) -> None:
     frames = actions.add_parser("learn-media-frames", help="Extract and archive video frame OCR evidence")
     frames.add_argument("source_id")
 
+    repository = actions.add_parser("learn-repo-verify", help="Verify a quoted repository with GitHub's public API")
+    repository.add_argument("source_id")
+    repository.add_argument("--quote", required=True)
+
     propose = actions.add_parser("learn-media-propose", help="Propose an inactive, source-quoted claim")
     propose.add_argument("source_id")
     propose.add_argument("claim")
@@ -42,6 +47,11 @@ def media_command(args: argparse.Namespace) -> dict[str, Any]:
     if args.mission_action == "learn-media-frames":
         try:
             return extract_video_screen_text(fabric, args.source_id)
+        except KeyError as exc:
+            raise ValueError(f"unknown learning source: {args.source_id}") from exc
+    if args.mission_action == "learn-repo-verify":
+        try:
+            return verify_quoted_repository(fabric, args.source_id, args.quote)
         except KeyError as exc:
             raise ValueError(f"unknown learning source: {args.source_id}") from exc
     if args.mission_action == "learn-media-propose":

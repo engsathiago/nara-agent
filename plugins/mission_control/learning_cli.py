@@ -109,6 +109,6 @@ def learning_command(store: MissionStore, args: argparse.Namespace) -> dict[str,
 
 
 def dispatch_learning(store: MissionStore, args: argparse.Namespace) -> dict[str, Any]:
-    if args.mission_action.startswith("learn-media-"):
+    if args.mission_action.startswith(("learn-media-", "learn-repo-")):
         return media_command(args)
     return learning_command(store, args)

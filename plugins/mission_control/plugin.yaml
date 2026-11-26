@@ -27,6 +27,7 @@ provides_tools:
   - nara_learning_ingest
   - nara_learning_claim_propose
   - nara_learning_frame_extract
+  - nara_learning_repo_verify
   - nara_specialist_resolve
   - nara_specialist_get
   - nara_fleet_status
