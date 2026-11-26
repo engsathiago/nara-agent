@@ -60,6 +60,33 @@ promotion. `nara mission learn-rollback CANDIDATE_ID` disables a promoted skill.
 The operator must supply meaningful, independent cases and the executable
 evaluator; a passing toy fixture does not establish general competence.
 
+To have Nara write the proposal itself, run:
+
+```sh
+nara mission learn-media-study SOURCE_ID --objective "Learn the display convention for a virtual office"
+```
+
+This uses the host's configured model through the plugin LLM router, including
+its normal provider selection; unlike transcription, study is not necessarily
+local. The extracted source text is sent to that model. Each invocation makes
+one bounded structured-generation call (up to 2,048 output tokens and a
+120-second timeout), without tools or access to evaluation cases. Sources over
+48,000 characters require an explicitly selected smaller source. The result can
+be an inactive candidate, an explicit `no_procedure`, or a recorded failure.
+`--repo-claim VERIFIED_CLAIM_ID` optionally attaches existing repository proof.
+No package is installed and no skill is activated by this command.
+
+The source is verified before generation and again before candidate creation.
+Nara checks output types and exact citations independently of the model.
+Content-addressed request and result receipts preserve the objective, source,
+prompt, model/provider, response and token usage. The result points to the
+candidate and receipt hash. Failed attempts preserve a receipt too; transport
+errors record their type without copying credential-bearing error messages.
+Use the existing `learn-evaluate`, `learn-promote` and `learn-rollback` commands
+for the subsequent lifecycle. This command automates proposal authoring for a
+selected source; it does not yet schedule autonomous source discovery or design
+an independent evaluation on the user's behalf.
+
 Extraction uses local `ffmpeg` to decode mono 16 kHz WAV, then
 Nara's installed local STT backend. It never falls through to a cloud STT
 provider. The transcript is stored by content hash, linked to the original

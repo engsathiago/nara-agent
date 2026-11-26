@@ -199,6 +199,7 @@ def mission_command(
     args: argparse.Namespace,
     *,
     dispatch_tool: Callable[[str, dict[str, Any]], str] | None = None,
+    llm: Any = None,
 ) -> int:
     action = getattr(args, "mission_action", None)
     if not action:
@@ -356,7 +357,7 @@ def mission_command(
                 holdout_case_ids=args.holdout_case,
             ).to_dict())
         elif action.startswith("learn-"):
-            _print(dispatch_learning(store, args))
+            _print(dispatch_learning(store, args, llm=llm))
         elif action == "rebuild":
             mission = store.rebuild_projection(args.mission_id)
             _print({"mission": mission.to_dict(), "projection_verified": store.verify_projection(args.mission_id)})

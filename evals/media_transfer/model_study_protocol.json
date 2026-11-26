@@ -1,0 +1,11 @@
+{
+  "source_id": "source:46bafd75c32053dcac9115f5eca0164bfcd4ac281efd86cf2cd870ba7882f171",
+  "objective": "Aprender a convenção de apresentação visual de um escritório virtual de robôs a partir deste vídeo, para reutilizar em outro painel.",
+  "model": "qwen3.5:4b",
+  "cases": [
+    {"case_id": "development", "robots": [{"id": "example", "balance": 11}]},
+    {"case_id": "new_pair", "robots": [{"id": "research-A", "balance": 234.5}, {"id": "research-B", "balance": -7.75}]},
+    {"case_id": "new_single", "robots": [{"id": "desk-zero", "balance": 0}]},
+    {"case_id": "new_team", "robots": [{"id": "lead", "balance": 9000}, {"id": "worker-x", "balance": 0.125}, {"id": "worker-y", "balance": -31}]}
+  ]
+}
