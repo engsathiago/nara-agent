@@ -182,3 +182,13 @@ path on the archived public memory post: inactive candidate created, promotion
 refused without a reserved evaluation, and no active skill file. The DMG/ZIP
 passed integrity checks. This satisfies the local media-to-candidate seam only;
 the full real-media-to-new-task transfer gate remains open.
+
+The full-suite pass on the earlier production commit `a72116f` remains the last
+completed zero-failure integral run recorded here. A later integral run on
+`dac95d6` completed with 74,277 passing tests, 27 failures and 2,100 skips;
+PR #49 repaired the observed categories, and PR #50 repaired one additional
+Desktop test expectation found during the next run. The latter run was stopped
+after the correction had merged, so it is not counted as a full pass. The
+current local product code is packaged and its CLI and archives were checked
+as described in the publication report. A zero-failure integral run on this
+newer code must be recorded separately before calling that gate passed.
