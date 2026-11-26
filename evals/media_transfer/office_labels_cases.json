@@ -1,0 +1,8 @@
+{
+  "cases": [
+    {"case_id": "development", "robots": [{"id": "example", "balance": 1}]},
+    {"case_id": "positive_and_negative", "robots": [{"id": "robot-a", "balance": 23.75}, {"id": "robot-b", "balance": -4.5}]},
+    {"case_id": "zero_and_fraction", "robots": [{"id": "robot-c", "balance": 0}, {"id": "robot-d", "balance": 0.01}]},
+    {"case_id": "three_new_workers", "robots": [{"id": "worker-17", "balance": -12.25}, {"id": "worker-3", "balance": 1024}, {"id": "worker-80", "balance": 8.9}]}
+  ]
+}

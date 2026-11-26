@@ -1,0 +1,91 @@
+{
+  "candidate_hash": "51d11a56adc7145e2c29142d85003d38711045d0edb03a0e56fba4f95ec043fe",
+  "candidate_id": "a3c2479ac17ba676fff9",
+  "cases": [
+    {
+      "baseline": 0.0,
+      "baseline_evidence": [
+        {
+          "bytes": 1980,
+          "path": "evidence/e77b9f87734059aa49251d51bc1513d595ea279d5c0ac895946e40e3b9fdb6fe.json",
+          "sha256": "e77b9f87734059aa49251d51bc1513d595ea279d5c0ac895946e40e3b9fdb6fe"
+        }
+      ],
+      "candidate": 1.0,
+      "candidate_evidence": [
+        {
+          "bytes": 2133,
+          "path": "evidence/85d0c724eec9d4c6c040d05dde73e528e4d093539198be73cfb4f1bf0eeeec1e.json",
+          "sha256": "85d0c724eec9d4c6c040d05dde73e528e4d093539198be73cfb4f1bf0eeeec1e"
+        }
+      ],
+      "case_id": "positive_and_negative",
+      "delta": 1.0
+    },
+    {
+      "baseline": 0.0,
+      "baseline_evidence": [
+        {
+          "bytes": 1961,
+          "path": "evidence/89597f651ec23c669d65dde1a3c3a823df965d2a84333b2174f86fbfa0ff885f.json",
+          "sha256": "89597f651ec23c669d65dde1a3c3a823df965d2a84333b2174f86fbfa0ff885f"
+        }
+      ],
+      "candidate": 1.0,
+      "candidate_evidence": [
+        {
+          "bytes": 2118,
+          "path": "evidence/34bffdde7d8af37644a6099442b3b33a387be00b9488da8755b1ddc80345ea59.json",
+          "sha256": "34bffdde7d8af37644a6099442b3b33a387be00b9488da8755b1ddc80345ea59"
+        }
+      ],
+      "case_id": "zero_and_fraction",
+      "delta": 1.0
+    },
+    {
+      "baseline": 0.0,
+      "baseline_evidence": [
+        {
+          "bytes": 2242,
+          "path": "evidence/6b12ce5588938c4492eed2e48a4f6b90070302e47c224412c29e4275e58171fb.json",
+          "sha256": "6b12ce5588938c4492eed2e48a4f6b90070302e47c224412c29e4275e58171fb"
+        }
+      ],
+      "candidate": 1.0,
+      "candidate_evidence": [
+        {
+          "bytes": 2399,
+          "path": "evidence/eb0e37bd14d0d62dd47f0f27af18385a1d93822d92060d1a46a7602b1c34ed8e.json",
+          "sha256": "eb0e37bd14d0d62dd47f0f27af18385a1d93822d92060d1a46a7602b1c34ed8e"
+        }
+      ],
+      "case_id": "three_new_workers",
+      "delta": 1.0
+    }
+  ],
+  "development_case_ids": [
+    "development"
+  ],
+  "evaluated_at": "2026-11-26T22:16:15.859174+00:00",
+  "evaluator_path": "../office_labels.py",
+  "evaluator_sha256": "1f949f1d8b6fc24cb4713498cb3a6c0c42a842c26eb1d7debe631547f502e28d",
+  "holdout_case_ids": [
+    "positive_and_negative",
+    "zero_and_fraction",
+    "three_new_workers"
+  ],
+  "mean_delta": 1.0,
+  "passed": true,
+  "regressions": 0,
+  "schema_version": 1,
+  "protocol_commit": "4ad327d24ce248d4b1e88ce11c96de7cf8055c08",
+  "original_evaluation_sha256": "448b161099d227c9d4a6bfd6bd7127436b5c6c8d1bdd492f8aca140297e3ad51",
+  "cases_sha256": "7152ee02b4733a011631dc61816ad544aadf9806949c769645d6a509e44ddc27",
+  "definition_sha256": "6a69ec9d251dbad7a20bc820ecdec0968aa86d77baa0c356fd8f1dd483021317",
+  "temporary_lifecycle": {
+    "status": "rolled_back",
+    "active_skill_present": false,
+    "archived_skill_sha256": "427df849e0b2d6f7508ad33253964ac95caa1db304aed1cfa375533d350c9eae"
+  },
+  "export_note": "Paths normalized for public replay. Initial wrapper failed to serialize rollback Path after evaluation and rollback; export recovered from unchanged durable artifacts without rerunning the model."
+}

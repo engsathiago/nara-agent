@@ -61,3 +61,20 @@ transfer evaluation`, and no `SKILL.md` appeared in that temporary profile.
 This is real-media candidate creation and promotion refusal, not evidence that
 the advice transferred to another task. Package hashes and signature limits
 are in `research/NARA_PUBLICATION_2026-11-25.md`.
+
+## Narrow real-media transfer measured
+
+The archived public `DdFLWjqAfMC` video was used in the predeclared
+`evals/media_transfer/` experiment. Its display convention became a candidate
+authored by the coding assistant from an exact quote. The local `qwen3.5:4b`
+model mapped three reserved sets of robot balances into display data. Baseline
+scored 0.0 and the procedure-conditioned variant 1.0 on each case. The frozen
+production evaluator retained all six requests/responses; an independent
+offline verifier recalculates the scores and checks hashes and paired prompts.
+
+The LearningLab promoted and rolled back this candidate only in a temporary
+profile. This establishes a small, sourced UI-convention transfer, not broad
+learning or autonomous candidate discovery. The real-Reel requirement with
+an OCR-only GitHub repository remains open because this source has no extracted
+repository URL. See `evals/media_transfer/README.md` for the frozen protocol,
+evidence export recovery, model limitations and reproduction command.

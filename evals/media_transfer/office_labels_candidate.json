@@ -1,0 +1,6 @@
+{
+  "source_id": "source:46bafd75c32053dcac9115f5eca0164bfcd4ac281efd86cf2cd870ba7882f171",
+  "name": "Saldos no escritório virtual",
+  "steps": ["Apresente o saldo informado de cada robô acima do personagem correspondente e atualize essa exibição a cada 20 segundos."],
+  "quotes": ["Cada trader é um robo número em cima da cabeça, é o saldo sendo atualizado a cada 20 segundos"]
+}
