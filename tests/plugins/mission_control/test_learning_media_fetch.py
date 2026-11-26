@@ -1,6 +1,7 @@
 """Public video acquisition uses a bounded, temporary, cookie-free path."""
 
 import argparse
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -31,9 +32,31 @@ def test_rejects_nonpublic_or_nonvideo_urls(url):
 
 def test_reports_missing_extractor(tmp_path, monkeypatch):
     monkeypatch.setattr("plugins.mission_control.learning_media_fetch.shutil.which", lambda name: None)
+    monkeypatch.setattr("plugins.mission_control.learning_media_fetch.find_spec", lambda name: None)
     assert media_fetch_status()["status"] == "unavailable"
     with pytest.raises(ValueError, match="yt-dlp is unavailable"):
         fetch_public_media(LearningFabric(tmp_path / "fabric"), URL)
+
+
+def test_uses_pinned_python_module_when_binary_is_not_on_path(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "plugins.mission_control.learning_media_fetch.shutil.which",
+        lambda name: "/usr/bin/ffprobe" if name == "ffprobe" else None,
+    )
+    monkeypatch.setattr("plugins.mission_control.learning_media_fetch.find_spec", lambda name: object())
+    monkeypatch.setattr("plugins.mission_control.learning_media_fetch._duration", lambda media, probe: 10.0)
+    commands = []
+
+    def download(command, **options):
+        commands.append(command)
+        media = Path(command[command.index("--output") + 1].replace("%(ext)s", "mp4"))
+        media.write_bytes(b"module video")
+        return SimpleNamespace(returncode=0, stdout=str(media) + "\n", stderr="")
+
+    monkeypatch.setattr("plugins.mission_control.learning_media_fetch.subprocess.run", download)
+    source = fetch_public_media(LearningFabric(tmp_path / "fabric"), URL)
+    assert source["source_uri"] == URL
+    assert commands[0][:3] == [sys.executable, "-m", "yt_dlp"]
 
 
 def test_fetches_one_file_through_learning_fabric_and_removes_temp(tmp_path, monkeypatch):

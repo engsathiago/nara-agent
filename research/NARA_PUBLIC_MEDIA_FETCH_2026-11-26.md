@@ -42,3 +42,10 @@ overlong media before archive creation.
 
 Authenticated media acquisition remains separate. No browser cookies are read
 by this path; a post that requires login returns a visible acquisition error.
+
+The subsequent packaging pass pins `yt-dlp==2026.8.19` in the optional
+`media-fetch` extra. The Desktop build stages all declared extras, so it can
+invoke the module through its own Python interpreter when no standalone
+`yt-dlp` binary is on the app's `PATH`. Source installs can add the extra or
+provide the command externally. A focused test exercises that module fallback;
+the actual bundled-app check is recorded with the package build, separately.
