@@ -8,6 +8,7 @@ import re
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from nara_cli.sqlite_util import transaction
@@ -66,11 +67,40 @@ def _quoted_repository(quote: str) -> str:
     return f"{owner}/{repo}"
 
 
+def _check_cited_source(source: dict[str, Any]) -> None:
+    """Reject a citation when its archived media or extraction proof changed."""
+    original = Path(source["stored_path"])
+    digest = hashlib.sha256()
+    try:
+        with original.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+    except OSError as exc:
+        raise ValueError("cited source archive is missing") from exc
+    if digest.hexdigest() != source["source_hash"]:
+        raise ValueError("cited source archive has changed")
+    transcript_path = source.get("transcript_path")
+    if transcript_path:
+        transcript = Path(transcript_path)
+        if not transcript.is_file() or hashlib.sha256(transcript.read_bytes()).hexdigest() != source["transcript_hash"]:
+            raise ValueError("cited transcript archive has changed")
+    frame_ocr = source["metadata"].get("frame_ocr", {})
+    if frame_ocr.get("status") == "complete":
+        fused = hashlib.sha256((source["extracted_text"] or "").encode()).hexdigest()
+        if fused != frame_ocr.get("fused_text_hash"):
+            raise ValueError("cited screen text has changed")
+        for item in frame_ocr.get("evidence", []):
+            frame = Path(item["frame_path"])
+            if not frame.is_file() or hashlib.sha256(frame.read_bytes()).hexdigest() != item["frame_hash"]:
+                raise ValueError("cited video frame archive has changed")
+
+
 def verify_quoted_repository(
     fabric: LearningFabric, source_id: str, quote: str,
 ) -> dict[str, Any]:
     """Verify only repository identity/existence, never a video's feature claims."""
     source = fabric.source(source_id)
+    _check_cited_source(source)
     if quote not in (source["extracted_text"] or ""):
         raise ValueError("repository quote is not present in the extracted source")
     requested = _quoted_repository(quote)

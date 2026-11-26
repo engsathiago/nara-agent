@@ -69,6 +69,15 @@ def test_tampered_official_snapshot_fails_claim_read(tmp_path, monkeypatch):
         fabric.claim(result["claim"]["claim_id"])
 
 
+def test_tampered_cited_source_cannot_be_verified(tmp_path, monkeypatch):
+    fabric, source = _source(tmp_path)
+    Path(source["stored_path"]).write_text("altered archive")
+    monkeypatch.setattr("plugins.mission_control.learning_github_source._github_json", _official([]))
+    with pytest.raises(ValueError, match="cited source archive has changed"):
+        verify_quoted_repository(fabric, source["source_id"], QUOTE)
+    assert fabric.status()["claims"] == []
+
+
 def test_wrong_or_unquoted_repository_cannot_be_verified(tmp_path, monkeypatch):
     fabric, source = _source(tmp_path)
     monkeypatch.setattr(
