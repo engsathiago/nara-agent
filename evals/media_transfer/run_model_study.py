@@ -47,7 +47,7 @@ def main():
             transcript_path=source["transcript_path"],
         )
         env = {key: value for key, value in os.environ.items()
-               if key in {"PATH", "SYSTEMROOT", "WINDIR", "TZ", "LANG"}}
+               if key in {"PATH", "PYTHONPATH", "SYSTEMROOT", "WINDIR", "TZ", "LANG"}}
         env["NARA_HOME"] = str(root)
         result = subprocess.run(
             [sys.executable, "-m", "nara_cli.main", "mission", "learn-media-study",
