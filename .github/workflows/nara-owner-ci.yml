@@ -37,10 +37,17 @@ jobs:
         run: |
           "$NARA_PYTHON" scripts/check_product_identity.py
 
-      - name: Test mission control, voice, and process cleanup
+      - name: Test mission control, memory gateway, voice, and process cleanup
         env:
           NARA_TEST_WORKERS: '2'
           OPENAI_API_KEY: ''
           OPENROUTER_API_KEY: ''
           NOUS_API_KEY: ''
-        run: scripts/run_tests.sh tests/plugins/mission_control tests/test_session_daemon_reaper.py tests/tools/test_voice_mode.py
+        run: |
+          scripts/run_tests.sh \
+            tests/plugins/mission_control \
+            tests/plugins/memory/test_nara_temporal.py \
+            tests/plugins/memory/test_nara_temporal_discovery.py \
+            tests/plugins/memory/test_nara_memory_gateway.py \
+            tests/test_session_daemon_reaper.py \
+            tests/tools/test_voice_mode.py
