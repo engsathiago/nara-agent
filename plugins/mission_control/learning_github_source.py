@@ -69,6 +69,9 @@ def _quoted_repository(quote: str) -> str:
 
 def _check_cited_source(source: dict[str, Any]) -> None:
     """Reject a citation when its archived media or extraction proof changed."""
+    from plugins.mission_control.learning_speech_timing import check_speech_timing
+
+    check_speech_timing(source)
     original = Path(source["stored_path"])
     digest = hashlib.sha256()
     try:

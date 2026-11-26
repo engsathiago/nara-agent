@@ -32,7 +32,7 @@ from tools.transcription_audio import (
     _validate_audio_file, _validate_audio_source_file)
 from tools.transcription_chunking import exceeds_upload_limit, transcribe_oversized, upload_limit
 from tools.transcription_local import (
-    _get_idle_unload_seconds, _has_local_command, _join_confident_segments,
+    _get_idle_unload_seconds, _has_local_command, _join_confident_segments, _timed_confident_segments,
     _load_local_whisper_model, _looks_like_cuda_lib_error, _normalize_local_model,
     _normalize_local_stt_language, _transcribe_local_command, _try_lazy_install_stt,
     build_local_transcribe_kwargs)
@@ -415,7 +415,8 @@ def _transcribe_local(
         idle_timeout = _get_idle_unload_seconds(local_cfg)
         if idle_timeout > 0:
             _start_idle_unload_watcher(idle_timeout)
-        return _ok_result(transcript, "local")
+        return {**_ok_result(transcript, "local"),
+                "speech_segments": _timed_confident_segments(segments, local_cfg)}
     except Exception as e:
         logger.error("Local transcription failed: %s", e, exc_info=True)
         return _error_result(f"Local transcription failed: {e}")

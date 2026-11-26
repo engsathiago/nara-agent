@@ -90,7 +90,9 @@ def test_media_cli_ingest_show_and_propose_use_same_store(tmp_path, monkeypatch,
         _media(media, "audio")
         monkeypatch.setattr(
             "tools.transcription_tools.transcribe_audio_local_fallback",
-            lambda path, **kwargs: {"success": True, "transcript": "Nara confirma o resultado.", "provider": "fixture-stt"},
+            lambda path, **kwargs: {"success": True, "transcript": "Nara confirma o resultado.",
+                                    "provider": "fixture-stt", "speech_segments": [
+                                        {"start": 0.0, "end": 0.8, "text": "Nara confirma o resultado."}]},
         )
         parser = argparse.ArgumentParser()
         register_cli(parser)
@@ -100,7 +102,9 @@ def test_media_cli_ingest_show_and_propose_use_same_store(tmp_path, monkeypatch,
         source = json.loads(capsys.readouterr().out)
         assert source["extracted_text"] == "Nara confirma o resultado."
         assert mission_command(parser.parse_args(["learn-media-show", source["source_id"]])) == 0
-        assert json.loads(capsys.readouterr().out)["source_hash"] == source["source_hash"]
+        shown = json.loads(capsys.readouterr().out)
+        assert shown["source_hash"] == source["source_hash"]
+        assert shown["metadata"]["local_extraction"]["timing"]["segments"][0]["end"] == 0.8
         assert mission_command(parser.parse_args([
             "learn-media-propose", source["source_id"], "Nara checks the outcome",
             "--quote", "confirma o resultado",
@@ -161,3 +165,27 @@ def test_local_transcript_tampering_fails_closed(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match="stored transcript has changed"):
         extract_local_media(fabric, source["source_id"])
     assert fabric.source(source["source_id"])["extracted_text"] == "Original words."
+
+
+def test_speech_timing_survives_reopen_and_rejects_changed_archive(tmp_path, monkeypatch):
+    media = tmp_path / "lesson.wav"
+    _media(media, "audio")
+    fabric = LearningFabric(tmp_path / "fabric")
+    source = fabric.ingest_file(media, modality="audio")
+    rows = [{"start": 0.1, "end": 0.9, "text": "Texto real."}]
+    monkeypatch.setattr(
+        "tools.transcription_tools.transcribe_audio_local_fallback",
+        lambda *a, **kw: {"success": True, "transcript": "Texto real.",
+                          "provider": "fixture", "speech_segments": rows},
+    )
+    extracted = extract_local_media(fabric, source["source_id"])
+    timing = extracted["metadata"]["local_extraction"]["timing"]
+    reopened = LearningFabric(fabric.root)
+    assert extract_local_media(reopened, source["source_id"])["metadata"]["local_extraction"]["timing"]["segments"] == rows
+    from plugins.mission_control.learning_github_source import _check_cited_source
+    _check_cited_source(reopened.source(source["source_id"]))
+    Path(timing["path"]).write_text("changed", encoding="utf-8")
+    with pytest.raises(ValueError, match="speech timestamps have changed"):
+        extract_local_media(reopened, source["source_id"])
+    with pytest.raises(ValueError, match="speech timestamps have changed"):
+        _check_cited_source(reopened.source(source["source_id"]))

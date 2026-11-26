@@ -9,6 +9,7 @@ stay in ``transcription_tools`` (module state) and are read from it lazily.
 from __future__ import annotations
 
 import logging
+import math
 import os
 import platform
 import shlex
@@ -293,6 +294,23 @@ def _join_confident_segments(segments: Any, local_cfg: dict[str, Any]) -> str:
             continue
         kept.append(segment.text.strip())
     return " ".join(kept).strip()
+
+
+def _timed_confident_segments(segments: Any, local_cfg: dict[str, Any]) -> list[dict[str, Any]]:
+    """Keep native segment times for the same speech admitted into the transcript."""
+    thresholds = _confidence_thresholds(local_cfg)
+    rows = []
+    for segment in segments:
+        if _is_hallucinated_segment(segment, *thresholds) or not segment.text.strip():
+            continue
+        try:
+            start, end = float(segment.start), float(segment.end)
+        except (AttributeError, TypeError, ValueError):
+            return []
+        if not (math.isfinite(start) and math.isfinite(end) and 0 <= start < end):
+            return []
+        rows.append({"start": start, "end": end, "text": segment.text.strip()})
+    return rows
 
 
 def _transcribe_local_command(

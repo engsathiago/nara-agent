@@ -16,8 +16,10 @@ The multimodal contract still has these concrete implementation gaps:
   but that does not implement the contract's temporary-original default.
   Retention must preserve source hashes and necessary derived evidence, and
   keep procedure evaluation possible after intentional original expiry.
-- `extract_local_media` currently archives a plain transcript and duration;
-  it does not persist speech segment timestamps as required by the pipeline.
+- The faster-whisper path now preserves native speech segment timestamps in a
+  hashed archive, exposed by the existing media-show source metadata. Local
+  command backends that return only plain text explicitly report timing as
+  unavailable; their timestamp adapters remain incomplete.
 - Real Reel-to-new-task transfer remains unproved as described in
   `NARA_MEDIA_PROCEDURE_TRANSFER_2026-11-26.md`.
 
@@ -25,7 +27,19 @@ Reingestion also previously accepted an existing archive without checking its
 bytes. The ingestion path now verifies its SHA-256 before reuse and reports
 corruption without silently replacing the evidence. The original and supplied
 transcript regression cases both failed on the prior code. This correction
-does not close retention, timestamp, or real-transfer requirements above.
+does not close retention or real-transfer requirements above.
+
+The subsequent timestamp change passed 104 focused tests. The two new
+provider/persistence regressions failed on the previous production code. A real
+Portuguese synthesized audio file was transcribed locally using the current
+checkout with the existing Desktop package's faster-whisper dependencies:
+source hash `5330e1b2d2eefa1991839d97a8ac6b432294a286d75e11c54286a3df40be8690`,
+one segment from 0.00 to 6.24 seconds, timing artifact SHA-256
+`8d866604d355220d84b7c44cbf36b09a43fe04edf6e8e05d9b56ddbb31b8b969`.
+Reopening the temporary store preserved the timing. The tests also demonstrate
+that changed timing evidence blocks both cached extraction and source citation.
+This is segment-level timing, not word alignment or a varied acoustic benchmark.
+The existing Desktop archive has not been rebuilt with this change.
 
 ## Authoritative local run
 
