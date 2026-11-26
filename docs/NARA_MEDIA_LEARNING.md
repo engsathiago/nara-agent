@@ -64,6 +64,17 @@ provider. The transcript is stored by content hash, linked to the original
 source hash and duration. The original remains available even if decode or STT
 fails; the source keeps `needs_extraction` and records the error for a retry.
 Re-running extraction on an intact local transcript returns the same source.
+With faster-whisper, `learn-media-show` also exposes
+`metadata.local_extraction.timing`: native speech segments with `start` and
+`end` in seconds and their text, plus the JSON archive path and SHA-256.
+The segments use the same confidence filter as the transcript. Their evidence
+is checked on cached extraction and before source citation or procedure
+evaluation. A changed archive produces an error; preserve it for diagnosis
+and restore the original evidence from a trusted backup before retrying.
+Text-only local command backends report `timing.status: unavailable`; Nara
+does not infer timestamps from text length. Earlier sources without a timing
+record remain readable. Segment boundaries are model estimates, not word
+alignment or a guarantee of acoustic accuracy.
 Duration is checked with `ffprobe` when present, or the installed PyAV backend
 when `ffprobe` is absent. The Desktop bundle carries PyAV and the pinned
 FFmpeg executable; a source install needs `ffmpeg` and either `ffprobe` or PyAV.

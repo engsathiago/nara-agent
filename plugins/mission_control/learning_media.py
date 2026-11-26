@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any
 
 from nara_cli.sqlite_util import transaction
 from plugins.mission_control.contracts import utc_now
+from plugins.mission_control.learning_speech_timing import archive_speech_timing, check_speech_timing
 
 if TYPE_CHECKING:
     from plugins.mission_control.learning_fabric import LearningFabric
@@ -105,6 +106,7 @@ def extract_local_media(
         raise ValueError("source already has a supplied transcript")
     transcript_path = source.get("transcript_path")
     if source["extraction_status"] == "transcribed_local":
+        check_speech_timing(source)
         transcript = Path(transcript_path) if transcript_path else None
         if transcript and transcript.is_file() and hashlib.sha256(transcript.read_bytes()).hexdigest() == source["transcript_hash"]:
             return source
@@ -140,6 +142,7 @@ def extract_local_media(
             "source_hash": source["source_hash"],
             "duration_seconds": duration,
             "extracted_at": utc_now(),
+            "timing": archive_speech_timing(fabric, source, transcription, duration),
         }
         extracted_text = content.decode("utf-8")
         frame_ocr = metadata.get("frame_ocr", {})
