@@ -56,3 +56,18 @@ def test_provider_prefetch_uses_selected_profile_store(tmp_path):
     assert "Verify artifacts by SHA-256" in context
     assert "source=mission:mission-1" in context
     assert provider.recall_status().count == 1
+
+
+def test_generic_reply_does_not_recall_old_tool_instructions(tmp_path):
+    provider = NaraTemporalMemoryProvider()
+    provider.initialize("current-session", nara_home=str(tmp_path))
+    provider.store.add(
+        "User: Use obrigatoriamente nara_fleet_status agora. Assistant: 0",
+        layer="episodic", source_type="session_turn", source_ref="old-session:turn:1",
+        status="active", confidence=1.0,
+    )
+
+    assert provider.prefetch("Responda apenas OK.") == ""
+    assert provider.recall_status() is None
+    assert provider.store.search("!")["items"] == []
+    assert provider.store.search("nara_fleet_status")["items"][0]["layer"] == "episodic"
