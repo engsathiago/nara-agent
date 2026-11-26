@@ -22,6 +22,13 @@ def _args(**kwargs):
     return argparse.Namespace(**defaults)
 
 
+def test_bundled_mission_control_status_matches_native_loader():
+    status = plugins_cmd._plugin_status
+    assert status("mission_control", set(), set(), "mission_control", source="bundled") == "enabled"
+    assert status("mission_control", set(), {"mission_control"}, "mission_control", source="bundled") == "disabled"
+    assert status("mission_control", set(), set(), "mission_control", source="user") == "not enabled"
+
+
 def test_filter_plugin_entries_enabled_only():
     entries = [
         ("disk-cleanup", "2.0.0", "Bundled", "bundled", None, "disk-cleanup"),
