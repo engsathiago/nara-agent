@@ -21,7 +21,8 @@ from plugins.mission_control.contracts import (
 )
 from plugins.mission_control.kanban_bridge import create_mission_task
 from plugins.mission_control.ledger import ExperienceLedger
-from plugins.mission_control.learning_cli import learning_command
+from plugins.mission_control.learning_cli import dispatch_learning, register_learning_cli
+from plugins.mission_control.learning_fabric_cli import register_media_cli
 from plugins.mission_control.goal_bridge import bind_mission_goal
 from plugins.mission_control.receipts import ReceiptStore
 from plugins.mission_control.schedule_bridge import schedule_mission
@@ -172,35 +173,8 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     study_plan.add_argument("--development-case", action="append", required=True)
     study_plan.add_argument("--holdout-case", action="append", required=True)
 
-    learn_extract = actions.add_parser(
-        "learn-extract", help="Create an inactive procedural candidate from a verified mission")
-    learn_extract.add_argument("mission_id")
-    learn_extract.add_argument("--name")
-
-    learn_show = actions.add_parser(
-        "learn-show", help="Inspect a procedural candidate and its reserved-transfer eval")
-    learn_show.add_argument("candidate_id")
-
-    learn_evaluate = actions.add_parser(
-        "learn-evaluate", help="Run reserved transfer cases with an executable evaluator")
-    learn_evaluate.add_argument("candidate_id")
-    learn_evaluate.add_argument("--cases-file", type=Path, required=True)
-    learn_evaluate.add_argument("--evaluator", type=Path, required=True)
-    learn_evaluate.add_argument("--development-case", action="append", required=True)
-    learn_evaluate.add_argument("--timeout", type=float, default=30.0)
-
-    learn_promote = actions.add_parser(
-        "learn-promote", help="Promote only a candidate whose reserved-transfer eval passed")
-    learn_promote.add_argument("candidate_id")
-
-    learn_rollback = actions.add_parser(
-        "learn-rollback", help="Disable a promoted learned skill and reject its active memory")
-    learn_rollback.add_argument("candidate_id")
-
-    consolidate = actions.add_parser(
-        "learn-consolidate", help="Extract inactive candidates from newly verified missions")
-    consolidate.add_argument("--limit", type=int, default=100)
-    actions.add_parser("learn-status", help="Show learning consolidation health and pending missions")
+    register_learning_cli(actions)
+    register_media_cli(actions)
 
     rebuild = actions.add_parser("rebuild", help="Rebuild and verify a projection from its event log")
     rebuild.add_argument("mission_id")
@@ -381,8 +355,8 @@ def mission_command(
                 development_case_ids=args.development_case,
                 holdout_case_ids=args.holdout_case,
             ).to_dict())
-        elif action in {"learn-extract", "learn-show", "learn-evaluate", "learn-promote", "learn-rollback", "learn-consolidate", "learn-status"}:
-            _print(learning_command(store, args))
+        elif action.startswith("learn-"):
+            _print(dispatch_learning(store, args))
         elif action == "rebuild":
             mission = store.rebuild_projection(args.mission_id)
             _print({"mission": mission.to_dict(), "projection_verified": store.verify_projection(args.mission_id)})

@@ -202,10 +202,12 @@ avaliação. A fixture `phase4-evolution-fabric-v1` promove o hash exato de uma 
 holdout, injeta uma regressão no canário, restaura o baseline e conserva a versão da sessão antiga.
 
 O Learning Fabric desse incremento ingere documentos, sites materializados, imagens, áudio e vídeo
-como originais endereçados por conteúdo. Texto local é extraído; áudio/vídeo sem adapter fica
-explicitamente em `needs_extraction`; transcrição fornecida recebe hash próprio. Claims só podem
+como originais endereçados por conteúdo. Texto local é extraído; áudio/vídeo pode ser transcrito
+por um backend local instalado, com idioma configurável, hash próprio da transcrição e ligação
+ao original. Sem backend, permanece em `needs_extraction` com erro visível; transcrição fornecida
+também recebe hash próprio. Claims só podem
 citar trechos existentes e permanecem candidatas até verificador e evidência. A mesma fixture
-ingere documento e áudio com transcrição e prova a procedência. Adapters reais de ASR/OCR/download,
+ingere documento e áudio com transcrição e prova a procedência. Fusão de ASR com cenas/OCR, download,
 GEPA/DSPy e otimização por modelos continuam sujeitos aos gates desta fase antes de `operational`.
 
 O primeiro incremento da Fase 5 está `verified`. O `pre_llm_call` da líder executa uma resolução

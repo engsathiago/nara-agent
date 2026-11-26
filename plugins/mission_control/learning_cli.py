@@ -13,6 +13,39 @@ from plugins.mission_control.consolidation import MissionConsolidator, learning_
 from plugins.mission_control.learning import LearningLab
 from plugins.mission_control.learning_runner import ProcessEvaluator
 from plugins.mission_control.store import MissionStore
+from plugins.mission_control.learning_fabric_cli import media_command
+
+
+def register_learning_cli(actions: Any) -> None:
+    learn_extract = actions.add_parser(
+        "learn-extract", help="Create an inactive procedural candidate from a verified mission")
+    learn_extract.add_argument("mission_id")
+    learn_extract.add_argument("--name")
+
+    learn_show = actions.add_parser(
+        "learn-show", help="Inspect a procedural candidate and its reserved-transfer eval")
+    learn_show.add_argument("candidate_id")
+
+    learn_evaluate = actions.add_parser(
+        "learn-evaluate", help="Run reserved transfer cases with an executable evaluator")
+    learn_evaluate.add_argument("candidate_id")
+    learn_evaluate.add_argument("--cases-file", type=Path, required=True)
+    learn_evaluate.add_argument("--evaluator", type=Path, required=True)
+    learn_evaluate.add_argument("--development-case", action="append", required=True)
+    learn_evaluate.add_argument("--timeout", type=float, default=30.0)
+
+    learn_promote = actions.add_parser(
+        "learn-promote", help="Promote only a candidate whose reserved-transfer eval passed")
+    learn_promote.add_argument("candidate_id")
+
+    learn_rollback = actions.add_parser(
+        "learn-rollback", help="Disable a promoted learned skill and reject its active memory")
+    learn_rollback.add_argument("candidate_id")
+
+    consolidate = actions.add_parser(
+        "learn-consolidate", help="Extract inactive candidates from newly verified missions")
+    consolidate.add_argument("--limit", type=int, default=100)
+    actions.add_parser("learn-status", help="Show learning consolidation health and pending missions")
 
 
 def _show(lab: LearningLab, args: argparse.Namespace, candidates: Path) -> dict[str, Any]:
@@ -73,3 +106,9 @@ def learning_command(store: MissionStore, args: argparse.Namespace) -> dict[str,
         ).run_once(limit=args.limit),
     }
     return actions[args.mission_action]()
+
+
+def dispatch_learning(store: MissionStore, args: argparse.Namespace) -> dict[str, Any]:
+    if args.mission_action.startswith("learn-media-"):
+        return media_command(args)
+    return learning_command(store, args)

@@ -25,6 +25,7 @@ provides_tools:
   - nara_evolution_status
   - nara_learning_status
   - nara_learning_ingest
+  - nara_learning_claim_propose
   - nara_specialist_resolve
   - nara_specialist_get
   - nara_fleet_status

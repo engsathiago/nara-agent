@@ -52,7 +52,7 @@ def register(ctx) -> None:
     from plugins.mission_control.fleet import FLEET_STATUS_SCHEMA, fleet_status_tool
     from plugins.mission_control.kanban_bridge import sync_task_status
     from plugins.mission_control.ledger import record_llm_call
-    from plugins.mission_control.learning_fabric import LEARNING_INGEST_SCHEMA, learning_ingest_tool
+    from plugins.mission_control.learning_fabric_tool import register_learning_tools
     from plugins.mission_control.policy import (
         POLICY_CONFIRM_SCHEMA,
         POLICY_EXPLAIN_SCHEMA,
@@ -147,9 +147,7 @@ def register(ctx) -> None:
     ctx.register_tool(
         name="nara_learning_status", toolset="mission_control",
         schema=LEARNING_STATUS_SCHEMA, handler=_tool_handler(learning_status_tool), emoji="📖")
-    ctx.register_tool(
-        name="nara_learning_ingest", toolset="mission_control",
-        schema=LEARNING_INGEST_SCHEMA, handler=_tool_handler(learning_ingest_tool), emoji="📚")
+    register_learning_tools(ctx, _tool_handler)
     ctx.register_tool(
         name="nara_specialist_resolve", toolset="mission_control",
         schema=SPECIALIST_RESOLVE_SCHEMA, handler=_tool_handler(specialist_resolve_tool), emoji="🧭")
