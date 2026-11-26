@@ -11,11 +11,11 @@ The passing regression suite and published package do not establish 100% of
 the datasheet or build contract, including the locally implementable scope.
 The multimodal contract still has these concrete implementation gaps:
 
-- `LearningFabric.ingest_file` stores the original bytes permanently in the
-  content-addressed archive. The downloader's temporary directory is removed,
-  but that does not implement the contract's temporary-original default.
-  Retention must preserve source hashes and necessary derived evidence, and
-  keep procedure evaluation possible after intentional original expiry.
+- New audio/video/image originals now default to 24-hour retention, with a
+  gateway housekeeping consumer and explicit CLI status/expiry command.
+  Verified derived evidence survives deletion under a hashed expiry receipt.
+  Older archives are explicitly legacy-retained; source input files are never
+  removed. This is due-time cleanup, not an always-running deletion service.
 - The faster-whisper path now preserves native speech segment timestamps in a
   hashed archive, exposed by the existing media-show source metadata. Local
   command backends that return only plain text explicitly report timing as
@@ -27,7 +27,7 @@ Reingestion also previously accepted an existing archive without checking its
 bytes. The ingestion path now verifies its SHA-256 before reuse and reports
 corruption without silently replacing the evidence. The original and supplied
 transcript regression cases both failed on the prior code. This correction
-does not close retention or real-transfer requirements above.
+does not by itself establish real-media learning transfer.
 
 The subsequent timestamp change passed 104 focused tests. The two new
 provider/persistence regressions failed on the previous production code. A real
@@ -40,6 +40,18 @@ Reopening the temporary store preserved the timing. The tests also demonstrate
 that changed timing evidence blocks both cached extraction and source citation.
 This is segment-level timing, not word alignment or a varied acoustic benchmark.
 The existing Desktop archive has not been rebuilt with this change.
+
+The subsequent retention implementation was exercised through the CLI,
+gateway callback, interrupted-unlink recovery, shared-evidence preservation,
+and candidate evaluation after expiry. Four new regression cases failed on
+the preceding production code. A manual run transcribed the same real PT-BR
+audio with checkout code and packaged dependencies, advanced the cleanup's
+explicit clock argument beyond the deadline, removed the archived original,
+and reopened/verified the surviving transcript and segment evidence. Receipt
+SHA-256: `24eb4d0f9db8580181de644a1d0aa5f5fb1e1e474ee9af356b205e03c5ec23dd`.
+This proves the local lifecycle with a simulated deadline, not 24 hours of
+unattended operation or learned competence. The Desktop binary still predates
+these changes and will need a later rebuild.
 
 ## Authoritative local run
 

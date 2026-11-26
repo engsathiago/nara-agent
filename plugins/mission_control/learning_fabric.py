@@ -86,6 +86,7 @@ class LearningFabric:
         license_name: str | None = None,
         transcript_path: Path | str | None = None,
         metadata: dict[str, Any] | None = None,
+        retain_original: bool = False,
     ) -> dict[str, Any]:
         if modality not in MODALITIES:
             raise ValueError(f"unsupported modality: {modality}")
@@ -116,6 +117,17 @@ class LearningFabric:
         if existing is not None:
             if existing["modality"] != modality:
                 raise ValueError("source bytes are already registered with a different modality")
+            from plugins.mission_control.learning_retention import original_policy
+
+            if existing["metadata"].get("original_retention", {}).get("status") in {"expired", "expiring"}:
+                with transaction(self._connect(), immediate=True) as conn:
+                    self._store(content)
+                    existing["metadata"] = json.loads(conn.execute(
+                        "SELECT metadata_json FROM learning_sources WHERE source_id=?", (identity,),
+                    ).fetchone()["metadata_json"])
+                    existing["metadata"]["original_retention"] = original_policy(keep=retain_original)
+                    conn.execute("UPDATE learning_sources SET metadata_json=? WHERE source_id=?",
+                                 (json.dumps(existing["metadata"], sort_keys=True), identity))
             if transcript_path is not None and existing["transcript_hash"] != transcript_hash:
                 if existing["extraction_status"] not in {"needs_extraction", "screen_text_local"}:
                     raise ValueError("source already has different extraction evidence")
@@ -136,6 +148,11 @@ class LearningFabric:
                     )
                 return self.source(identity)
             return existing
+        from plugins.mission_control.learning_retention import MEDIA_MODALITIES, original_policy
+
+        source_metadata = dict(metadata or {})
+        if modality in MEDIA_MODALITIES:
+            source_metadata["original_retention"] = original_policy(keep=retain_original)
         with transaction(self._connect(), immediate=True) as conn:
             conn.execute(
                 """INSERT OR REPLACE INTO learning_sources VALUES (
@@ -143,7 +160,7 @@ class LearningFabric:
                 )""",
                 (identity, modality, source_uri or source_path.as_uri(), digest, media_type,
                  str(stored), version, license_name, status, extracted_text, transcript_hash,
-                 stored_transcript, json.dumps(metadata or {}, sort_keys=True), utc_now()))
+                 stored_transcript, json.dumps(source_metadata, sort_keys=True), utc_now()))
         return self.source(identity)
 
     def source(self, source_id: str) -> dict[str, Any]:
