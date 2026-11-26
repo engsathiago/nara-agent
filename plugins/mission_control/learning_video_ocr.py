@@ -63,6 +63,13 @@ def _verified_video(fabric: LearningFabric, source_id: str) -> tuple[dict[str, A
     if source["modality"] != "video":
         raise ValueError("frame OCR requires a video source")
     stored = Path(source["stored_path"])
+    if not stored.exists() and source["metadata"].get("original_retention", {}).get("status") in {"expired", "expiring"}:
+        from plugins.mission_control.learning_github_source import _check_cited_source
+
+        _check_cited_source(source)
+        if source["metadata"].get("frame_ocr", {}).get("status") == "complete":
+            return source, stored
+        raise ValueError("original media expired; reingest the original to extract frames")
     if not stored.is_file() or stored.stat().st_size > MAX_MEDIA_BYTES:
         raise LearningEvidenceIntegrityError("stored video is missing or oversized")
     digest = hashlib.sha256()

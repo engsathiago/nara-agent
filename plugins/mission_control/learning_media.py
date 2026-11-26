@@ -94,6 +94,13 @@ def extract_local_media(
     if source["modality"] not in {"audio", "video"}:
         raise ValueError("local extraction requires an audio or video source")
     stored = Path(source["stored_path"])
+    if not stored.exists() and source["metadata"].get("original_retention", {}).get("status") in {"expired", "expiring"}:
+        from plugins.mission_control.learning_github_source import _check_cited_source
+
+        _check_cited_source(source)
+        if source["extraction_status"] == "transcribed_local":
+            return source
+        raise ValueError("original media expired; reingest the original to extract speech")
     if not stored.is_file() or stored.stat().st_size > MAX_MEDIA_BYTES:
         raise LearningEvidenceIntegrityError("stored source is missing, oversized, or changed")
     digest = hashlib.sha256()

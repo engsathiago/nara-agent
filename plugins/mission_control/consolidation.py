@@ -172,6 +172,9 @@ class MissionConsolidator:
 
 def maybe_run_gateway_consolidation(log: logging.Logger | None = None) -> dict[str, Any] | None:
     """Gateway housekeeping entry: per-profile, due-gated, and safe when unused."""
+    from plugins.mission_control.learning_retention import expire_gateway_media
+
+    expire_gateway_media()
     missions = MissionStore.open_default()
     if not missions.path.exists():
         return None

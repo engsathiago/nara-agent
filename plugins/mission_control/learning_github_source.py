@@ -70,18 +70,21 @@ def _quoted_repository(quote: str) -> str:
 def _check_cited_source(source: dict[str, Any]) -> None:
     """Reject a citation when its archived media or extraction proof changed."""
     from plugins.mission_control.learning_speech_timing import check_speech_timing
+    from plugins.mission_control.learning_retention import check_expiry_receipt
 
     check_speech_timing(source)
+    expired = check_expiry_receipt(source)
     original = Path(source["stored_path"])
     digest = hashlib.sha256()
-    try:
-        with original.open("rb") as handle:
-            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-                digest.update(chunk)
-    except OSError as exc:
-        raise ValueError("cited source archive is missing") from exc
-    if digest.hexdigest() != source["source_hash"]:
-        raise ValueError("cited source archive has changed")
+    if not expired or original.exists():
+        try:
+            with original.open("rb") as handle:
+                for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                    digest.update(chunk)
+        except OSError as exc:
+            raise ValueError("cited source archive is missing") from exc
+        if digest.hexdigest() != source["source_hash"]:
+            raise ValueError("cited source archive has changed")
     transcript_path = source.get("transcript_path")
     if transcript_path:
         transcript = Path(transcript_path)

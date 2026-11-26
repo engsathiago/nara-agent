@@ -21,6 +21,10 @@ def register_media_cli(actions: Any) -> None:
     ingest.add_argument("--license-name")
     ingest.add_argument("--extract-local", action="store_true")
     ingest.add_argument("--language", default="pt")
+    ingest.add_argument("--retain-original", action="store_true", help="Keep original media beyond the default 24 hours")
+
+    retention = actions.add_parser("learn-media-retention", help="Inspect or run original-media expiry")
+    retention.add_argument("--expire", action="store_true")
 
     fetch = actions.add_parser("learn-media-fetch", help="Acquire one public HTTPS video URL")
     fetch.add_argument("url")
@@ -54,6 +58,10 @@ def register_media_cli(actions: Any) -> None:
 
 def media_command(args: argparse.Namespace) -> dict[str, Any]:
     fabric = LearningFabric.open_default()
+    if args.mission_action == "learn-media-retention":
+        from plugins.mission_control.learning_retention import expire_originals, retention_status
+
+        return expire_originals(fabric) if args.expire else retention_status(fabric)
     if args.mission_action == "learn-media-fetch-status":
         return media_fetch_status()
     if args.mission_action == "learn-media-fetch":
@@ -84,6 +92,7 @@ def media_command(args: argparse.Namespace) -> dict[str, Any]:
         source = fabric.ingest_file(
             args.path, modality=args.modality, source_uri=args.source_uri,
             version=args.version, license_name=args.license_name,
+            retain_original=args.retain_original,
         )
     except OSError as exc:
         raise ValueError(f"cannot read media source: {exc}") from exc

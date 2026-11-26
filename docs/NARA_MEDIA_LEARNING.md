@@ -8,6 +8,8 @@ nara mission learn-media-ingest /absolute/path/lesson.mp4 --modality video --ext
 nara mission learn-media-fetch-status
 nara mission learn-media-fetch https://www.instagram.com/reel/POST_ID/ --extract-local --language pt
 nara mission learn-media-show SOURCE_ID
+nara mission learn-media-retention
+nara mission learn-media-retention --expire
 nara mission learn-media-propose SOURCE_ID "The lesson recommends X" --quote "exact words in transcript"
 nara mission learn-media-frames SOURCE_ID
 nara mission learn-repo-verify SOURCE_ID --quote "github.com/OWNER/REPOSITORY"
@@ -24,7 +26,7 @@ options. Fetch uses the pinned `media-fetch` package extra or an installed
 Desktop package includes the pinned extra. It accepts one public Instagram post/Reel, YouTube video, or Vimeo
 video over HTTPS, then sends the temporary download through the local file
 ingestion path. The download directory is removed; the content-addressed source
-archive remains for provenance and later re-extraction. `learn-media-fetch-status`
+archive is retained for 24 hours by default. `learn-media-fetch-status`
 reports whether the optional extractor is available. Authentication-only posts,
 expired Stories, rate limits, and site changes produce an explicit error.
 After reading the returned transcript, the
@@ -90,6 +92,25 @@ available and the failure appears in source metadata. The frame times describe
 sample points, not word-level timestamps; brief text between samples can be
 missed. Re-running `learn-media-frames` returns completed OCR evidence after
 checking archived frame and fused-text hashes; changed evidence fails visibly.
+
+New audio, video and image originals expire after 24 hours on the gateway's
+housekeeping pass, or when `learn-media-retention --expire` runs. The CLI status
+reports due items, counts and recorded errors. Before deletion, Nara verifies
+the original and derived evidence and archives an expiry receipt binding the
+original hash to the extracted text, transcript, timestamps and OCR evidence.
+The receipt and derived artifacts remain; existing procedure evaluation and
+cached extraction can still verify them. A crash during deletion leaves an
+`expiring` record that the next pass resumes. Corruption blocks deletion and
+appears as a degraded retention status.
+
+The caller's input file is never removed. To extract new evidence after expiry,
+ingest the original file again; this restores its archive and retention window.
+Use `learn-media-ingest ... --retain-original` on initial ingestion to opt out
+of expiry. Archives created before this policy remain `legacy_retained`;
+they are not silently deleted. Bytes shared with a transcript, OCR frame or
+other derived artifact are also retained. The deadline is a cleanup eligibility
+time: when the gateway is off, cleanup occurs on the next run. Keep a separate
+backup if the original must remain recoverable after deletion.
 
 An installed local STT backend is required for speech extraction; screen OCR
 can still succeed on a silent video. The bundled Desktop runtime has
