@@ -120,9 +120,11 @@ def _get_disabled_plugins() -> set:
 
 
 def _get_enabled_plugins() -> Optional[set]:
-    """Read the ``plugins.enabled`` allow-list (plugins are opt-in). ``None`` = key missing/malformed ("nothing
-    enabled yet"; the first ``migrate_config`` run grandfathers installed user plugins); ``set()`` = explicitly
-    empty; else the allow-list."""
+    """Read the opt-in allow-list. Bundled Mission Control loads unless explicitly disabled.
+
+    ``None`` means the key is missing/malformed; the first migration may
+    grandfather installed user plugins. ``set()`` is an empty allow-list.
+    """
     try:
         from nara_cli.config import load_config
         enabled = cfg_get(load_config(), "plugins", "enabled")
@@ -310,6 +312,10 @@ def gate_manifest(
         return _placeholder(
             None, logging.DEBUG, "Skipping '%s' (model-provider, handled by providers/ discovery)", enabled=True)
     if manifest.source == "bundled":
+        # Mission Control is Nara's native task runtime. The profile's deny-list
+        # above still disables it explicitly; other standalone plugins stay opt-in.
+        if lookup_key == "mission_control":
+            return ManifestGate("load")
         # Bundled backends auto-load; selection among them is ``<category>.provider`` config.
         if manifest.kind == "backend":
             return ManifestGate("load_now")
