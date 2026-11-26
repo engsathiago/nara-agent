@@ -142,7 +142,7 @@ class TestUpdateAdmission:
         refusal = evaluate_update_admission(root)
         assert refusal is not None
         assert refusal.code == "docker"
-        assert "docker pull" in refusal.update_command
+        assert "docker build -t nara-agent:local" in refusal.update_command
 
     def test_git_checkout_is_admitted(self, tmp_path, monkeypatch):
         from nara_cli.update_contract import evaluate_update_admission
