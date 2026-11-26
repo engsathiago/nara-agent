@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from extensions.nara_temporal_memory.nara_temporal import (
     NaraTemporalMemoryProvider,
     TemporalMemoryStore,
@@ -27,6 +29,39 @@ def test_correction_supersedes_current_fact_but_keeps_history(tmp_path):
         "The deployment region is us-east-1", "The deployment region is sa-east-1",
     }
     assert store.get(old["memory_id"])["valid_to"] is not None
+
+
+def test_only_one_correction_of_a_fact_can_become_current(tmp_path):
+    store = TemporalMemoryStore(tmp_path / "memory.db")
+    original = store.add("Region is us-east-1", layer="semantic", source_type="user",
+                         source_ref="session:1", status="active")
+    first = store.add("Region is sa-east-1", layer="semantic", source_type="operator",
+                      source_ref="correction:1", supersedes_id=original["memory_id"])
+    second = store.add("Region is eu-west-1", layer="semantic", source_type="operator",
+                       source_ref="correction:2", supersedes_id=original["memory_id"])
+
+    store.promote(first["memory_id"])
+    with pytest.raises(ValueError, match="no longer current"):
+        store.promote(second["memory_id"])
+
+    assert [item["memory_id"] for item in store.search("Region")["items"]] == [first["memory_id"]]
+    assert store.get(second["memory_id"])["status"] == "candidate"
+    with pytest.raises(ValueError, match="no longer current"):
+        store.add("Region is ap-south-1", layer="semantic", source_type="operator",
+                  source_ref="correction:3", supersedes_id=original["memory_id"])
+
+
+def test_correction_cannot_cross_scope_or_layer(tmp_path):
+    store = TemporalMemoryStore(tmp_path / "memory.db")
+    original = store.add("Project Nara owns the account", layer="semantic", source_type="user",
+                         source_ref="session:1", scope="project:nara", status="active")
+    with pytest.raises(ValueError, match="same layer and scope"):
+        store.add("Another project owns the account", layer="semantic", source_type="external",
+                  source_ref="document:1", scope="project:other", supersedes_id=original["memory_id"])
+    with pytest.raises(ValueError, match="same layer and scope"):
+        store.add("Run a deployment", layer="procedural", source_type="external",
+                  source_ref="document:2", scope="project:nara", supersedes_id=original["memory_id"])
+    assert store.get(original["memory_id"])["valid_to"] is None
 
 
 def test_search_explains_retrieval_and_preserves_provenance(tmp_path):
