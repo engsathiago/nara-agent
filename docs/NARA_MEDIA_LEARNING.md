@@ -5,6 +5,8 @@ For local audio or video files up to 500 MB and 15 minutes:
 
 ```sh
 nara mission learn-media-ingest /absolute/path/lesson.mp4 --modality video --extract-local --language pt
+nara mission learn-media-fetch-status
+nara mission learn-media-fetch https://www.instagram.com/reel/POST_ID/ --extract-local --language pt
 nara mission learn-media-show SOURCE_ID
 nara mission learn-media-propose SOURCE_ID "The lesson recommends X" --quote "exact words in transcript"
 nara mission learn-media-frames SOURCE_ID
@@ -13,6 +15,14 @@ nara mission learn-repo-verify SOURCE_ID --quote "github.com/OWNER/REPOSITORY"
 
 The `nara_learning_ingest` agent tool accepts the same `path`, `modality`,
 `extract_local: true`, and optional `language` fields (Portuguese by default).
+The `nara_learning_fetch` tool accepts a public video URL and the same extraction
+options. Fetch uses an installed `yt-dlp` with configuration and browser cookies
+disabled. It accepts one public Instagram post/Reel, YouTube video, or Vimeo
+video over HTTPS, then sends the temporary download through the local file
+ingestion path. The download directory is removed; the content-addressed source
+archive remains for provenance and later re-extraction. `learn-media-fetch-status`
+reports whether the optional extractor is available. Authentication-only posts,
+expired Stories, rate limits, and site changes produce an explicit error.
 After reading the returned transcript, the
 agent can call `nara_learning_claim_propose` with an exact source quote. The
 `nara_learning_frame_extract` tool retries video screen OCR separately. A claim
@@ -54,7 +64,6 @@ An installed local STT backend is required for speech extraction; screen OCR
 can still succeed on a silent video. The bundled Desktop runtime has
 the optional local Whisper dependencies; a source checkout can install the
 `stt-whisper` extra or configure Nara's local STT command. `ffmpeg` and
-`ffprobe` must be on `PATH`. Larger media, full scene/clip understanding,
-word timestamps, remote URL acquisition, and automated claim verification
-require separate adapters and evaluations. The current command does not claim
-those abilities.
+`ffprobe` must be on `PATH`. URL acquisition also needs `yt-dlp` on `PATH`.
+Larger media, full scene/clip understanding, word timestamps, and broad
+automated claim verification require separate adapters and evaluations.

@@ -7,6 +7,7 @@ from typing import Any
 from plugins.mission_control.learning_fabric import LearningFabric, MODALITIES
 from plugins.mission_control.learning_github_source import verify_quoted_repository
 from plugins.mission_control.learning_media import extract_local_media
+from plugins.mission_control.learning_media_fetch import fetch_public_media
 from plugins.mission_control.learning_video_ocr import extract_video_local, extract_video_screen_text
 
 
@@ -40,6 +41,24 @@ def learning_ingest_tool(
             return extract_video_local(fabric, source["source_id"], language=language)
         return extract_local_media(fabric, source["source_id"], language=language)
     return source
+
+
+FETCH_SCHEMA = {
+    "name": "nara_learning_fetch",
+    "description": "Acquire one public Instagram, YouTube, or Vimeo video and optionally extract speech and screen text locally.",
+    "parameters": {"type": "object", "properties": {
+        "url": {"type": "string"}, "extract_local": {"type": "boolean"},
+        "language": {"type": "string"},
+    }, "required": ["url"]},
+}
+
+
+def learning_fetch_tool(
+    url: str, extract_local: bool = False, language: str = "pt", **_: Any,
+) -> dict[str, Any]:
+    return fetch_public_media(
+        LearningFabric.open_default(), url, extract_local=extract_local, language=language,
+    )
 
 
 FRAME_EXTRACT_SCHEMA = {
@@ -87,6 +106,9 @@ def learning_claim_propose_tool(
 
 
 def register_learning_tools(ctx: Any, adapt: Any) -> None:
+    ctx.register_tool(
+        name="nara_learning_fetch", toolset="mission_control",
+        schema=FETCH_SCHEMA, handler=adapt(learning_fetch_tool), emoji="🌐")
     ctx.register_tool(
         name="nara_learning_ingest", toolset="mission_control",
         schema=LEARNING_INGEST_SCHEMA, handler=adapt(learning_ingest_tool), emoji="📚")
