@@ -99,6 +99,7 @@ def test_invalid_model_output_archived_without_candidate(tmp_path, monkeypatch, 
         digest = result["message"].split("sha256:")[1]
         receipt = json.loads((fabric.root / "sources" / digest[:2] / digest).read_bytes())
         assert receipt["status"] == "failed" and receipt["parsed"] == payload
+        assert receipt["failure_stage"] == "validation" and receipt["reason"]
         assert not list(home.rglob("*.candidate.json"))
         assert not list((home / "skills").glob("nara-learned-*"))
         assert not list((home / "plugin-data/mission-control/learning/candidates").glob("*.json"))
@@ -130,5 +131,21 @@ def test_model_can_decline_without_inventing_a_skill(tmp_path, monkeypatch, caps
         code, result = _study(parser, source, _model(payload, []), capsys)
         assert code == 0 and result["status"] == "no_procedure" and "candidate" not in result
         assert not list((home / "skills").glob("nara-learned-*"))
+    finally:
+        reset_nara_home_override(token)
+
+
+def test_transport_failure_keeps_diagnostics_without_error_credentials(tmp_path, monkeypatch, capsys):
+    _, token, parser, fabric, source, _, _, _ = _setup(tmp_path, monkeypatch)
+    def unavailable(**kwargs):
+        raise ConnectionError("https://provider.invalid/?api_key=DO_NOT_ARCHIVE")
+    try:
+        code, result = _study(parser, source, SimpleNamespace(complete_structured=unavailable), capsys)
+        assert code == 1 and "DO_NOT_ARCHIVE" not in result["message"]
+        digest = result["message"].split("sha256:")[1]
+        raw = (fabric.root / "sources" / digest[:2] / digest).read_bytes()
+        receipt = json.loads(raw)
+        assert receipt["failure_stage"] == "generation" and receipt["error_type"] == "ConnectionError"
+        assert b"DO_NOT_ARCHIVE" not in raw
     finally:
         reset_nara_home_override(token)

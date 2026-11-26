@@ -80,3 +80,9 @@ sets `reasoning_effort: none`, and disables transient retries in the temporary
 profile. Prompt, source, cases and scoring stay unchanged; no holdout result was
 seen before this configuration correction. The outer 180-second timeout now
 also retains partial output for diagnosis.
+
+The follow-up at `d914e4051c` generated an invalid proposal: ten steps, eight
+quotes, including one nonliteral quote. The CLI rejected it and archived the
+failure; no candidate or transfer scores were created. See
+`research/NARA_MODEL_MEDIA_STUDY_2026-11-26.md` for the negative result and
+evidence hashes. The model output was not manually repaired or regenerated.

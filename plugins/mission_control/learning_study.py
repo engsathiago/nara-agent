@@ -83,6 +83,7 @@ def study_media(lab: Any, llm: Any, source_id: str, objective: str,
         "kind": "media_study_result", "schema_version": 1,
         "request_sha256": request_hash, "source_id": source_id,
     }
+    stage = "generation"
     try:
         result = llm.complete_structured(
             instructions=STUDY_INSTRUCTIONS,
@@ -93,6 +94,7 @@ def study_media(lab: Any, llm: Any, source_id: str, objective: str,
         )
         receipt.update(provider=result.provider, model=result.model,
                        usage=asdict(result.usage), response=result.text, parsed=result.parsed)
+        stage = "validation"
         proposal = _proposal(result.parsed)
         if proposal["steps"]:
             candidate = lab.propose_from_media(
@@ -103,8 +105,9 @@ def study_media(lab: Any, llm: Any, source_id: str, objective: str,
             receipt.update(status="no_procedure", reason=proposal["decline_reason"])
     except Exception as exc:
         # Preserve a failed attempt too; transport errors may contain credentials.
-        receipt.update(status="failed", error_type=type(exc).__name__)
+        reason = str(exc) if stage == "validation" and isinstance(exc, ValueError) else type(exc).__name__
+        receipt.update(status="failed", error_type=type(exc).__name__, failure_stage=stage, reason=reason)
         digest, _ = fabric._store(json.dumps(receipt, sort_keys=True, ensure_ascii=False).encode())
-        raise ValueError(f"media study failed ({type(exc).__name__}); evidence sha256:{digest}") from exc
+        raise ValueError(f"media study failed during {stage}: {reason}; evidence sha256:{digest}") from exc
     digest, path = fabric._store(json.dumps(receipt, sort_keys=True, ensure_ascii=False).encode())
     return {**receipt, "evidence": {"sha256": digest, "path": str(path)}}

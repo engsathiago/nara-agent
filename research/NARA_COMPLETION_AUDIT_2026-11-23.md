@@ -26,6 +26,11 @@ The multimodal contract still has these concrete implementation gaps:
   Broad transfer, autonomous candidate discovery, and the real-Reel case with
   an OCR-only repository remain unproved; see
   `NARA_MEDIA_PROCEDURE_TRANSFER_2026-11-26.md`.
+- Model-authored proposals now have a registered CLI consumer and configurable
+  auxiliary model slot, with request/response receipts. The first real local
+  generation failed citation validation and created no candidate. It is a
+  negative result, not proof of autonomous learning transfer; see
+  `NARA_MODEL_MEDIA_STUDY_2026-11-26.md`.
 
 Reingestion also previously accepted an existing archive without checking its
 bytes. The ingestion path now verifies its SHA-256 before reuse and reports
