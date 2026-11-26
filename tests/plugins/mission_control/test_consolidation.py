@@ -13,6 +13,7 @@ from plugins.mission_control.artifacts import ArtifactStore
 from plugins.mission_control.cli import mission_command, register_cli
 from plugins.mission_control.consolidation import (
     MissionConsolidator,
+    learning_status_tool,
     maybe_run_gateway_consolidation,
 )
 from plugins.mission_control.contracts import Mission, Receipt
@@ -56,6 +57,15 @@ def _verified_profile(tmp_path, monkeypatch):
     return home, token, missions
 
 
+def test_learning_status_reports_unavailable_before_first_mission(tmp_path, monkeypatch):
+    monkeypatch.setenv("NARA_HOME", str(tmp_path))
+    token = set_nara_home_override(tmp_path)
+    try:
+        assert learning_status_tool()["state"] == "unavailable"
+    finally:
+        reset_nara_home_override(token)
+
+
 def test_gateway_consolidates_once_and_cli_can_inspect_candidate(tmp_path, monkeypatch, capsys):
     home, token, missions = _verified_profile(tmp_path, monkeypatch)
     try:
@@ -65,6 +75,8 @@ def test_gateway_consolidates_once_and_cli_can_inspect_candidate(tmp_path, monke
         memory = TemporalMemoryStore(home / "memories" / "nara-temporal.db")
         assert memory.get(f"procedure:{identity}")["status"] == "candidate"
         assert maybe_run_gateway_consolidation() is None
+        assert learning_status_tool()["state"] == "available"
+        assert learning_status_tool()["pending"] == 0
 
         parser = argparse.ArgumentParser()
         register_cli(parser)
@@ -73,6 +85,8 @@ def test_gateway_consolidates_once_and_cli_can_inspect_candidate(tmp_path, monke
         assert mission_command(parser.parse_args(["learn-consolidate"])) == 0
         manual = json.loads(capsys.readouterr().out)
         assert manual["unchanged"] == 1 and manual["created"] == []
+        assert mission_command(parser.parse_args(["learn-status"])) == 0
+        assert json.loads(capsys.readouterr().out)["processed"]["candidate"] == 1
 
         state = MissionConsolidator.open_default()
         stamp = time.time()
@@ -112,8 +126,11 @@ def test_consolidation_retry_repairs_interrupted_memory_write(tmp_path, monkeypa
             missions, lab, missions.path.parent / "learning" / "consolidation.db",
         )
         assert consolidation.run_once()["errors"]
+        assert consolidation.status()["state"] == "degraded"
+        assert consolidation.status()["pending"] == 1
         report = consolidation.run_once()
         assert len(report["created"]) == 1
+        assert consolidation.status()["state"] == "available"
         assert lab.memory.get(f"procedure:{report['created'][0]['candidate_id']}")["status"] == "candidate"
     finally:
         reset_nara_home_override(token)

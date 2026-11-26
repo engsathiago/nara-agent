@@ -9,7 +9,7 @@ from typing import Any
 
 from nara_constants import get_nara_home
 from plugins.memory import import_provider_module
-from plugins.mission_control.consolidation import MissionConsolidator
+from plugins.mission_control.consolidation import MissionConsolidator, learning_status_tool
 from plugins.mission_control.learning import LearningLab
 from plugins.mission_control.learning_runner import ProcessEvaluator
 from plugins.mission_control.store import MissionStore
@@ -45,6 +45,8 @@ def _evaluate(lab: LearningLab, args: argparse.Namespace, candidates: Path) -> d
 
 
 def learning_command(store: MissionStore, args: argparse.Namespace) -> dict[str, Any]:
+    if args.mission_action == "learn-status":
+        return learning_status_tool()
     home = get_nara_home()
     candidates = store.path.parent / "learning" / "candidates"
     provider_module = import_provider_module("nara_temporal")

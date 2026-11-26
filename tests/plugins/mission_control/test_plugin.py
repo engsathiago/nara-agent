@@ -43,7 +43,8 @@ def test_plugin_registers_real_mission_cli():
     }
     assert set(context.tools) == {
         "nara_competence_status", "nara_gap_record", "nara_evolution_status",
-        "nara_learning_ingest", "nara_specialist_resolve", "nara_specialist_get",
+        "nara_learning_ingest", "nara_learning_status",
+        "nara_specialist_resolve", "nara_specialist_get",
         "nara_fleet_status",
         "nara_voice_presence",
         "nara_trading_init", "nara_trading_backtest", "nara_trading_status",

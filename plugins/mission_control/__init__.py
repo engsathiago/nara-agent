@@ -46,6 +46,7 @@ def register(ctx) -> None:
         competence_status_tool,
         gap_record_tool,
     )
+    from plugins.mission_control.consolidation import LEARNING_STATUS_SCHEMA, learning_status_tool
     from plugins.mission_control.effect_hooks import post_tool_call, pre_tool_call
     from plugins.mission_control.evolution import EVOLUTION_STATUS_SCHEMA, evolution_status_tool
     from plugins.mission_control.fleet import FLEET_STATUS_SCHEMA, fleet_status_tool
@@ -143,6 +144,9 @@ def register(ctx) -> None:
     ctx.register_tool(
         name="nara_evolution_status", toolset="mission_control",
         schema=EVOLUTION_STATUS_SCHEMA, handler=_tool_handler(evolution_status_tool), emoji="🧬")
+    ctx.register_tool(
+        name="nara_learning_status", toolset="mission_control",
+        schema=LEARNING_STATUS_SCHEMA, handler=_tool_handler(learning_status_tool), emoji="📖")
     ctx.register_tool(
         name="nara_learning_ingest", toolset="mission_control",
         schema=LEARNING_INGEST_SCHEMA, handler=_tool_handler(learning_ingest_tool), emoji="📚")
