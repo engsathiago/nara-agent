@@ -6,11 +6,12 @@ from typing import Any
 
 from plugins.mission_control.learning_fabric import LearningFabric, MODALITIES
 from plugins.mission_control.learning_media import extract_local_media
+from plugins.mission_control.learning_video_ocr import extract_video_local, extract_video_screen_text
 
 
 LEARNING_INGEST_SCHEMA = {
     "name": "nara_learning_ingest",
-    "description": "Archive a local source and optionally transcribe audio/video with installed local STT.",
+    "description": "Archive a local source; optionally extract speech and video screen text locally.",
     "parameters": {"type": "object", "properties": {
         "path": {"type": "string"},
         "modality": {"type": "string", "enum": sorted(MODALITIES)},
@@ -34,8 +35,23 @@ def learning_ingest_tool(
         license_name=license_name or None, transcript_path=transcript_path or None,
     )
     if extract_local:
+        if modality == "video":
+            return extract_video_local(fabric, source["source_id"], language=language)
         return extract_local_media(fabric, source["source_id"], language=language)
     return source
+
+
+FRAME_EXTRACT_SCHEMA = {
+    "name": "nara_learning_frame_extract",
+    "description": "Extract local on-screen text and archived frame evidence from a video source.",
+    "parameters": {"type": "object", "properties": {
+        "source_id": {"type": "string"},
+    }, "required": ["source_id"]},
+}
+
+
+def learning_frame_extract_tool(source_id: str, **_: Any) -> dict[str, Any]:
+    return extract_video_screen_text(LearningFabric.open_default(), source_id)
 
 
 CLAIM_PROPOSE_SCHEMA = {
@@ -63,3 +79,6 @@ def register_learning_tools(ctx: Any, adapt: Any) -> None:
     ctx.register_tool(
         name="nara_learning_claim_propose", toolset="mission_control",
         schema=CLAIM_PROPOSE_SCHEMA, handler=adapt(learning_claim_propose_tool), emoji="📝")
+    ctx.register_tool(
+        name="nara_learning_frame_extract", toolset="mission_control",
+        schema=FRAME_EXTRACT_SCHEMA, handler=adapt(learning_frame_extract_tool), emoji="🎞️")

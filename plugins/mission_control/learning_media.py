@@ -103,12 +103,18 @@ def extract_local_media(
             "duration_seconds": duration,
             "extracted_at": utc_now(),
         }
+        extracted_text = content.decode("utf-8")
+        frame_ocr = metadata.get("frame_ocr", {})
+        if source["modality"] == "video" and frame_ocr.get("status") == "complete":
+            # Preserve existing screen-quote offsets when speech arrives later.
+            extracted_text = "\n".join(part for part in (source["extracted_text"], extracted_text) if part)
+            frame_ocr["fused_text_hash"] = hashlib.sha256(extracted_text.encode()).hexdigest()
         with transaction(fabric._connect(), immediate=True) as conn:
             conn.execute(
                 """UPDATE learning_sources SET extraction_status = 'transcribed_local',
                    extracted_text = ?, transcript_hash = ?, transcript_path = ?, metadata_json = ?
                    WHERE source_id = ?""",
-                (content.decode("utf-8"), transcript_hash, str(archived),
+                (extracted_text, transcript_hash, str(archived),
                  json.dumps(metadata, sort_keys=True, ensure_ascii=False), source_id),
             )
         return fabric.source(source_id)

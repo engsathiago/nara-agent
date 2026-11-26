@@ -111,13 +111,22 @@ class LearningFabric:
             if existing["modality"] != modality:
                 raise ValueError("source bytes are already registered with a different modality")
             if transcript_path is not None and existing["transcript_hash"] != transcript_hash:
-                if existing["extraction_status"] != "needs_extraction":
+                if existing["extraction_status"] not in {"needs_extraction", "screen_text_local"}:
                     raise ValueError("source already has different extraction evidence")
+                preserved_text = "\n".join(
+                    part for part in (existing["extracted_text"], extracted_text) if part
+                )
+                existing_metadata = dict(existing["metadata"])
+                frame_ocr = existing_metadata.get("frame_ocr", {})
+                if frame_ocr.get("status") == "complete":
+                    frame_ocr["fused_text_hash"] = hashlib.sha256(preserved_text.encode()).hexdigest()
                 with transaction(self._connect(), immediate=True) as conn:
                     conn.execute(
                         """UPDATE learning_sources SET extraction_status = ?, extracted_text = ?,
-                           transcript_hash = ?, transcript_path = ? WHERE source_id = ?""",
-                        (status, extracted_text, transcript_hash, stored_transcript, identity),
+                           transcript_hash = ?, transcript_path = ?, metadata_json = ?
+                           WHERE source_id = ?""",
+                        (status, preserved_text, transcript_hash, stored_transcript,
+                         json.dumps(existing_metadata, sort_keys=True, ensure_ascii=False), identity),
                     )
                 return self.source(identity)
             return existing
