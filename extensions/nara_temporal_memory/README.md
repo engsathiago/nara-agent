@@ -90,3 +90,13 @@ when the correction is proposed and promoted. If two candidates correct the
 same fact, only the first promoted candidate becomes current; the other remains
 inactive and must be reconsidered against the new current fact. A stale
 correction sent through the gateway returns HTTP 400 with the reason.
+
+Current recall groups byte-identical active facts within the same layer and
+scope. It returns one excerpt with up to eight `supporting_memory_ids` and a
+`consolidated_memory_count`; every original remains available through
+`memory_get`. If one copy is explicitly corrected to different text, the other
+exact copies in that scope are withheld from current recall and counted in
+`suppressed_stale_duplicates`. Historical search still returns the originals;
+an explicit later correction back to the previous text restores it as current.
+This does not infer equivalence between paraphrases or resolve conflicting
+sources. Those cases still need independent evaluation before consolidation.

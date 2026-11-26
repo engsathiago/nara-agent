@@ -172,6 +172,11 @@ avaliar a transferência com um executável congelado, casos reservados e artefa
 antes da promoção. Deduplicação e correção semântica entre experiências diversas ainda exigem
 avaliação adicional.
 
+A recuperação atual também reúne conteúdos exatamente idênticos dentro da mesma camada e escopo,
+mantendo os IDs das fontes originais no recibo. Após uma correção explícita, cópias idênticas do
+texto substituído deixam de aparecer como fatos atuais; o histórico continua consultável.
+Paráfrases e conflitos entre fontes não são mesclados por esse mecanismo.
+
 A fixture `phase2-learning-transfer-v1` atravessa a demonstração prioritária: a missão A sofre uma
 queda real após o efeito, reconstrói e verifica; uma candidata é extraída; três casos reservados
 medem `0,5` de ganho médio sobre o baseline sem regressão; a skill é promovida; uma sessão nova

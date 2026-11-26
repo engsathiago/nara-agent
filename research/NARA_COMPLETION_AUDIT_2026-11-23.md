@@ -152,3 +152,11 @@ integrity checks. Exact artifact hashes and the ad-hoc signature boundary are
 recorded in `research/NARA_PUBLICATION_2026-11-25.md`. The earlier real public
 Instagram extraction remains evidence for that URL; this package was not used
 to repeat the download or to claim transfer from a real Reel.
+
+Exact cross-experience recall now groups byte-identical active memories in the
+same layer and scope, keeps the source memory IDs and originals, and withholds
+copies of a fact that was explicitly corrected to different text. The
+temporal-store tests and authenticated Memory Gateway API exercise duplicate
+recall, correction, history, scope isolation and an explicit reversal. This is
+an exact-content rule; semantic equivalence and conflict adjudication remain
+unproven and are not promoted by embedding similarity alone.
