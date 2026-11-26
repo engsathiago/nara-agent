@@ -99,3 +99,5 @@ After the product-identity update, a clean local macOS bundle was rebuilt from p
 both contain the project's own bundle identifier. The unpacked app passed ad-hoc code-signature
 verification after packaging; the archives themselves remain unsigned and unnotarized. The
 current hashes and manifest are recorded in `research/NARA_PUBLICATION_2026-11-25.md`.
+
+The local bundle was subsequently rebuilt from clean public `main` commit `efcc2b6f846c4b2ecaad85a6df7085b6cb911249`, including the owned metrics/reporting and runtime-guard fixes. Its DMG and ZIP passed integrity checks and both carry the owned bundle identifier. The extracted app passed deep strict verification after a local ad-hoc signature applied after packaging; the archives remain unsigned and unnotarized. The exact hashes, manifest, CI runs and partial full-suite attempts are recorded in the publication report. On this commit, `nara --version`, the product-identity guard and the strict mission-continuity baseline passed. VPS installation remains a separate later step as requested by the owner.
