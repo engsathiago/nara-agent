@@ -1,6 +1,29 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+import pytest
+
 from plugins.mission_control.learning_fabric import LearningFabric
+
+
+@pytest.mark.parametrize("transcript", [False, True])
+def test_reingestion_rejects_corrupted_archived_evidence(tmp_path, transcript):
+    fabric = LearningFabric(tmp_path / "fabric")
+    original = tmp_path / "lesson.txt"
+    original.write_text("Preserve evidence before learning.", encoding="utf-8")
+    supplied = tmp_path / "speech.txt"
+    supplied.write_text("Check the reserved cases.", encoding="utf-8")
+    kwargs = {"transcript_path": supplied} if transcript else {}
+    source = fabric.ingest_file(original, modality="document", **kwargs)
+    archived = Path(source["transcript_path" if transcript else "stored_path"])
+    archived.write_bytes(b"corrupted archive")
+
+    with pytest.raises(ValueError, match="archived learning evidence.*changed"):
+        LearningFabric(fabric.root).ingest_file(original, modality="document", **kwargs)
+
+    assert archived.read_bytes() == b"corrupted archive"
+    assert fabric.source(source["source_id"])["source_hash"] == source["source_hash"]
 
 
 def test_document_claim_requires_exact_source_quote_and_verification(tmp_path):
