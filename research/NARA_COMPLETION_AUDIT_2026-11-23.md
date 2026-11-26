@@ -78,10 +78,11 @@ The following requirements cannot be truthfully completed from the current machi
 7. Apple Developer credentials and explicit publication authority for Developer ID signing,
    notarization and release-feed upload.
 
-The owner chose this order: finish the local code, documentation, manifest and package; publish
-the repository on GitHub; then install and validate on the VPS. The active project goal remains
-open through the applicable external gates. They must not be converted to passes by mocks,
-documentation, empty provider rows, or a locally signed package.
+The owner separated VPS installation and validation into a later project step, after local code,
+documentation, manifest and package are finished. The VPS is not a prerequisite for completing
+the local implementation. External gates remain unverified until their own evidence exists;
+they must not be converted to passes by mocks, documentation, empty provider rows, or a locally
+signed package.
 
 ## Subsequent publication evidence (2026-11-25)
 
