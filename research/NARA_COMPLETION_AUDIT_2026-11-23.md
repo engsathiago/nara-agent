@@ -135,3 +135,12 @@ still needs a reserved real-task evaluation. See
 `research/NARA_PUBLICATION_2026-11-25.md` and
 `research/NARA_MEDIA_PROCEDURE_TRANSFER_2026-11-26.md`. The owner has deferred
 VPS installation and remote failover validation to a separate later stage.
+
+The learned-skill activation path was also retested against the runtime skill
+catalog. Before the fix, a failed temporal-memory promotion left a discoverable
+`SKILL.md`, and rollback's `.disabled` suffix still allowed the scanner to load
+the skill. The local fix publishes `SKILL.md` only after memory promotion and
+moves rolled-back skills under the scanner-excluded `skills/.archive/` directory.
+Focused tests first reproduced both failures on the prior `main`, then passed
+against the production Learning Lab and real skill discovery. This closes those
+local lifecycle faults; it does not substitute for varied real-task transfer.

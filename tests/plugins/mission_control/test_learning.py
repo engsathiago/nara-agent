@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import pytest
+
 from extensions.nara_temporal_memory.nara_temporal import TemporalMemoryStore
+from nara_constants import reset_nara_home_override, set_nara_home_override
 from plugins.mission_control.artifacts import ArtifactStore
 from plugins.mission_control.contracts import Mission, Receipt
 from plugins.mission_control.learning import LearningLab
 from plugins.mission_control.receipts import ReceiptStore
 from plugins.mission_control.store import MissionStore
 from plugins.mission_control.verification import VerificationService
+from tools.skills_tool import find_all_skills
 
 
 def _completed_mission(tmp_path):
@@ -82,3 +86,51 @@ def test_regression_prevents_promotion_and_rollback_disables_skill(tmp_path):
     assert not skill_path.exists()
     assert disabled.name.endswith(".disabled")
     assert memory.get(f"procedure:{candidate.candidate_id}")["status"] == "rejected"
+
+
+def test_failed_memory_promotion_leaves_no_loadable_skill(tmp_path, monkeypatch):
+    missions = _completed_mission(tmp_path)
+    memory = TemporalMemoryStore(tmp_path / "memory.db")
+    lab = LearningLab(missions, memory, tmp_path / "candidates", tmp_path / "skills")
+    candidate = lab.extract("mission-a", name="atomic report write")
+    lab.evaluate_transfer(
+        candidate.candidate_id, [{"case_id": "holdout-b"}],
+        lambda procedure, _case: 1.0 if procedure else 0.0,
+        development_case_ids=set(),
+    )
+
+    def fail_promotion(_memory_id):
+        raise RuntimeError("memory store unavailable")
+
+    original_promote = memory.promote
+    monkeypatch.setattr(memory, "promote", fail_promotion)
+    with pytest.raises(RuntimeError, match="memory store unavailable"):
+        lab.promote(candidate.candidate_id)
+    assert not list(lab.skill_root.rglob("SKILL.md"))
+    assert memory.get(f"procedure:{candidate.candidate_id}")["status"] == "candidate"
+    monkeypatch.setattr(memory, "promote", original_promote)
+    assert (lab.promote(candidate.candidate_id) / "SKILL.md").is_file()
+
+
+def test_rollback_removes_skill_from_runtime_discovery(tmp_path, monkeypatch):
+    home = tmp_path / "profile"
+    home.mkdir()
+    monkeypatch.setenv("NARA_HOME", str(home))
+    token = set_nara_home_override(home)
+    try:
+        missions = _completed_mission(home)
+        memory = TemporalMemoryStore(home / "memory.db")
+        lab = LearningLab(missions, memory, home / "candidates", home / "skills")
+        candidate = lab.extract("mission-a", name="atomic report write")
+        lab.evaluate_transfer(
+            candidate.candidate_id, [{"case_id": "holdout-b"}],
+            lambda procedure, _case: 1.0 if procedure else 0.0,
+            development_case_ids=set(),
+        )
+        skill_path = lab.promote(candidate.candidate_id)
+        assert skill_path.name in {skill["name"] for skill in find_all_skills()}
+        disabled = lab.rollback(candidate.candidate_id)
+        assert disabled.is_dir()
+        assert skill_path.name not in {skill["name"] for skill in find_all_skills()}
+    finally:
+        reset_nara_home_override(token)
