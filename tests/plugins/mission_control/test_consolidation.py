@@ -77,6 +77,9 @@ def test_gateway_consolidates_once_and_cli_can_inspect_candidate(tmp_path, monke
         assert maybe_run_gateway_consolidation() is None
         assert learning_status_tool()["state"] == "available"
         assert learning_status_tool()["pending"] == 0
+        (home / "config.yaml").write_text("memory:\n  provider: none\n", encoding="utf-8")
+        assert learning_status_tool()["state"] == "degraded"
+        (home / "config.yaml").write_text("memory:\n  provider: nara_temporal\n", encoding="utf-8")
 
         parser = argparse.ArgumentParser()
         register_cli(parser)

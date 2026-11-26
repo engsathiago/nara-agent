@@ -198,6 +198,13 @@ def learning_status_tool(**_: Any) -> dict[str, Any]:
     if not missions.path.exists():
         return {"state": "unavailable", "reason": "no mission store exists in this profile"}
     try:
-        return MissionConsolidator.open_default().status()
+        report = MissionConsolidator.open_default().status()
     except (FileNotFoundError, ImportError, RuntimeError) as exc:
         return {"state": "unavailable", "reason": str(exc)}
+    from nara_cli.config import load_config_readonly
+
+    selected = (load_config_readonly().get("memory") or {}).get("provider")
+    if selected != "nara_temporal":
+        report["state"] = "degraded"
+        report["reason"] = "nara_temporal is installed but not the active memory provider"
+    return report
