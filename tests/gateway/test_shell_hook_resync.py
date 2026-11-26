@@ -41,7 +41,10 @@ def _cfg(*commands):
 
 def _wired(event="pre_tool_call"):
     from nara_cli.plugins import get_plugin_manager
-    return sorted(cb.__name__ for cb in get_plugin_manager()._hooks.get(event, []))
+    return sorted(
+        cb.__name__ for cb in get_plugin_manager()._hooks.get(event, [])
+        if cb.__name__.startswith("shell_hook[")
+    )
 
 
 def test_gateway_resync_follows_config_and_allowlist_without_prompting(home, tmp_path, monkeypatch):

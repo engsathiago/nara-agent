@@ -1379,6 +1379,7 @@ def test_gui_password_store_bridge_is_linux_only(tmp_path, monkeypatch):
          patch("nara_cli.source_build.prepare_source_dependencies", return_value=ok), \
          patch("nara_cli.main_desktop._desktop_build_needed", return_value=True), \
          patch("nara_cli.main_desktop._desktop_macos_relaunchable_fixup"), \
+         patch("nara_cli.main_desktop._stop_desktop_processes_locking_build", return_value=[]), \
          patch("nara_cli.config.load_config", return_value={}), \
          patch("nara_cli.linux_desktop_entry.install_desktop_entry", return_value=None), \
          patch("nara_cli.main_desktop._detect_linux_password_store") as mock_detect, \
@@ -1558,7 +1559,8 @@ def _gui_build_patches(root: Path, run_side_effect):
     ]
 
 
-def test_swap_staged_desktop_app_promotes_staged_tree_and_drops_previous(tmp_path):
+def test_swap_staged_desktop_app_promotes_staged_tree_and_drops_previous(tmp_path, monkeypatch):
+    monkeypatch.setattr(main_desktop, "_stop_desktop_processes_locking_build", lambda *args, **kwargs: [])
     root = _make_desktop_tree(tmp_path)
     desktop_dir = root / "apps" / "desktop"
     live_exe = desktop_dir / "release" / _packaged_exe_rel()
@@ -1593,6 +1595,7 @@ def test_swap_staged_desktop_app_without_staged_exe_keeps_live_app(tmp_path):
 
 
 def test_swap_staged_desktop_app_rolls_back_when_second_rename_fails(tmp_path, monkeypatch):
+    monkeypatch.setattr(main_desktop, "_stop_desktop_processes_locking_build", lambda *args, **kwargs: [])
     root = _make_desktop_tree(tmp_path)
     desktop_dir = root / "apps" / "desktop"
     live_exe = desktop_dir / "release" / _packaged_exe_rel()

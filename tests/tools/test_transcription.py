@@ -254,7 +254,7 @@ class TestLocalFallback:
             result = transcribe_audio_local_fallback(str(audio_file))
 
         assert result["transcript"] == "local result"
-        mock_local.assert_called_once_with(str(audio_file), "small")
+        mock_local.assert_called_once_with(str(audio_file), "small", language=None)
 
     def test_does_not_install_when_no_local_backend_exists(self, tmp_path):
         audio_file = tmp_path / "test.ogg"

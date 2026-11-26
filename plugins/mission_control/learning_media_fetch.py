@@ -80,7 +80,7 @@ def fetch_public_media(
         ]
         try:
             result = subprocess.run(
-                command, capture_output=True, text=True, check=False, timeout=360,
+                command, capture_output=True, text=True, check=False, timeout=360, stdin=subprocess.DEVNULL,
             )
         except subprocess.TimeoutExpired as exc:
             raise ValueError("public media download timed out") from exc

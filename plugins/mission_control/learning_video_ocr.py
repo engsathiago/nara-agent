@@ -32,7 +32,7 @@ def _ocr_backend(frames: list[Path]) -> tuple[str, list[dict[str, Any]]]:
     if swift and helper.is_file():
         result = subprocess.run(
             [swift, str(helper), *(str(frame) for frame in frames)],
-            capture_output=True, text=True, check=False, timeout=180,
+            capture_output=True, text=True, check=False, timeout=180, stdin=subprocess.DEVNULL,
         )
         if result.returncode:
             raise ValueError(f"macOS Vision OCR failed: {result.stderr[-300:]}")
@@ -50,7 +50,7 @@ def _ocr_backend(frames: list[Path]) -> tuple[str, list[dict[str, Any]]]:
     for frame in frames:
         result = subprocess.run(
             [tesseract, str(frame), "stdout", "-l", "por+eng"],
-            capture_output=True, text=True, check=False, timeout=20,
+            capture_output=True, text=True, check=False, timeout=20, stdin=subprocess.DEVNULL,
         )
         if result.returncode:
             raise ValueError(f"Tesseract OCR failed: {result.stderr[-300:]}")
@@ -84,7 +84,7 @@ def _sample_frames(stored: Path, duration: float, ffmpeg: str, root: Path) -> tu
             [ffmpeg, "-nostdin", "-hide_banner", "-loglevel", "error", "-y",
              "-ss", str(seconds), "-i", str(stored), "-frames:v", "1",
              "-vf", f"scale='min({MAX_FRAME_WIDTH},iw)':-2", str(frame)],
-            capture_output=True, text=True, check=False, timeout=20,
+            capture_output=True, text=True, check=False, timeout=20, stdin=subprocess.DEVNULL,
         )
         if result.returncode:
             raise ValueError(f"ffmpeg frame extraction failed: {result.stderr[-300:]}")
