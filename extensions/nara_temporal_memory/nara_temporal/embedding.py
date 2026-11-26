@@ -75,12 +75,14 @@ class OllamaEmbedder:
 
 def configured_embedder(home: Path):
     """Resolve one profile's optional embedding model; no process-global config."""
-    config_path = home / "config.yaml"
-    if not config_path.is_file():
-        return None
-    from nara_yaml import safe_load
+    from nara_cli.config import load_config_readonly
+    from nara_constants import reset_nara_home_override, set_nara_home_override
 
-    config = safe_load(config_path.read_text(encoding="utf-8")) or {}
+    token = set_nara_home_override(home)
+    try:
+        config = load_config_readonly()
+    finally:
+        reset_nara_home_override(token)
     memory = config.get("memory", {}) if isinstance(config, dict) else {}
     settings = memory.get("nara_temporal", {}) if isinstance(memory, dict) else {}
     if not isinstance(settings, dict):
