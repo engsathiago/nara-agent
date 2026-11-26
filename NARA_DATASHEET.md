@@ -160,10 +160,17 @@ O primeiro incremento executável da Fase 2 está `verified`. O provedor
 `nara_temporal` foi mantido como extensão instalável independente, respeitando o limite do runtime
 que fecha `plugins/memory/` para novos provedores internos. Ele persiste as cinco camadas, fonte,
 validade, correções, candidatos e recibos de recuperação em SQLite por perfil. A recuperação atual é
-um baseline lexical explicável; busca semântica/híbrida continua fora da alegação até vencer sua
-bancada reservada. O Learning Lab extrai procedimentos apenas de missões concluídas com prova
+um baseline lexical explicável e uma busca híbrida local opcional com `embeddinggemma`,
+testada em bancada sintética PT-BR reservada. O resultado não demonstra qualidade geral em
+tarefas reais variadas. O Learning Lab extrai procedimentos apenas de missões concluídas com prova
 independente, separa desenvolvimento de holdout, materializa skills nativas somente depois de ganho
 sem regressão e faz rollback sem apagar a evidência.
+
+O gateway revisa periodicamente missões concluídas com prova e propõe de forma idempotente
+candidatas procedimentais inativas. O CLI permite executar a consolidação imediatamente e
+avaliar a transferência com um executável congelado, casos reservados e artefatos verificáveis
+antes da promoção. Deduplicação e correção semântica entre experiências diversas ainda exigem
+avaliação adicional.
 
 A fixture `phase2-learning-transfer-v1` atravessa a demonstração prioritária: a missão A sofre uma
 queda real após o efeito, reconstrói e verifica; uma candidata é extraída; três casos reservados

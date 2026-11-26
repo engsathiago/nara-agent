@@ -110,7 +110,18 @@ class LearningLab:
             source_event_count=len(self.missions.events(mission_id)),
             created_at=utc_now(),
         )
-        self._write_json(self._candidate_path(candidate.candidate_id), candidate.to_dict())
+        existing_path = self._candidate_path(candidate.candidate_id)
+        if existing_path.exists():
+            existing = self.load(candidate.candidate_id)
+            try:
+                self.memory.get(f"procedure:{candidate.candidate_id}")
+            except KeyError:
+                if existing.status != "candidate":
+                    raise ValueError("promoted procedure has no matching memory; manual repair required")
+                # Repair a prior interrupted extraction below.
+            else:
+                return existing
+        self._write_json(existing_path, candidate.to_dict())
         self.memory.add(
             "\n".join(candidate.steps),
             layer="procedural",
