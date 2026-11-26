@@ -9,6 +9,7 @@ from typing import Any
 
 from nara_constants import get_nara_home
 from plugins.memory import import_provider_module
+from plugins.mission_control.consolidation import MissionConsolidator
 from plugins.mission_control.learning import LearningLab
 from plugins.mission_control.learning_runner import ProcessEvaluator
 from plugins.mission_control.store import MissionStore
@@ -65,5 +66,8 @@ def learning_command(store: MissionStore, args: argparse.Namespace) -> dict[str,
             "skill_path": str(lab.rollback(args.candidate_id)),
             "status": "rolled_back",
         },
+        "learn-consolidate": lambda: MissionConsolidator(
+            store, lab, store.path.parent / "learning" / "consolidation.db"
+        ).run_once(limit=args.limit),
     }
     return actions[args.mission_action]()

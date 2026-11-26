@@ -197,6 +197,10 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         "learn-rollback", help="Disable a promoted learned skill and reject its active memory")
     learn_rollback.add_argument("candidate_id")
 
+    consolidate = actions.add_parser(
+        "learn-consolidate", help="Extract inactive candidates from newly verified missions")
+    consolidate.add_argument("--limit", type=int, default=100)
+
     rebuild = actions.add_parser("rebuild", help="Rebuild and verify a projection from its event log")
     rebuild.add_argument("mission_id")
     parser.set_defaults(func=mission_command)
@@ -376,7 +380,7 @@ def mission_command(
                 development_case_ids=args.development_case,
                 holdout_case_ids=args.holdout_case,
             ).to_dict())
-        elif action in {"learn-extract", "learn-show", "learn-evaluate", "learn-promote", "learn-rollback"}:
+        elif action in {"learn-extract", "learn-show", "learn-evaluate", "learn-promote", "learn-rollback", "learn-consolidate"}:
             _print(learning_command(store, args))
         elif action == "rebuild":
             mission = store.rebuild_projection(args.mission_id)

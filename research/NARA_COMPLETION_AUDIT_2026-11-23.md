@@ -109,8 +109,8 @@ The final local package for this stage was rebuilt again from clean public `main
 On 2026-11-26, PR #23 added the authenticated local Memory Gateway to public
 `main` at `e883a70d908f3e79a048f78f000e9f6b70123c5a`, with two-client MCP
 and API tests in owner CI. A separate optional hybrid-retrieval change is under
-local validation; its PT-BR synthetic holdout and limitations are recorded in
-`research/NARA_MEMORY_RETRIEVAL_2026-11-26.md`. Neither step constitutes VPS
+ merged on `main`; its PT-BR synthetic holdout and limitations are recorded in
+ `research/NARA_MEMORY_RETRIEVAL_2026-11-26.md`. Neither step constitutes VPS
 installation or real external-service connectivity.
 
 The procedural learning CLI was subsequently closed end to end: `learn-evaluate`

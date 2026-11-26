@@ -46,6 +46,8 @@ from agent.turn_context import compression_made_progress
 from agent.session_activity import ActivityProvenance, AwakeIdleMeter
 from nara_cli.config import _is_ssh_remote_tilde_cwd, cfg_get, config_exists
 from gateway.run_common import _csv_or_list_to_set
+from gateway.run_learning import housekeeping_mission_learning as _housekeeping_mission_learning
+from gateway.run_plugins import housekeeping_plugin_update_check as _housekeeping_plugin_update_check
 from nara_cli.fallback_config import pre_agent_fallback_notice
 from gateway.turn_executor import _UnboundedThreadExecutor
 
@@ -4328,16 +4330,6 @@ def _housekeeping_curator() -> None:
     maybe_run_curator(idle_for_seconds=float("inf"), on_summary=lambda msg: logger.info("curator: %s", msg))
 
 
-def _housekeeping_plugin_update_check() -> None:
-    """Plugin update-check cadence (plugins_cadence): due-gated by
-    plugins.auto_update_check_hours, read-only, receipt-surfaced; the
-    opt-in auto-apply rides the manual update pipeline. A network error
-    costs one warning and a stamped marker — never an apply."""
-    from nara_cli.plugins_cadence import maybe_run_gateway_check
-
-    maybe_run_gateway_check(log=logger)
-
-
 def _launch_sessions_dir(config) -> Optional[tuple[Path, Path]]:
     """``(launch home, its configured transcript dir)``, or ``None`` when the gateway carries none.
 
@@ -4497,6 +4489,7 @@ def _start_gateway_housekeeping(
         # Per served profile: plugins dir, last-run marker and plugins.auto_apply are all the
         # profile's own (get_nara_home()/load_config_readonly() bind to the scope).
         (1, "Plugin update check", profile_scoped_chore(runner, _housekeeping_plugin_update_check)),
+        (5, "Mission learning consolidation", profile_scoped_chore(runner, _housekeeping_mission_learning)),
         (1, "Deferred FTS retry tick", _housekeeping_deferred_fts_retry),
         (1, "gateway housekeeping memory trim", _housekeeping_memory_trim),
         (1, "MCP config reconcile", _mcp_config_reconciler(runner)),
