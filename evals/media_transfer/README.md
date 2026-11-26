@@ -28,3 +28,27 @@ inputs. It is not a benchmark of broad procedural learning, coding, profitabilit
 or autonomous improvement. This post has no extracted repository URL, so the
 separate contract requirement of a real Reel with an OCR-only repository is
 not established by this experiment.
+
+## Observed result — 2026-11-26
+
+Protocol commit: `4ad327d24ce248d4b1e88ce11c96de7cf8055c08`. All three reserved
+cases scored 0.0 baseline and 1.0 with the candidate; mean delta +1.0, no
+regressions. The same local model digest was observed for all six calls.
+Requests, raw responses and scores are in `result_2026_11_26/`. Run
+`python3 evals/media_transfer/verify_result.py` to independently recompute scores,
+check artifact/protocol hashes and verify that only the procedure changed in
+the paired requests. This verifier makes no model calls.
+
+The production LearningLab accepted the frozen executable evaluation, promoted
+the skill in a temporary profile, and rolled it back into `skills/.archive`.
+No skill was activated in the owner's live profile. The first wrapper failed
+to JSON-serialize the rollback's Path after those operations; the public export
+was recovered from the already persisted artifacts without repeating the model
+calls. Public report paths are normalized; its original evaluation hash is
+recorded separately.
+
+The coding assistant authored the candidate by paraphrasing an exact source
+quote. This tests use of a sourced procedure supplied in context, not autonomous
+candidate discovery, model weight changes or persistence of improved behavior
+without retrieving the procedure. It measures one convention with one model and
+three inputs; larger real-task and regression datasets are still required.

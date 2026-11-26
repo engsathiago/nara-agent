@@ -21,7 +21,10 @@ The multimodal contract still has these concrete implementation gaps:
   command backends now accept native Whisper and whisper.cpp JSON sidecars.
   Text-only commands explicitly report timing as unavailable. Native
   whisper.cpp execution on Windows ARM64 remains unverified on this Mac.
-- Real Reel-to-new-task transfer remains unproved as described in
+- A narrow real-video UI-convention transfer now has a frozen local-model
+  comparison and independently replayable evidence in `evals/media_transfer/`.
+  Broad transfer, autonomous candidate discovery, and the real-Reel case with
+  an OCR-only repository remain unproved; see
   `NARA_MEDIA_PROCEDURE_TRANSFER_2026-11-26.md`.
 
 Reingestion also previously accepted an existing archive without checking its

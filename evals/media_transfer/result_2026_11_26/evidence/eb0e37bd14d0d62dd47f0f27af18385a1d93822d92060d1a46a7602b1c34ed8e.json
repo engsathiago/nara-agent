@@ -1,0 +1,67 @@
+{
+  "case_id": "three_new_workers",
+  "model": "qwen3.5:4b",
+  "model_digest": "7f3251fa6878a78a606bcb3c074283306e5ad2ea411a7774a9dd98a4bc7f2d13",
+  "request": {
+    "model": "qwen3.5:4b",
+    "stream": false,
+    "think": false,
+    "format": "json",
+    "options": {
+      "temperature": 0,
+      "seed": 42,
+      "num_predict": 512
+    },
+    "messages": [
+      {
+        "role": "system",
+        "content": "Produza os dados de exibição de um escritório virtual de robôs. Use os saldos fornecidos, mantendo IDs e valores numéricos. Escolha intervalo de atualização e posição do rótulo conforme seu conhecimento. Responda somente JSON com refresh_seconds (número) e labels (lista de objetos com id, balance e anchor: \"above_character\" ou \"panel\").\nProcedimento estudado:\nApresente o saldo informado de cada robô acima do personagem correspondente e atualize essa exibição a cada 20 segundos."
+      },
+      {
+        "role": "user",
+        "content": "[{\"id\": \"worker-17\", \"balance\": -12.25}, {\"id\": \"worker-3\", \"balance\": 1024}, {\"id\": \"worker-80\", \"balance\": 8.9}]"
+      }
+    ]
+  },
+  "raw_response": {
+    "model": "qwen3.5:4b",
+    "created_at": "2026-11-26T22:16:15.839012Z",
+    "message": {
+      "role": "assistant",
+      "content": "{\n  \"refresh_seconds\": 20,\n  \"labels\": [\n    {\n      \"id\": \"worker-17\",\n      \"balance\": -12.25,\n      \"anchor\": \"above_character\"\n    },\n    {\n      \"id\": \"worker-3\",\n      \"balance\": 1024,\n      \"anchor\": \"above_character\"\n    },\n    {\n      \"id\": \"worker-80\",\n      \"balance\": 8.9,\n      \"anchor\": \"above_character\"\n    }\n  ]\n}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 4967251667,
+    "load_duration": 355542,
+    "prompt_eval_count": 186,
+    "prompt_eval_cached_count": 82,
+    "prompt_eval_duration": 304667084,
+    "eval_count": 132,
+    "eval_duration": 4648933125
+  },
+  "checks": {
+    "refresh": true,
+    "labels": true
+  },
+  "expected": {
+    "refresh_seconds": 20,
+    "labels": [
+      {
+        "id": "worker-17",
+        "balance": -12.25,
+        "anchor": "above_character"
+      },
+      {
+        "id": "worker-3",
+        "balance": 1024,
+        "anchor": "above_character"
+      },
+      {
+        "id": "worker-80",
+        "balance": 8.9,
+        "anchor": "above_character"
+      }
+    ]
+  }
+}
