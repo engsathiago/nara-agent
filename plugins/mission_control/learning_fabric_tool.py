@@ -87,6 +87,29 @@ def learning_repo_verify_tool(source_id: str, quote: str, **_: Any) -> dict[str,
     return verify_quoted_repository(LearningFabric.open_default(), source_id, quote)
 
 
+MEDIA_PROCEDURE_SCHEMA = {
+    "name": "nara_learning_media_procedure_propose",
+    "description": "Propose an inactive procedure from a source-verified repository, with one exact source quote per step. Evaluation is still required.",
+    "parameters": {"type": "object", "properties": {
+        "source_id": {"type": "string"}, "repository_claim_id": {"type": "string"},
+        "name": {"type": "string"},
+        "steps": {"type": "array", "items": {"type": "string"}},
+        "quotes": {"type": "array", "items": {"type": "string"}},
+    }, "required": ["source_id", "repository_claim_id", "name", "steps", "quotes"]},
+}
+
+
+def learning_media_procedure_propose_tool(
+    source_id: str, repository_claim_id: str, name: str,
+    steps: list[str], quotes: list[str], **_: Any,
+) -> dict[str, Any]:
+    from plugins.mission_control.learning_cli import open_learning_lab
+
+    return open_learning_lab().propose_from_media(
+        source_id, repository_claim_id, name, steps, quotes,
+    ).to_dict()
+
+
 CLAIM_PROPOSE_SCHEMA = {
     "name": "nara_learning_claim_propose",
     "description": "Propose a candidate claim with an exact quote from an archived source or transcript.",
@@ -121,3 +144,7 @@ def register_learning_tools(ctx: Any, adapt: Any) -> None:
     ctx.register_tool(
         name="nara_learning_repo_verify", toolset="mission_control",
         schema=REPOSITORY_VERIFY_SCHEMA, handler=adapt(learning_repo_verify_tool), emoji="🔎")
+    ctx.register_tool(
+        name="nara_learning_media_procedure_propose", toolset="mission_control",
+        schema=MEDIA_PROCEDURE_SCHEMA,
+        handler=adapt(learning_media_procedure_propose_tool), emoji="🧪")

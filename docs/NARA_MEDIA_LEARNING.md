@@ -11,6 +11,9 @@ nara mission learn-media-show SOURCE_ID
 nara mission learn-media-propose SOURCE_ID "The lesson recommends X" --quote "exact words in transcript"
 nara mission learn-media-frames SOURCE_ID
 nara mission learn-repo-verify SOURCE_ID --quote "github.com/OWNER/REPOSITORY"
+nara mission learn-media-procedure SOURCE_ID --repo-claim VERIFIED_CLAIM_ID --name "Inspect repository" --step "Inspect the pinned commit" --quote "exact words from the video"
+nara mission learn-evaluate CANDIDATE_ID --cases-file /absolute/path/cases.json --evaluator /absolute/path/evaluator.py --development-case DEVELOPMENT_CASE_ID
+nara mission learn-promote CANDIDATE_ID
 ```
 
 The `nara_learning_ingest` agent tool accepts the same `path`, `modality`,
@@ -40,6 +43,19 @@ archived response produces an explicit error. The caller can inspect the
 `primary_sources` record on the source and the returned evidence hash. This
 uses GitHub's documented [repository](https://docs.github.com/en/rest/repos/repos)
 and [commit](https://docs.github.com/en/rest/commits/commits) endpoints.
+
+After repository verification, `learn-media-procedure` (or
+`nara_learning_media_procedure_propose`) can create an **inactive** procedural
+candidate. Each proposed step needs an exact quote present in the extracted
+speech or screen text. The candidate carries the original hash, source URL,
+declared license or `unknown`, quote-to-step mapping, verified repository claim
+and archived API evidence. A quote grounds the proposal; it does not prove the
+step works. Promotion uses the same frozen evaluator, reserved holdout,
+baseline/candidate evidence, and rollback as procedures learned from verified
+missions. The source and archived evidence are rechecked before evaluation and
+promotion. `nara mission learn-rollback CANDIDATE_ID` disables a promoted skill.
+The operator must supply meaningful, independent cases and the executable
+evaluator; a passing toy fixture does not establish general competence.
 
 Extraction uses local `ffprobe` and `ffmpeg` to decode mono 16 kHz WAV, then
 Nara's installed local STT backend. It never falls through to a cloud STT
