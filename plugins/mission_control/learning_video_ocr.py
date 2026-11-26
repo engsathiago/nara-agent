@@ -13,7 +13,9 @@ from typing import TYPE_CHECKING, Any
 
 from nara_cli.sqlite_util import transaction
 from plugins.mission_control.contracts import utc_now
-from plugins.mission_control.learning_media import MAX_MEDIA_BYTES, _duration, extract_local_media
+from plugins.mission_control.learning_media import (
+    MAX_MEDIA_BYTES, LearningEvidenceIntegrityError, _duration, extract_local_media,
+)
 
 if TYPE_CHECKING:
     from plugins.mission_control.learning_fabric import LearningFabric
@@ -62,13 +64,13 @@ def _verified_video(fabric: LearningFabric, source_id: str) -> tuple[dict[str, A
         raise ValueError("frame OCR requires a video source")
     stored = Path(source["stored_path"])
     if not stored.is_file() or stored.stat().st_size > MAX_MEDIA_BYTES:
-        raise ValueError("stored video is missing or oversized")
+        raise LearningEvidenceIntegrityError("stored video is missing or oversized")
     digest = hashlib.sha256()
     with stored.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     if digest.hexdigest() != source["source_hash"]:
-        raise ValueError("stored video hash does not match source")
+        raise LearningEvidenceIntegrityError("stored video hash does not match source")
     return source, stored
 
 
@@ -101,11 +103,11 @@ def extract_video_screen_text(fabric: LearningFabric, source_id: str) -> dict[st
         frame_ocr = metadata["frame_ocr"]
         fused_hash = hashlib.sha256((source["extracted_text"] or "").encode()).hexdigest()
         if fused_hash != frame_ocr.get("fused_text_hash"):
-            raise ValueError("archived screen text has changed")
+            raise LearningEvidenceIntegrityError("archived screen text has changed")
         for item in frame_ocr.get("evidence", []):
             frame = Path(item["frame_path"])
             if not frame.is_file() or hashlib.sha256(frame.read_bytes()).hexdigest() != item["frame_hash"]:
-                raise ValueError("archived OCR frame has changed")
+                raise LearningEvidenceIntegrityError("archived OCR frame has changed")
         return source
     try:
         ffmpeg, ffprobe = shutil.which("ffmpeg"), shutil.which("ffprobe")
@@ -136,7 +138,7 @@ def extract_video_screen_text(fabric: LearningFabric, source_id: str) -> dict[st
         if source["transcript_path"]:
             transcript_bytes = Path(source["transcript_path"]).read_bytes()
             if hashlib.sha256(transcript_bytes).hexdigest() != source["transcript_hash"]:
-                raise ValueError("stored transcript hash does not match source")
+                raise LearningEvidenceIntegrityError("stored transcript hash does not match source")
             transcript = transcript_bytes.decode("utf-8")
         screen_text = "\n".join(
             f"[screen @ {item['seconds']:.3f}s] {item['text']}" for item in evidence
@@ -160,6 +162,8 @@ def extract_video_screen_text(fabric: LearningFabric, source_id: str) -> dict[st
                 (status, fused, json.dumps(metadata, sort_keys=True, ensure_ascii=False), source_id),
             )
         return fabric.source(source_id)
+    except LearningEvidenceIntegrityError:
+        raise
     except (OSError, subprocess.TimeoutExpired, ValueError) as exc:
         metadata["frame_ocr_error"] = str(exc)
         metadata["frame_ocr_attempted_at"] = utc_now()
@@ -180,6 +184,8 @@ def extract_video_local(
                       lambda: extract_video_screen_text(fabric, source_id)):
         try:
             operation()
+        except LearningEvidenceIntegrityError:
+            raise
         except ValueError as exc:
             errors.append(str(exc))
     source = fabric.source(source_id)

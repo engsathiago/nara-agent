@@ -123,6 +123,8 @@ def test_completed_ocr_rejects_tampered_frame(tmp_path, monkeypatch):
     Path(result["metadata"]["frame_ocr"]["evidence"][0]["frame_path"]).write_bytes(b"altered")
     with pytest.raises(ValueError, match="archived OCR frame has changed"):
         extract_video_screen_text(fabric, source["source_id"])
+    with pytest.raises(ValueError, match="archived OCR frame has changed"):
+        extract_video_local(fabric, source["source_id"])
 
 
 def test_video_cli_ingest_and_frame_retry_share_source(tmp_path, monkeypatch, capsys):

@@ -34,9 +34,11 @@ speech transcript. A repository name appearing only on screen can therefore be
 cited as a candidate claim. If speech or OCR fails, the other result remains
 available and the failure appears in source metadata. The frame times describe
 sample points, not word-level timestamps; brief text between samples can be
-missed. Re-running `learn-media-frames` returns completed OCR evidence.
+missed. Re-running `learn-media-frames` returns completed OCR evidence after
+checking archived frame and fused-text hashes; changed evidence fails visibly.
 
-An installed local STT backend is required. The bundled Desktop runtime has
+An installed local STT backend is required for speech extraction; screen OCR
+can still succeed on a silent video. The bundled Desktop runtime has
 the optional local Whisper dependencies; a source checkout can install the
 `stt-whisper` extra or configure Nara's local STT command. `ffmpeg` and
 `ffprobe` must be on `PATH`. Larger media, full scene/clip understanding,
