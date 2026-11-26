@@ -83,3 +83,10 @@ Nara runtime verifies and promotes them. External clients have no promotion
 endpoint. Their identity and supplied source reference are retained as
 provenance. The gateway uses the same lexical or configured hybrid path as the
 in-agent provider, including the context budget and retrieval receipt.
+
+Corrections retain the original and its retrieval history. A correction must
+stay in the original layer and scope, and its predecessor must still be current
+when the correction is proposed and promoted. If two candidates correct the
+same fact, only the first promoted candidate becomes current; the other remains
+inactive and must be reconsidered against the new current fact. A stale
+correction sent through the gateway returns HTTP 400 with the reason.

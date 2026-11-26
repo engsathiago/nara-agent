@@ -83,6 +83,12 @@ def test_gateway_api_shares_canonical_store_and_enforces_scopes(tmp_path):
         assert client.post("/v1/memory/search", headers=claude, json={"query": "Portuguese"}).json()["items"][0]["memory_id"] == original["memory_id"]
         store.promote(corrected.json()["memory_id"])
         assert client.post("/v1/memory/search", headers=claude, json={"query": "Portuguese"}).json()["items"][0]["memory_id"] == corrected.json()["memory_id"]
+        stale = client.post("/v1/memory/correct", headers=codex, json={
+            "memory_id": original["memory_id"], "content": "Nara speaks another language",
+            "source_ref": "document:3",
+        })
+        assert stale.status_code == 400
+        assert "no longer current" in stale.json()["error"]
 
 
 def test_gateway_mcp_protocol_uses_same_store_and_requires_bearer(tmp_path):

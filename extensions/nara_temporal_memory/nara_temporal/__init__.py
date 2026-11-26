@@ -47,6 +47,13 @@ def _tokens(text: str) -> set[str]:
     }
 
 
+def _check_current_predecessor(previous: sqlite3.Row, *, layer: str, scope: str) -> None:
+    if previous["layer"] != layer or previous["scope"] != scope:
+        raise ValueError("a correction must keep the same layer and scope")
+    if previous["valid_to"] is not None or previous["status"] == "rejected":
+        raise ValueError("superseded memory is no longer current")
+
+
 def _initialize(conn: sqlite3.Connection) -> None:
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS memories (
@@ -146,6 +153,7 @@ class TemporalMemoryStore:
                     "SELECT * FROM memories WHERE memory_id = ?", (supersedes_id,)).fetchone()
                 if previous is None:
                     raise ValueError(f"unknown superseded memory: {supersedes_id}")
+                _check_current_predecessor(previous, layer=layer, scope=scope)
                 if status == "active":
                     conn.execute(
                         "UPDATE memories SET valid_to = ? WHERE memory_id = ? AND valid_to IS NULL",
@@ -187,15 +195,26 @@ class TemporalMemoryStore:
             row = conn.execute("SELECT * FROM memories WHERE memory_id = ?", (memory_id,)).fetchone()
             if row is None:
                 raise KeyError(memory_id)
-            if row["supersedes_id"]:
+            if row["status"] == "rejected":
+                raise ValueError("rejected memory cannot be promoted")
+            if row["status"] == "candidate":
+                if row["valid_to"] is not None:
+                    raise ValueError("memory candidate is no longer current")
+                if row["supersedes_id"]:
+                    previous = conn.execute(
+                        "SELECT * FROM memories WHERE memory_id = ?", (row["supersedes_id"],)
+                    ).fetchone()
+                    if previous is None:
+                        raise ValueError("superseded memory is missing")
+                    _check_current_predecessor(previous, layer=row["layer"], scope=row["scope"])
+                    conn.execute(
+                        "UPDATE memories SET valid_to = ? WHERE memory_id = ? AND valid_to IS NULL",
+                        (_now(), row["supersedes_id"]),
+                    )
                 conn.execute(
-                    "UPDATE memories SET valid_to = ? WHERE memory_id = ? AND valid_to IS NULL",
-                    (_now(), row["supersedes_id"]),
+                    "UPDATE memories SET status = 'active', version = version + 1 WHERE memory_id = ?",
+                    (memory_id,),
                 )
-            conn.execute(
-                "UPDATE memories SET status = 'active', version = version + 1 WHERE memory_id = ?",
-                (memory_id,),
-            )
         return self.get(memory_id)
 
     def reject(self, memory_id: str) -> dict[str, Any]:
