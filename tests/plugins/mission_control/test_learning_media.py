@@ -145,3 +145,19 @@ def test_supplied_transcript_cannot_be_overwritten_by_local_stt(tmp_path):
     with pytest.raises(ValueError, match="supplied transcript"):
         extract_local_media(fabric, source["source_id"])
     assert fabric.source(source["source_id"])["extracted_text"] == "Human supplied transcript."
+
+
+def test_local_transcript_tampering_fails_closed(tmp_path, monkeypatch):
+    media = tmp_path / "lesson.wav"
+    _media(media, "audio")
+    fabric = LearningFabric(tmp_path / "fabric")
+    source = fabric.ingest_file(media, modality="audio")
+    monkeypatch.setattr(
+        "tools.transcription_tools.transcribe_audio_local_fallback",
+        lambda path, **kwargs: {"success": True, "transcript": "Original words.", "provider": "fixture_stt"},
+    )
+    extracted = extract_local_media(fabric, source["source_id"])
+    Path(extracted["transcript_path"]).write_text("Altered words.")
+    with pytest.raises(ValueError, match="stored transcript has changed"):
+        extract_local_media(fabric, source["source_id"])
+    assert fabric.source(source["source_id"])["extracted_text"] == "Original words."

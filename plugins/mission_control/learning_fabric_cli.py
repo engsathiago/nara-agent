@@ -7,6 +7,7 @@ from typing import Any
 
 from plugins.mission_control.learning_fabric import LearningFabric
 from plugins.mission_control.learning_media import extract_local_media
+from plugins.mission_control.learning_video_ocr import extract_video_local, extract_video_screen_text
 
 
 def register_media_cli(actions: Any) -> None:
@@ -22,6 +23,9 @@ def register_media_cli(actions: Any) -> None:
     show = actions.add_parser("learn-media-show", help="Show stored source and transcript provenance")
     show.add_argument("source_id")
 
+    frames = actions.add_parser("learn-media-frames", help="Extract and archive video frame OCR evidence")
+    frames.add_argument("source_id")
+
     propose = actions.add_parser("learn-media-propose", help="Propose an inactive, source-quoted claim")
     propose.add_argument("source_id")
     propose.add_argument("claim")
@@ -33,6 +37,11 @@ def media_command(args: argparse.Namespace) -> dict[str, Any]:
     if args.mission_action == "learn-media-show":
         try:
             return fabric.source(args.source_id)
+        except KeyError as exc:
+            raise ValueError(f"unknown learning source: {args.source_id}") from exc
+    if args.mission_action == "learn-media-frames":
+        try:
+            return extract_video_screen_text(fabric, args.source_id)
         except KeyError as exc:
             raise ValueError(f"unknown learning source: {args.source_id}") from exc
     if args.mission_action == "learn-media-propose":
@@ -47,4 +56,8 @@ def media_command(args: argparse.Namespace) -> dict[str, Any]:
         )
     except OSError as exc:
         raise ValueError(f"cannot read media source: {exc}") from exc
-    return extract_local_media(fabric, source["source_id"], language=args.language) if args.extract_local else source
+    if not args.extract_local:
+        return source
+    if args.modality == "video":
+        return extract_video_local(fabric, source["source_id"], language=args.language)
+    return extract_local_media(fabric, source["source_id"], language=args.language)

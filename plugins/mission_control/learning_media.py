@@ -21,6 +21,10 @@ MAX_MEDIA_BYTES = 500_000_000
 MAX_MEDIA_SECONDS = 900.0
 
 
+class LearningEvidenceIntegrityError(ValueError):
+    """Archived source or extraction evidence no longer matches its recorded hash."""
+
+
 def _duration(source: Path, ffprobe: str) -> float:
     result = subprocess.run(
         [ffprobe, "-v", "error", "-show_entries", "format=duration",
@@ -57,20 +61,21 @@ def extract_local_media(
         raise ValueError("local extraction requires an audio or video source")
     stored = Path(source["stored_path"])
     if not stored.is_file() or stored.stat().st_size > MAX_MEDIA_BYTES:
-        raise ValueError("stored source is missing, oversized, or changed")
+        raise LearningEvidenceIntegrityError("stored source is missing, oversized, or changed")
     digest = hashlib.sha256()
     with stored.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     if digest.hexdigest() != source["source_hash"]:
-        raise ValueError("stored source is missing or changed")
+        raise LearningEvidenceIntegrityError("stored source is missing or changed")
     if source["extraction_status"] == "transcript_supplied":
         raise ValueError("source already has a supplied transcript")
     transcript_path = source.get("transcript_path")
-    if transcript_path and source["extraction_status"] == "transcribed_local":
-        transcript = Path(transcript_path)
-        if transcript.is_file() and hashlib.sha256(transcript.read_bytes()).hexdigest() == source["transcript_hash"]:
+    if source["extraction_status"] == "transcribed_local":
+        transcript = Path(transcript_path) if transcript_path else None
+        if transcript and transcript.is_file() and hashlib.sha256(transcript.read_bytes()).hexdigest() == source["transcript_hash"]:
             return source
+        raise LearningEvidenceIntegrityError("stored transcript has changed")
     metadata = dict(source["metadata"])
     try:
         ffmpeg, ffprobe = shutil.which("ffmpeg"), shutil.which("ffprobe")
@@ -103,12 +108,18 @@ def extract_local_media(
             "duration_seconds": duration,
             "extracted_at": utc_now(),
         }
+        extracted_text = content.decode("utf-8")
+        frame_ocr = metadata.get("frame_ocr", {})
+        if source["modality"] == "video" and frame_ocr.get("status") == "complete":
+            # Preserve existing screen-quote offsets when speech arrives later.
+            extracted_text = "\n".join(part for part in (source["extracted_text"], extracted_text) if part)
+            frame_ocr["fused_text_hash"] = hashlib.sha256(extracted_text.encode()).hexdigest()
         with transaction(fabric._connect(), immediate=True) as conn:
             conn.execute(
                 """UPDATE learning_sources SET extraction_status = 'transcribed_local',
                    extracted_text = ?, transcript_hash = ?, transcript_path = ?, metadata_json = ?
                    WHERE source_id = ?""",
-                (content.decode("utf-8"), transcript_hash, str(archived),
+                (extracted_text, transcript_hash, str(archived),
                  json.dumps(metadata, sort_keys=True, ensure_ascii=False), source_id),
             )
         return fabric.source(source_id)
