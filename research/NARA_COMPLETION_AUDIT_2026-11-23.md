@@ -108,15 +108,17 @@ The final local package for this stage was rebuilt again from clean public `main
 
 On 2026-11-26, PR #23 added the authenticated local Memory Gateway to public
 `main` at `e883a70d908f3e79a048f78f000e9f6b70123c5a`, with two-client MCP
-and API tests in owner CI. A separate optional hybrid-retrieval change is under
- merged on `main`; its PT-BR synthetic holdout and limitations are recorded in
- `research/NARA_MEMORY_RETRIEVAL_2026-11-26.md`. Neither step constitutes VPS
+and API tests in owner CI. Optional hybrid retrieval was subsequently merged
+on `main`; its PT-BR synthetic holdout and limitations are recorded in
+`research/NARA_MEMORY_RETRIEVAL_2026-11-26.md`. Neither step constitutes VPS
 installation or real external-service connectivity.
 
 The procedural learning CLI was subsequently closed end to end: `learn-evaluate`
 now executes a frozen evaluator against separate baseline and candidate runs,
 archives evidence hashes, and refuses promotion when candidate or evidence
 changes. The local vertical test covers extraction, evaluation, promotion and
-tamper refusal in a temporary profile. Automatic background consolidation and
-varied real-task transfer remain separate requirements; the test does not
-convert them into proven capabilities.
+tamper refusal in a temporary profile. A later gateway housekeeping pass
+creates inactive candidates from newly verified missions and retries interrupted
+writes. Cross-experience semantic consolidation and varied real-task transfer
+remain separate requirements; these tests do not convert them into proven
+capabilities.
