@@ -45,7 +45,7 @@ def _duration(source: Path, ffprobe: str | None) -> float:
         result = subprocess.run(
             [ffprobe, "-v", "error", "-show_entries", "format=duration",
              "-of", "default=noprint_wrappers=1:nokey=1", str(source)],
-            capture_output=True, text=True, check=False, timeout=20,
+            capture_output=True, text=True, check=False, timeout=20, stdin=subprocess.DEVNULL,
         )
         if result.returncode:
             raise ValueError(f"ffprobe could not read media: {result.stderr[-300:]}")
@@ -121,7 +121,7 @@ def extract_local_media(
                 [ffmpeg, "-nostdin", "-hide_banner", "-loglevel", "error", "-y",
                  "-i", str(stored), "-vn", "-ac", "1", "-ar", "16000",
                  "-c:a", "pcm_s16le", str(audio)],
-                capture_output=True, text=True, check=False,
+                capture_output=True, text=True, check=False, stdin=subprocess.DEVNULL,
                 timeout=min(300, max(30, duration * 2)),
             )
             if result.returncode or not audio.is_file() or audio.stat().st_size == 0:

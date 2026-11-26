@@ -31,8 +31,11 @@ def test_desktop_process_kill_stop_and_mcp_reload_reach_only_this_session(tmp_pa
     # tools.show is served for an owner session (the classic CLI's /tools), not -32601.
     assert set(receipt['tools_show']) == {'sections', 'total'}, receipt
     assert receipt['tools_show']['total'] == sum(len(s['tools']) for s in receipt['tools_show']['sections']), receipt
-    # Scoped to THIS session's toolsets (created with toolsets=[]), not the launch profile's catalog.
-    assert receipt['tools_show']['total'] == 0, receipt
+    # The empty core selection must not import the launch profile's terminal/browser tools;
+    # the built-in Mission Control plugin is available across sessions.
+    names = {tool['name'] for section in receipt['tools_show']['sections'] for tool in section['tools']}
+    assert names and all(name.startswith('nara_') for name in names), receipt
+    assert 'nara_competence_status' in names, receipt
     assert receipt['skills_reload'] == ['zeta-skill'], receipt
     assert receipt['exited'] == [True, True, False], receipt
     assert receipt['reload_mcp'] == 'reloaded', receipt
