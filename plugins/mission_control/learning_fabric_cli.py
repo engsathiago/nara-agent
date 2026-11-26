@@ -7,6 +7,7 @@ from typing import Any
 
 from plugins.mission_control.learning_fabric import LearningFabric
 from plugins.mission_control.learning_github_source import verify_quoted_repository
+from plugins.mission_control.learning_media_fetch import fetch_public_media, media_fetch_status
 from plugins.mission_control.learning_media import extract_local_media
 from plugins.mission_control.learning_video_ocr import extract_video_local, extract_video_screen_text
 
@@ -20,6 +21,12 @@ def register_media_cli(actions: Any) -> None:
     ingest.add_argument("--license-name")
     ingest.add_argument("--extract-local", action="store_true")
     ingest.add_argument("--language", default="pt")
+
+    fetch = actions.add_parser("learn-media-fetch", help="Acquire one public HTTPS video URL")
+    fetch.add_argument("url")
+    fetch.add_argument("--extract-local", action="store_true")
+    fetch.add_argument("--language", default="pt")
+    actions.add_parser("learn-media-fetch-status", help="Check public media acquisition availability")
 
     show = actions.add_parser("learn-media-show", help="Show stored source and transcript provenance")
     show.add_argument("source_id")
@@ -39,6 +46,12 @@ def register_media_cli(actions: Any) -> None:
 
 def media_command(args: argparse.Namespace) -> dict[str, Any]:
     fabric = LearningFabric.open_default()
+    if args.mission_action == "learn-media-fetch-status":
+        return media_fetch_status()
+    if args.mission_action == "learn-media-fetch":
+        return fetch_public_media(
+            fabric, args.url, extract_local=args.extract_local, language=args.language,
+        )
     if args.mission_action == "learn-media-show":
         try:
             return fabric.source(args.source_id)

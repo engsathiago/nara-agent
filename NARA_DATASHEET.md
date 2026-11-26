@@ -210,8 +210,10 @@ mesclando a fala e o texto da tela sem perder erros parciais. Sem backend, perma
 podem citar trechos existentes e permanecem candidatas até verificador e evidência. Um nome de
 repositório GitHub citado literalmente pode ser conferido na API pública oficial, com commit e
 respostas arquivadas por hash; isso verifica existência e identidade, não as demais alegações do
-vídeo. A mesma fixture ingere documento e áudio com transcrição e prova a procedência.
-Entendimento completo de cenas, timestamps por palavra, download,
+vídeo. Vídeos públicos do Instagram, YouTube e Vimeo podem ser adquiridos por URL com `yt-dlp`
+opcional, sem cookies, e entram no mesmo caminho de ingestão local; fontes que exigem autenticação
+ficam indisponíveis até uma integração específica. A mesma fixture ingere documento e áudio com
+transcrição e prova a procedência. Entendimento completo de cenas, timestamps por palavra,
 GEPA/DSPy e otimização por modelos continuam sujeitos aos gates desta fase antes de `operational`.
 
 O primeiro incremento da Fase 5 está `verified`. O `pre_llm_call` da líder executa uma resolução
