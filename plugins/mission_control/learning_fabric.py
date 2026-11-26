@@ -64,7 +64,12 @@ class LearningFabric:
         digest = hashlib.sha256(content).hexdigest()
         destination = self.root / "sources" / digest[:2] / digest
         destination.parent.mkdir(parents=True, exist_ok=True)
-        if not destination.exists():
+        if destination.exists():
+            with destination.open("rb") as handle:
+                archived_digest = hashlib.file_digest(handle, "sha256").hexdigest()
+            if archived_digest != digest:
+                raise ValueError(f"archived learning evidence {digest} has changed")
+        else:
             with NamedTemporaryFile("wb", dir=destination.parent, delete=False) as handle:
                 handle.write(content)
                 temporary = Path(handle.name)

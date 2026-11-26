@@ -5,6 +5,28 @@ This audit maps the current implementation to `NARA_DATASHEET.md` and
 it is not used to claim a remote host, production account, acoustic dataset, market period, or
 public release that was not observed.
 
+## Completion scope correction
+
+The passing regression suite and published package do not establish 100% of
+the datasheet or build contract, including the locally implementable scope.
+The multimodal contract still has these concrete implementation gaps:
+
+- `LearningFabric.ingest_file` stores the original bytes permanently in the
+  content-addressed archive. The downloader's temporary directory is removed,
+  but that does not implement the contract's temporary-original default.
+  Retention must preserve source hashes and necessary derived evidence, and
+  keep procedure evaluation possible after intentional original expiry.
+- `extract_local_media` currently archives a plain transcript and duration;
+  it does not persist speech segment timestamps as required by the pipeline.
+- Real Reel-to-new-task transfer remains unproved as described in
+  `NARA_MEDIA_PROCEDURE_TRANSFER_2026-11-26.md`.
+
+Reingestion also previously accepted an existing archive without checking its
+bytes. The ingestion path now verifies its SHA-256 before reuse and reports
+corruption without silently replacing the evidence. The original and supplied
+transcript regression cases both failed on the prior code. This correction
+does not close retention, timestamp, or real-transfer requirements above.
+
 ## Authoritative local run
 
 - On the corrected production tree at `21ce2dfced0d0ea67d601021c802c9132af659ad`,
