@@ -17,6 +17,13 @@ to the selected `NARA_HOME` profile, not to the source checkout.
    `nara doctor`.
 5. Verify `nara --version`, `nara mission list`, and the authenticated Nara Office dashboard.
 
+For external memory access, configure the owner-only client file and start
+`nara nara_temporal serve --clients-file /absolute/private/path/memory-clients.json`.
+The command serves authenticated API and MCP on loopback using the selected
+profile's canonical temporal database. See the provider README for endpoint,
+token, scope and candidate rules. This service is optional and has its own
+process lifecycle; start it again after provider code or client-file changes.
+
 The validated offline baseline is Ollama at `http://127.0.0.1:11434/v1` with `qwen3.5:4b` and a
 64,000-token configured context. Confirm the model with a text turn and a real Mission Control tool
 call; a direct Ollama response alone does not prove agent integration. Other local or cloud providers

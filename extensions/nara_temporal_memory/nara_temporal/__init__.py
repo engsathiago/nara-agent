@@ -254,6 +254,20 @@ class TemporalMemoryStore:
             conn.execute(f"UPDATE memories SET {column} = {column} + 1 WHERE memory_id = ?", (memory_id,))
         return self.get(memory_id)
 
+    def get_receipt(self, receipt_id: str) -> dict[str, Any]:
+        with transaction(self._connect()) as conn:
+            row = conn.execute(
+                "SELECT * FROM retrieval_receipts WHERE receipt_id = ?", (receipt_id,),
+            ).fetchone()
+        if row is None:
+            raise KeyError(receipt_id)
+        return {
+            **dict(row),
+            "filters": json.loads(row["filters_json"]),
+            "memory_ids": json.loads(row["memory_ids_json"]),
+            "reasons": json.loads(row["reasons_json"]),
+        }
+
 
 _SCHEMAS = [
     {
