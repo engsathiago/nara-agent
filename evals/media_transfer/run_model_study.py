@@ -81,12 +81,16 @@ def main():
         report = lab.evaluate_transfer(
             candidate_id, protocol["cases"], run, development_case_ids={"development"},
             evaluator_sha256=evaluator.sha256, evaluator_path=str(evaluator.archived_path),
+            minimum_candidate_score=1.0,
         )
-        outcome = {"study": study, "evaluation": report,
+        complete_convention = all(row["candidate"] == 1.0 for row in report["cases"])
+        outcome = {"study": study, "evaluation": report, "complete_convention": complete_convention,
                    "protocol_sha256": hashlib.sha256((protocol_dir / "model_study_protocol.json").read_bytes()).hexdigest()}
-        if report["passed"]:
+        if report["passed"] and complete_convention:
             outcome["promoted_skill"] = str(lab.promote(candidate_id, require_evidence=True))
             outcome["rolled_back_skill"] = str(lab.rollback(candidate_id))
+        else:
+            outcome["promotion_skipped"] = "requires positive gain, no regression and full convention scores"
         (root / "result.json").write_text(json.dumps(outcome, ensure_ascii=False, indent=2), encoding="utf-8")
         print(json.dumps({"result": str(root / "result.json"), "passed": report["passed"],
                           "mean_delta": report["mean_delta"], "regressions": report["regressions"]}), flush=True)

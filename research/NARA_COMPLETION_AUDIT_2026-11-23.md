@@ -31,6 +31,12 @@ The multimodal contract still has these concrete implementation gaps:
   generation failed citation validation and created no candidate. It is a
   negative result, not proof of autonomous learning transfer; see
   `NARA_MODEL_MEDIA_STUDY_2026-11-26.md`.
+- Source-ID selection now removes model copying of citations. A fresh frozen
+  live call produced a valid, unedited candidate, but each reserved case scored
+  only 0.5 versus baseline 0.0. Full-score acceptance was not met and no skill
+  was activated. The generic evaluator now supports a declared per-case minimum;
+  archived-score replay confirmed that minimum 1.0 also blocks production
+  promotion. See `NARA_MODEL_STUDY_SPANS_2026-11-26.md`.
 
 Reingestion also previously accepted an existing archive without checking its
 bytes. The ingestion path now verifies its SHA-256 before reuse and reports

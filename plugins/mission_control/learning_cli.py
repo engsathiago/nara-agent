@@ -34,6 +34,9 @@ def register_learning_cli(actions: Any) -> None:
     learn_evaluate.add_argument("--evaluator", type=Path, required=True)
     learn_evaluate.add_argument("--development-case", action="append", required=True)
     learn_evaluate.add_argument("--timeout", type=float, default=30.0)
+    learn_evaluate.add_argument(
+        "--minimum-candidate-score", type=float, default=0.0,
+        help="Required candidate score on every reserved case (0-1); 1 requires full correctness")
 
     learn_promote = actions.add_parser(
         "learn-promote", help="Promote only a candidate whose reserved-transfer eval passed")
@@ -55,6 +58,14 @@ def _show(lab: LearningLab, args: argparse.Namespace, candidates: Path) -> dict[
     payload["evaluation"] = (
         json.loads(eval_path.read_text(encoding="utf-8-sig")) if eval_path.exists() else None
     )
+    request_path = candidates / f"{args.candidate_id}.eval.request.json"
+    request = json.loads(request_path.read_text(encoding="utf-8-sig")) if request_path.exists() else None
+    payload["evaluation_request"] = request
+    payload["evaluation_pending"] = bool(request and request["evaluation_request_id"] != (
+        payload["evaluation"] or {}).get("evaluation_request_id"))
+    if payload["evaluation_pending"]:
+        payload["previous_evaluation"] = payload["evaluation"]
+        payload["evaluation"] = None
     return payload
 
 
@@ -75,6 +86,7 @@ def _evaluate(lab: LearningLab, args: argparse.Namespace, candidates: Path) -> d
         development_case_ids=set(args.development_case),
         evaluator_sha256=evaluator.sha256,
         evaluator_path=str(evaluator.archived_path),
+        minimum_candidate_score=args.minimum_candidate_score,
     )
 
 

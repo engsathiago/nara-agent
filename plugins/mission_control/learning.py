@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import uuid
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING, Any, Callable, Iterable, Protocol
 
 from plugins.mission_control.contracts import EffectStatus, MissionStatus, load_contract, utc_now
+from plugins.mission_control.learning_acceptance import check_evaluation_request, check_minimum_score, validate_minimum_score
 from plugins.mission_control.store import MissionNotFoundError, MissionStore, completion_blockers
 
 if TYPE_CHECKING:
@@ -289,13 +291,25 @@ class LearningLab:
         development_case_ids: set[str],
         evaluator_sha256: str | None = None,
         evaluator_path: str | None = None,
+        minimum_candidate_score: float = 0.0,
     ) -> dict[str, Any]:
+        minimum = validate_minimum_score(minimum_candidate_score)
         candidate = self.load(candidate_id)
         self._check_media_origin(candidate)
         case_list = list(cases)
         holdout = [case for case in case_list if str(case["case_id"]) not in development_case_ids]
         if not holdout:
             raise ValueError("transfer evaluation requires at least one reserved holdout case")
+        request = {
+            "evaluation_request_id": uuid.uuid4().hex,
+            "candidate_id": candidate_id,
+            "candidate_hash": hashlib.sha256(json.dumps(candidate.to_dict(), sort_keys=True).encode()).hexdigest(),
+            "minimum_candidate_score": minimum,
+            "evaluator_sha256": evaluator_sha256,
+            "development_case_ids": sorted(development_case_ids),
+            "holdout_case_ids": [str(case["case_id"]) for case in holdout],
+        }
+        self._write_json(self.candidate_root / f"{candidate_id}.eval.request.json", request)
         rows = []
         for case in holdout:
             baseline_result = runner(None, case)
@@ -312,17 +326,15 @@ class LearningLab:
             })
         mean_delta = sum(row["delta"] for row in rows) / len(rows)
         regressions = sum(row["delta"] < 0 for row in rows)
+        below_minimum = [row["case_id"] for row in rows if row["candidate"] < minimum]
         report = {
+            **request,
             "schema_version": 1,
-            "candidate_id": candidate_id,
-            "candidate_hash": hashlib.sha256(json.dumps(candidate.to_dict(), sort_keys=True).encode()).hexdigest(),
-            "evaluator_sha256": evaluator_sha256,
             "evaluator_path": evaluator_path,
-            "development_case_ids": sorted(development_case_ids),
-            "holdout_case_ids": [row["case_id"] for row in rows],
             "mean_delta": mean_delta,
             "regressions": regressions,
-            "passed": mean_delta > 0 and regressions == 0,
+            "below_minimum": below_minimum,
+            "passed": mean_delta > 0 and regressions == 0 and not below_minimum,
             "cases": rows,
             "evaluated_at": utc_now(),
         }
@@ -336,8 +348,10 @@ class LearningLab:
         if not report_path.is_file():
             raise ValueError("candidate has no reserved transfer evaluation")
         report = json.loads(report_path.read_text(encoding="utf-8-sig"))
+        check_evaluation_request(report, self.candidate_root / f"{candidate_id}.eval.request.json")
         if not report.get("passed"):
             raise ValueError("candidate did not pass reserved transfer evaluation")
+        check_minimum_score(report)
         expected_hash = hashlib.sha256(json.dumps(candidate.to_dict(), sort_keys=True).encode()).hexdigest()
         if report.get("candidate_id") != candidate_id or (
             report.get("candidate_hash") is not None and report["candidate_hash"] != expected_hash

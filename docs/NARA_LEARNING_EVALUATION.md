@@ -9,7 +9,8 @@ nara mission learn-extract MISSION_ID
 nara mission learn-evaluate CANDIDATE_ID \
   --cases-file /absolute/path/cases.json \
   --evaluator /absolute/path/evaluator.py \
-  --development-case dev-1
+  --development-case dev-1 \
+  --minimum-candidate-score 1
 nara mission learn-show CANDIDATE_ID
 nara mission learn-promote CANDIDATE_ID
 ```
@@ -44,6 +45,20 @@ self-contained script or executable; Python files run with Nara's Python.
 
 Promotion requires positive mean gain, zero regressions, the exact candidate
 identity, the archived evaluator, and intact evidence from both variants.
+`--minimum-candidate-score` declares an additional acceptance floor before the
+evaluation: every reserved candidate result must reach it. Use `1` when every
+case must be fully correct, or a predeclared fractional quality threshold for
+graded tasks. The report preserves the threshold and lists `below_minimum`
+case IDs; promotion checks the scores against that threshold again. A positive
+average improvement cannot compensate for a case below the declared floor.
+The default remains `0` for existing callers and reports, which require relative
+improvement only. Set the threshold before observing reserved results.
+Nara persists an evaluation request before the first case, binding its ID,
+candidate hash, threshold, evaluator hash and reserved case IDs. Promotion must
+match that latest request. If an evaluation stops or fails, an older passing
+report cannot satisfy it. `learn-show` exposes `evaluation_pending` and the
+request, while any older report is shown as `previous_evaluation`. Re-run the
+evaluation after resolving the failure; the previous artifacts remain available.
 `nara mission learn-rollback CANDIDATE_ID` disables the promoted skill and
 rejects its memory. A synthetic local fixture proves this command chain and
 tamper refusal. Real-task transfer quality still needs varied missions and
