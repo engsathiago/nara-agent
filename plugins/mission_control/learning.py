@@ -357,7 +357,6 @@ class LearningLab:
                             raise ValueError("transfer evidence is missing or changed")
         skill_name = f"nara-learned-{_slug(candidate.name)}-{candidate.candidate_id[:8]}"
         destination = self.skill_root / skill_name
-        destination.mkdir(parents=True, exist_ok=True)
         procedure = "\n".join(
             f"{index}. {step}" for index, step in enumerate(candidate.steps, start=1))
         body = (
@@ -376,8 +375,14 @@ class LearningLab:
             "## Verification\n\n"
             "Re-run the target task's independent completion criteria and preserve evidence.\n"
         )
-        (destination / "SKILL.md").write_text(body, encoding="utf-8")
+        # The skill scanner treats any SKILL.md under this root as loadable.
+        # Promote evidence first, then publish the file with one atomic rename.
         self.memory.promote(f"procedure:{candidate.candidate_id}")
+        destination.mkdir(parents=True, exist_ok=True)
+        with NamedTemporaryFile("w", encoding="utf-8", dir=destination, delete=False) as handle:
+            handle.write(body)
+            temporary = Path(handle.name)
+        temporary.replace(destination / "SKILL.md")
         promoted = {**candidate.to_dict(), "status": "promoted", "skill_path": str(destination)}
         self._write_json(self._candidate_path(candidate_id), promoted)
         return destination
@@ -385,12 +390,17 @@ class LearningLab:
     def rollback(self, candidate_id: str) -> Path:
         candidate = self.load(candidate_id)
         active = next(self.skill_root.glob(f"nara-learned-*-{candidate.candidate_id[:8]}"), None)
-        if active is None:
-            raise ValueError("promoted skill not found")
-        disabled = active.with_name(active.name + ".disabled")
-        if disabled.exists():
-            disabled = active.with_name(active.name + f".disabled-{hashlib.sha256(utc_now().encode()).hexdigest()[:8]}")
-        active.replace(disabled)
+        archive = self.skill_root / ".archive"
+        if active is not None:
+            archive.mkdir(parents=True, exist_ok=True)
+            disabled = archive / f"{active.name}.disabled"
+            if disabled.exists():
+                disabled = archive / f"{active.name}.disabled-{hashlib.sha256(utc_now().encode()).hexdigest()[:8]}"
+            active.replace(disabled)
+        else:
+            disabled = next(archive.glob(f"nara-learned-*-{candidate.candidate_id[:8]}.disabled*"), None)
+            if disabled is None:
+                raise ValueError("promoted skill not found")
         memory = self.memory.get(f"procedure:{candidate.candidate_id}")
         if memory["status"] == "active":
             self.memory.reject(memory["memory_id"])
