@@ -57,9 +57,10 @@ def load_clients(path: Path) -> list[MemoryClient]:
 
 
 class MemoryGateway:
-    def __init__(self, store: TemporalMemoryStore, clients: list[MemoryClient]):
+    def __init__(self, store: TemporalMemoryStore, clients: list[MemoryClient], embedder=None):
         self.store = store
         self.clients = clients
+        self.embedder = embedder
 
     def authenticate(self, authorization: str | None) -> MemoryClient | None:
         if not authorization or not authorization.startswith("Bearer "):
@@ -75,14 +76,18 @@ class MemoryGateway:
         if permission not in client.permissions:
             raise PermissionError(f"client lacks {permission} permission")
 
-    def search(self, client: MemoryClient, query: str, *, layer: str | None = None, limit: int = 8) -> dict[str, Any]:
+    def search(self, client: MemoryClient, query: str, *, layer: str | None = None,
+               limit: int = 8, max_chars: int = 6000) -> dict[str, Any]:
         self.require(client, "read")
         if layer is not None and layer not in LAYERS:
             raise ValueError("unknown memory layer")
         if not 1 <= limit <= 20:
             raise ValueError("limit must be between 1 and 20")
+        if not 512 <= max_chars <= 24_000:
+            raise ValueError("max_chars must be between 512 and 24000")
         return self.store.search(query, session_id=f"memory-gateway:{client.client_id}",
-                                 layer=layer, scope=client.scope, limit=limit)
+                                 layer=layer, scope=client.scope, limit=limit, embedder=self.embedder,
+                                 max_chars=max_chars)
 
     def get(self, client: MemoryClient, memory_id: str) -> dict[str, Any]:
         self.require(client, "read")
@@ -154,8 +159,9 @@ def create_app(gateway: MemoryGateway, *, host: str = "127.0.0.1"):
         return client
 
     @server.tool(name="memory_search", description="Search current scoped memories and return a retrieval receipt")
-    def memory_search(query: str, ctx: Context, layer: str | None = None, limit: int = 8) -> dict[str, Any]:
-        return gateway.search(mcp_client(ctx), query, layer=layer, limit=limit)
+    def memory_search(query: str, ctx: Context, layer: str | None = None,
+                      limit: int = 8, max_chars: int = 6000) -> dict[str, Any]:
+        return gateway.search(mcp_client(ctx), query, layer=layer, limit=limit, max_chars=max_chars)
 
     @server.tool(name="memory_get", description="Read the original memory, provenance and correction chain")
     def memory_get(memory_id: str, ctx: Context) -> dict[str, Any]:
@@ -192,7 +198,8 @@ def create_app(gateway: MemoryGateway, *, host: str = "127.0.0.1"):
                     raise ValueError("request body must be an object")
                 if operation == "search":
                     result = gateway.search(client, str(data["query"]), layer=data.get("layer"),
-                                            limit=int(data.get("limit", 8)))
+                                            limit=int(data.get("limit", 8)),
+                                            max_chars=int(data.get("max_chars", 6000)))
                 elif operation == "propose":
                     result = gateway.propose(client, str(data["content"]), str(data["layer"]),
                                              str(data["source_ref"]), source_type=str(data.get("source_type", "external")),
@@ -244,5 +251,6 @@ def serve_cli(args) -> None:
 
     home = get_nara_home()
     store = TemporalMemoryStore(home / "memories" / "nara-temporal.db")
-    app = create_app(MemoryGateway(store, load_clients(args.clients_file)), host=args.host)
+    from .embedding import configured_embedder
+    app = create_app(MemoryGateway(store, load_clients(args.clients_file), configured_embedder(home)), host=args.host)
     uvicorn.run(app, host=args.host, port=args.port, log_level="warning")

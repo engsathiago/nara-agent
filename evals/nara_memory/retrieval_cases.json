@@ -1,0 +1,17 @@
+{
+  "cases": [
+    {"id": "secret", "content": "As credenciais da API ficam no cofre de segredos local, nunca no repositório.", "queries": ["Onde devemos guardar tokens de acesso?", "Posso colocar senhas no Git?"]},
+    {"id": "atomic", "content": "Publique pacotes por renomeação atômica após fsync para evitar arquivos parciais.", "queries": ["Como impedir um pacote incompleto após falha de energia?", "Qual é o procedimento seguro para trocar o arquivo final?"]},
+    {"id": "mission", "content": "Uma missão só pode ser concluída depois que um verificador independente confirmar o artefato.", "queries": ["Quando é seguro marcar uma tarefa como terminada?", "Quem precisa conferir a entrega antes do encerramento?"]},
+    {"id": "fleet", "content": "Se um worker cair, outro host assume a missão por lease sem repetir efeito externo confirmado.", "queries": ["Como continuar o trabalho após perder uma máquina?", "Como evitar executar duas vezes uma ação já concluída?"]},
+    {"id": "trading", "content": "O laboratório de trading usa paper trading e bloqueia ordens reais até autorização explícita.", "queries": ["A estratégia pode comprar ações com dinheiro verdadeiro agora?", "Como testar operações sem arriscar capital?"]},
+    {"id": "voice", "content": "O comando Ei, Nara ativa a escuta local e usa a mesma missão da interface de texto.", "queries": ["Qual palavra acorda o assistente por voz?", "Uma conversa falada continua o trabalho iniciado no chat?"]},
+    {"id": "provenance", "content": "Toda memória durável guarda origem, data, escopo e relação com a versão corrigida.", "queries": ["Como descobrir de onde veio uma lembrança?", "O sistema registra quando um fato foi alterado?"]},
+    {"id": "tax", "content": "Antes de calcular imposto de venda, informe UF de origem e destino, NCM e regime tributário.", "queries": ["Quais dados faltam para estimar a tributação da mercadoria?", "Dá para calcular o tributo sem classificação fiscal?"]},
+    {"id": "invoice", "content": "Importar XML de NF-e não equivale a receber mercadoria; estoque e financeiro exigem decisão auditada.", "queries": ["O simples recebimento do arquivo fiscal já atualiza o estoque?", "Quando a nota de fornecedor vira obrigação financeira?"]},
+    {"id": "team", "content": "A Nara escolhe especialistas da Legião por competência e modelo adequado antes de delegar uma missão.", "queries": ["Como o agente decide quem recebe uma tarefa especializada?", "Pode escolher modelos diferentes para cada trabalhador?"]},
+    {"id": "rollback", "content": "Mudanças aprendidas passam por avaliação, canário e rollback antes da promoção definitiva.", "queries": ["Como desfazer uma melhoria automática que piorou o resultado?", "A evolução entra direto em produção sem teste?"]},
+    {"id": "desktop", "content": "O Capability Router prefere API estruturada, depois terminal, DOM, acessibilidade e visão coordenada.", "queries": ["Qual meio o agente usa primeiro para operar um aplicativo?", "Quando a Nara deve clicar por coordenadas na tela?"]}
+  ],
+  "negative_queries": ["Qual é a receita de pão de queijo?", "Onde fica a estação espacial?", "Quanto mede o oceano Pacífico?", "Quem ganhou a corrida de Fórmula 1 ontem?"]
+}

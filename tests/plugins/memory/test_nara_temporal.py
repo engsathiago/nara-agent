@@ -43,6 +43,19 @@ def test_search_explains_retrieval_and_preserves_provenance(tmp_path):
     assert result["reasons"][memory["memory_id"]]["source_ref"] == "mission-1:artifact-2"
 
 
+def test_provider_exposes_retrieval_receipt_to_nara_tool(tmp_path):
+    import json
+
+    provider = NaraTemporalMemoryProvider()
+    provider.initialize("session-1", nara_home=str(tmp_path))
+    provider.store.add("Keep the original source", layer="semantic", source_type="user",
+                       source_ref="session-1", status="active")
+    search = json.loads(provider.handle_tool_call("nara_memory_search", {"query": "original source"}))
+    receipt = json.loads(provider.handle_tool_call("nara_memory_receipt", {"receipt_id": search["receipt_id"]}))
+    assert receipt["memory_ids"] == [search["items"][0]["memory_id"]]
+    assert receipt["filters"]["mode"] == "lexical"
+
+
 def test_provider_prefetch_uses_selected_profile_store(tmp_path):
     provider = NaraTemporalMemoryProvider()
     provider.initialize("session-1", nara_home=str(tmp_path))

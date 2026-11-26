@@ -105,3 +105,10 @@ current hashes and manifest are recorded in `research/NARA_PUBLICATION_2026-11-2
 The local bundle was subsequently rebuilt from clean public `main` commit `efcc2b6f846c4b2ecaad85a6df7085b6cb911249`, including the owned metrics/reporting and runtime-guard fixes. Its DMG and ZIP passed integrity checks and both carry the owned bundle identifier. The extracted app passed deep strict verification after a local ad-hoc signature applied after packaging; the archives remain unsigned and unnotarized. The exact hashes, manifest, CI runs and partial full-suite attempts are recorded in the publication report. On this commit, `nara --version`, the product-identity guard and the strict mission-continuity baseline passed. VPS installation remains a separate later step as requested by the owner.
 
 The final local package for this stage was rebuilt again from clean public `main` commit `81194723bc2cff253ec9f95a8547fd8fc03ed097`. This includes the temporal-memory relevance fix and corrected root persona. The DMG and ZIP passed integrity checks; their identifiers and the corrected files inside the ZIP were inspected. The extracted app passed deep strict verification after local ad-hoc signing. A real local `qwen3.5:4b` one-shot query returned `OK` with zero tool calls after the memory fix; before it, the same query retrieved unrelated old instructions and entered a tool loop, which was stopped. The full Python suite on this final commit has not completed under the current machine load; focused tests and owner CI passed. See the publication report for exact hashes, test counts, and the distinction between local and external gates.
+
+On 2026-11-26, PR #23 added the authenticated local Memory Gateway to public
+`main` at `e883a70d908f3e79a048f78f000e9f6b70123c5a`, with two-client MCP
+and API tests in owner CI. A separate optional hybrid-retrieval change is under
+local validation; its PT-BR synthetic holdout and limitations are recorded in
+`research/NARA_MEMORY_RETRIEVAL_2026-11-26.md`. Neither step constitutes VPS
+installation or real external-service connectivity.

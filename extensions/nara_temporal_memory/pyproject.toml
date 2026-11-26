@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nara-temporal-memory"
-version = "0.2.0"
+version = "0.3.0"
 description = "Profile-scoped temporal memory provider for Nara"
 requires-python = ">=3.11,<3.15"
 license = "MIT"

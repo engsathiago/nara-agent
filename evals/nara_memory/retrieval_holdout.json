@@ -1,0 +1,15 @@
+{
+  "cases": [
+    {"id": "backup", "content": "Antes de atualizar a Nara, faça backup completo do perfil e confira a integridade do arquivo de restauração.", "queries": ["O que preparar antes de instalar uma versão nova?", "Como saber se a cópia de segurança pode ser recuperada?"]},
+    {"id": "scheduler", "content": "Uma tarefa agendada mantém identificador, próximo disparo e histórico de execução persistidos entre reinícios.", "queries": ["O cron esquece seus horários quando o computador reinicia?", "Onde consultar quando a automação rodou?"]},
+    {"id": "browser", "content": "Para operar páginas web, o agente usa primeiro elementos do DOM e confirma o resultado observado após cada ação.", "queries": ["Como a Nara interage com um formulário no navegador?", "Ela verifica se o clique realmente produziu o efeito esperado?"]},
+    {"id": "specialist", "content": "O líder cria um contrato de missão para o especialista e confere o artefato antes de aceitar a entrega.", "queries": ["O que o agente principal entrega ao subagente?", "Quem valida o trabalho devolvido por um especialista?"]},
+    {"id": "learning", "content": "Uma nova skill só é promovida após comparação com baseline, teste reservado e reversão disponível.", "queries": ["A Nara pode instalar uma habilidade que acabou de inventar sem avaliação?", "Qual proteção existe se uma habilidade nova piorar os resultados?"]},
+    {"id": "privacy", "content": "Transcrições de voz ficam no perfil local com retenção configurável; o microfone mostra estado visível.", "queries": ["Onde ficam guardadas as conversas faladas?", "Como sei se o assistente está ouvindo agora?"]},
+    {"id": "sources", "content": "Uma resposta baseada em pesquisa deve ligar cada afirmação relevante ao documento ou URL que a sustenta.", "queries": ["Como conferir a origem de uma informação da internet?", "O agente deve indicar a fonte de cada conclusão importante?"]},
+    {"id": "hardware", "content": "O roteador de modelos considera memória disponível, capacidade do hardware, latência e custo observado.", "queries": ["Como escolher entre um modelo local e outro remoto?", "O consumo de RAM influencia qual IA executa a tarefa?"]},
+    {"id": "finance", "content": "No laboratório de trading, uma operação simulada registra posição, limite de risco e motivo da decisão.", "queries": ["Onde vejo por que uma compra fictícia foi feita?", "A simulação controla o tamanho máximo de uma posição?"]},
+    {"id": "recovery", "content": "Depois de uma queda, a missão é reconstruída pelo log de eventos e continua do próximo passo pendente.", "queries": ["A Nara retoma do início quando o processo falha?", "Qual registro permite recuperar uma tarefa interrompida?"]}
+  ],
+  "negative_queries": ["Como plantar alface em vaso?", "Qual é a capital do Nepal?", "Que horas começa o jogo de basquete?", "Como fazer uma massa de pizza fina?"]
+}

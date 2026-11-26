@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 import sqlite3
 import threading
@@ -25,9 +26,12 @@ LAYERS = frozenset({"working", "episodic", "semantic", "procedural", "reflective
 STATUSES = frozenset({"candidate", "active", "rejected"})
 TOKEN_RE = re.compile(r"[\wÀ-ÿ-]+", re.UNICODE)
 _RETRIEVAL_STOP_WORDS = frozenset({
-    "a", "an", "and", "apenas", "answer", "call", "chame", "diga", "do",
-    "faça", "faca", "just", "me", "now", "o", "ok", "only", "please",
-    "por", "reply", "responda", "respond", "the", "to", "um", "uma",
+    "a", "an", "and", "ao", "aos", "apenas", "answer", "call", "chame", "com",
+    "como", "da", "das", "de", "diga", "do", "dos", "em", "faça", "faca",
+    "foi", "ja", "já", "just", "mais", "me", "na", "nas", "no", "nos", "now",
+    "o", "ok", "onde", "only", "para", "pela", "pelas", "pelo", "pelos",
+    "please", "por", "qual", "quais", "quando", "que", "reply", "responda",
+    "respond", "se", "sem", "ser", "são", "sao", "the", "to", "um", "uma",
     "use", "você", "voce",
 })
 
@@ -81,8 +85,17 @@ def _initialize(conn: sqlite3.Connection) -> None:
             reasons_json TEXT NOT NULL,
             created_at TEXT NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS memory_embeddings (
+            memory_id TEXT NOT NULL,
+            model TEXT NOT NULL,
+            content_hash TEXT NOT NULL,
+            vector_json TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            PRIMARY KEY (memory_id, model),
+            FOREIGN KEY (memory_id) REFERENCES memories(memory_id)
+        );
     """)
-    conn.execute("PRAGMA user_version=1")
+    conn.execute("PRAGMA user_version=2")
     conn.commit()
 
 
@@ -202,6 +215,8 @@ class TemporalMemoryStore:
         scope: str | None = None,
         limit: int = 8,
         include_history: bool = False,
+        embedder: Any | None = None,
+        max_chars: int = 6000,
     ) -> dict[str, Any]:
         query_tokens = _tokens(query)
         clauses = ["status = 'active'"]
@@ -219,21 +234,59 @@ class TemporalMemoryStore:
                 f"SELECT * FROM memories WHERE {' AND '.join(clauses)} ORDER BY created_at DESC",
                 params,
             ).fetchall() if query_tokens else []
-        scored = []
+        lexical_scores = {}
         for row in rows:
             overlap = len(query_tokens & _tokens(row["content"]))
             if overlap == 0:
                 continue
             score = overlap / max(1, len(query_tokens)) + float(row["confidence"]) * 0.1
-            scored.append((score, row))
-        selected = sorted(scored, key=lambda item: (item[0], item[1]["created_at"]), reverse=True)[:limit]
-        items = [{
-            **dict(row), "score": score, "metadata": json.loads(row["metadata_json"]),
-        } for score, row in selected]
+            lexical_scores[row["memory_id"]] = score
+        lexical_order = sorted(lexical_scores, key=lambda key: lexical_scores[key], reverse=True)
+        semantic_scores: dict[str, float] = {}
+        mode, degraded_reason, pending_embeddings = "lexical", None, 0
+        if embedder is not None and rows:
+            try:
+                query_vector = embedder.embed_query(query) if hasattr(embedder, "embed_query") else embedder.embed([query])[0]
+                vectors, pending_embeddings = self._cached_embeddings(rows, embedder)
+                for memory_id, vector in vectors.items():
+                    if len(vector) == len(query_vector):
+                        similarity = sum(a * b for a, b in zip(query_vector, vector))
+                        if math.isfinite(similarity) and similarity >= 0.25:
+                            semantic_scores[memory_id] = similarity
+                mode = "hybrid_partial" if pending_embeddings else "hybrid"
+            except (OSError, RuntimeError, TypeError, ValueError, KeyError, IndexError) as exc:
+                mode, degraded_reason = "lexical_degraded", type(exc).__name__
+        semantic_order = sorted(semantic_scores, key=lambda key: semantic_scores[key], reverse=True)
+        ranks: dict[str, float] = {
+            memory_id: 0.20 + 0.03 * min(1.0, score)
+            for memory_id, score in lexical_scores.items()
+        }
+        for memory_id, similarity in semantic_scores.items():
+            ranks[memory_id] = similarity + 0.03 * min(1.0, lexical_scores.get(memory_id, 0.0))
+        selected_ids = sorted(ranks, key=lambda key: ranks[key], reverse=True)[:max(1, min(20, limit))]
+        rows_by_id = {row["memory_id"]: row for row in rows}
+        items = []
+        remaining = max(512, min(24_000, max_chars))
+        per_item_cap = max(512, remaining // max(1, len(selected_ids)))
+        for memory_id in selected_ids:
+            if remaining <= 0:
+                break
+            row = rows_by_id[memory_id]
+            content = row["content"]
+            excerpt = content[:min(remaining, per_item_cap)]
+            remaining -= len(excerpt)
+            items.append({
+                **dict(row), "content": excerpt, "truncated": len(excerpt) < len(content),
+                "score": ranks[memory_id], "metadata": json.loads(row["metadata_json"]),
+            })
         receipt_id = uuid.uuid4().hex
         reasons = {
             item["memory_id"]: {
                 "score": item["score"], "source_ref": item["source_ref"], "version": item["version"],
+                "lexical_rank": lexical_order.index(item["memory_id"]) + 1 if item["memory_id"] in lexical_scores else None,
+                "semantic_rank": semantic_order.index(item["memory_id"]) + 1 if item["memory_id"] in semantic_scores else None,
+                "semantic_similarity": semantic_scores.get(item["memory_id"]),
+                "truncated": item["truncated"],
             } for item in items
         }
         with transaction(self._connect(), immediate=True) as conn:
@@ -241,12 +294,85 @@ class TemporalMemoryStore:
                 "INSERT INTO retrieval_receipts VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (
                     receipt_id, query, session_id or None,
-                    json.dumps({"layer": layer, "scope": scope, "include_history": include_history}),
+                    json.dumps({"layer": layer, "scope": scope, "include_history": include_history,
+                                "mode": mode, "embedding_model": getattr(embedder, "model", None),
+                                "embedding_index_key": getattr(embedder, "index_key", getattr(embedder, "model", None)),
+                                "degraded_reason": degraded_reason, "pending_embeddings": pending_embeddings,
+                                "max_chars": max_chars}),
                     json.dumps([item["memory_id"] for item in items]),
                     json.dumps(reasons, sort_keys=True), _now(),
                 ),
             )
-        return {"receipt_id": receipt_id, "query": query, "items": items, "reasons": reasons}
+        return {"receipt_id": receipt_id, "query": query, "items": items, "reasons": reasons,
+                "mode": mode, "degraded_reason": degraded_reason,
+                "pending_embeddings": pending_embeddings}
+
+    def _cached_embeddings(self, rows: list[sqlite3.Row], embedder: Any) -> tuple[dict[str, list[float]], int]:
+        ids = [row["memory_id"] for row in rows]
+        index_key = getattr(embedder, "index_key", embedder.model)
+        with transaction(self._connect()) as conn:
+            cached = conn.execute(
+                "SELECT memory_id, content_hash, vector_json FROM memory_embeddings WHERE model = ?",
+                (index_key,),
+            ).fetchall()
+        by_id = {row["memory_id"]: row for row in rows}
+        vectors = {
+            item["memory_id"]: json.loads(item["vector_json"])
+            for item in cached
+            if item["memory_id"] in by_id and item["content_hash"] == by_id[item["memory_id"]]["content_hash"]
+        }
+        missing = [memory_id for memory_id in ids if memory_id not in vectors]
+        batch = missing[-63:]
+        if batch:
+            documents = [by_id[memory_id]["content"][:4000] for memory_id in batch]
+            generated = embedder.embed_documents(documents) if hasattr(embedder, "embed_documents") else embedder.embed(documents)
+            if len(generated) != len(batch):
+                raise ValueError("embedding batch count mismatch")
+            with transaction(self._connect(), immediate=True) as conn:
+                for memory_id, vector in zip(batch, generated):
+                    if not vector or any(not math.isfinite(value) for value in vector):
+                        raise ValueError("invalid embedding vector")
+                    conn.execute(
+                        """INSERT INTO memory_embeddings (memory_id, model, content_hash, vector_json, created_at)
+                           VALUES (?, ?, ?, ?, ?)
+                           ON CONFLICT(memory_id, model) DO UPDATE SET
+                           content_hash=excluded.content_hash, vector_json=excluded.vector_json,
+                           created_at=excluded.created_at""",
+                        (memory_id, index_key, by_id[memory_id]["content_hash"],
+                         json.dumps(vector), _now()),
+                    )
+                    vectors[memory_id] = vector
+        return vectors, max(0, len(missing) - len(batch))
+
+    def embedding_status(self, model: str | None = None) -> dict[str, Any]:
+        with transaction(self._connect()) as conn:
+            total = conn.execute(
+                "SELECT COUNT(*) FROM memories WHERE status = 'active' AND valid_to IS NULL",
+            ).fetchone()[0]
+            indexed = 0
+            if model:
+                indexed = conn.execute(
+                    """SELECT COUNT(*) FROM memories m JOIN memory_embeddings e
+                       ON e.memory_id = m.memory_id AND e.model = ? AND e.content_hash = m.content_hash
+                       WHERE m.status = 'active' AND m.valid_to IS NULL""",
+                    (model,),
+                ).fetchone()[0]
+        return {"model": model, "active_memories": total, "indexed_memories": indexed,
+                "pending_embeddings": total - indexed,
+                "mode": "hybrid" if model and indexed == total else "hybrid_partial" if model else "lexical"}
+
+    def index_embeddings(self, embedder: Any, *, max_batches: int = 100) -> dict[str, Any]:
+        if not 1 <= max_batches <= 100:
+            raise ValueError("max_batches must be between 1 and 100")
+        with transaction(self._connect()) as conn:
+            rows = conn.execute(
+                "SELECT * FROM memories WHERE status = 'active' AND valid_to IS NULL ORDER BY created_at DESC",
+            ).fetchall()
+        for _ in range(max_batches):
+            _, pending = self._cached_embeddings(rows, embedder)
+            if pending == 0:
+                break
+        return self.embedding_status(getattr(embedder, "index_key", embedder.model))
 
     def feedback(self, memory_id: str, useful: bool) -> dict[str, Any]:
         column = "usefulness_up" if useful else "usefulness_down"
@@ -276,6 +402,7 @@ _SCHEMAS = [
         "parameters": {"type": "object", "properties": {
             "query": {"type": "string"}, "layer": {"type": "string", "enum": sorted(LAYERS)},
             "limit": {"type": "integer", "minimum": 1, "maximum": 20},
+            "max_chars": {"type": "integer", "minimum": 512, "maximum": 24000},
         }, "required": ["query"]},
     },
     {
@@ -284,6 +411,13 @@ _SCHEMAS = [
         "parameters": {"type": "object", "properties": {
             "memory_id": {"type": "string"},
         }, "required": ["memory_id"]},
+    },
+    {
+        "name": "nara_memory_receipt",
+        "description": "Explain a memory retrieval, including scope, model, source, rank, and fallback status.",
+        "parameters": {"type": "object", "properties": {
+            "receipt_id": {"type": "string"},
+        }, "required": ["receipt_id"]},
     },
     {
         "name": "nara_memory_propose",
@@ -310,6 +444,7 @@ class NaraTemporalMemoryProvider(MemoryProvider):
 
     def __init__(self):
         self.store: TemporalMemoryStore | None = None
+        self.embedder = None
         self.session_id = ""
         self._recall: RecallStatus | None = None
         self._queued: dict[str, str] = {}
@@ -323,11 +458,28 @@ class NaraTemporalMemoryProvider(MemoryProvider):
         return True
 
     def get_config_schema(self) -> list[dict[str, Any]]:
-        return []
+        return [
+            {"key": "embedding_model", "description": "Local Ollama embedding model (blank keeps lexical search)",
+             "default": ""},
+            {"key": "embedding_url", "description": "Local Ollama origin", "default": "http://127.0.0.1:11434"},
+        ]
 
     def save_config(self, values: dict[str, Any], nara_home: str) -> None:
-        if values:
-            raise ValueError("nara_temporal has no configurable or secret fields")
+        if set(values) - {"embedding_model", "embedding_url"}:
+            raise ValueError("unknown nara_temporal setting")
+        from .embedding import OllamaEmbedder
+        if values.get("embedding_model"):
+            OllamaEmbedder(str(values["embedding_model"]), str(values.get("embedding_url") or "http://127.0.0.1:11434"))
+        from nara_constants import reset_nara_home_override, set_nara_home_override
+        from nara_cli.config import load_config, save_config
+
+        token = set_nara_home_override(Path(nara_home))
+        try:
+            config = load_config()
+            config.setdefault("memory", {})["nara_temporal"] = dict(values)
+            save_config(config)
+        finally:
+            reset_nara_home_override(token)
 
     def initialize(self, session_id: str, **kwargs) -> None:
         home_value = str(kwargs.get("nara_home") or "").strip()
@@ -337,6 +489,8 @@ class NaraTemporalMemoryProvider(MemoryProvider):
             from nara_constants import get_nara_home
             home = get_nara_home()
         self.store = TemporalMemoryStore(home / "memories" / "nara-temporal.db")
+        from .embedding import configured_embedder
+        self.embedder = configured_embedder(home)
         self.session_id = session_id
 
     def system_prompt_block(self) -> str:
@@ -356,7 +510,7 @@ class NaraTemporalMemoryProvider(MemoryProvider):
         key = session_id or self.session_id
         with self._lock:
             effective = self._queued.pop(key, query)
-        result = self.store.search(effective, session_id=key, limit=6)
+        result = self.store.search(effective, session_id=key, limit=6, embedder=self.embedder)
         self._recall = RecallStatus("Nara Temporal", len(result["items"])) if result["items"] else None
         if not result["items"]:
             return ""
@@ -408,9 +562,12 @@ class NaraTemporalMemoryProvider(MemoryProvider):
                 result = self.store.search(
                     str(args["query"]), session_id=self.session_id,
                     layer=args.get("layer"), limit=min(20, max(1, int(args.get("limit", 8)))),
+                    embedder=self.embedder, max_chars=int(args.get("max_chars", 6000)),
                 )
             elif tool_name == "nara_memory_get":
                 result = self.store.get(str(args["memory_id"]))
+            elif tool_name == "nara_memory_receipt":
+                result = self.store.get_receipt(str(args["receipt_id"]))
             elif tool_name == "nara_memory_propose":
                 result = self.store.add(
                     str(args["content"]), layer=str(args["layer"]),
