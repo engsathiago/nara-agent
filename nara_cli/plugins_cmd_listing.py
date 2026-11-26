@@ -111,7 +111,7 @@ def cmd_list(args: Any | None = None) -> None:
     console.print("[dim]Compact view:[/dim] nara plugins list --plain --no-bundled")
     console.print("[dim]Interactive toggle:[/dim] nara plugins")
     console.print("[dim]Enable/disable:[/dim] nara plugins enable/disable <name>")
-    console.print("[dim]Plugins are opt-in by default — only 'enabled' plugins load.[/dim]")
+    console.print("[dim]Standalone plugins are opt-in; native Mission Control loads by default.[/dim]")
 
 
 def cmd_show(name: str) -> None:
@@ -126,7 +126,10 @@ def cmd_show(name: str) -> None:
     manifest = _pc()._read_manifest(Path(dir_path)) if dir_path else {}
     emits = manifest.get("emits") or []
     listens = manifest.get("listens") or []
-    status = _pc()._plugin_status(pname, _pc()._get_enabled_set(), _pc()._get_disabled_set(), key=key)
+    status = _pc()._plugin_status(
+        pname, _pc()._get_enabled_set(), _pc()._get_disabled_set(),
+        key=key, source=source, dir_path=dir_path,
+    )
     console.print()
     console.print(f"[bold]{pname}[/bold]" + (f" [dim]v{version}[/dim]" if version else ""))
     if description:

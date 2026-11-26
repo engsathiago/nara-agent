@@ -169,9 +169,10 @@ async def get_plugins_catalog(request: Request):
         from nara_cli.web_server_dashboard import _plugin_runtime_status
         enabled, disabled = _get_enabled_set(), _get_disabled_set()
         installed = {}
-        for name, _v, _d, _s, dir_str, key in _discover_all_plugins():
+        for name, _v, _d, source, dir_str, key in _discover_all_plugins():
             aliases = {name, key} - {""}
-            info = {"dir": dir_str, "runtime_status": _plugin_runtime_status(aliases, enabled, disabled)}
+            info = {"dir": dir_str, "runtime_status": _plugin_runtime_status(
+                aliases, enabled, disabled, native=source == "bundled" and key == "mission_control")}
             installed.update({alias: info for alias in aliases})
         return installed_catalog_state(installed)
 

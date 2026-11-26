@@ -930,6 +930,8 @@ def _plugin_status(name: str, enabled: set, disabled: set, key: str = "", *, sou
     names = {name, key}
     if names & disabled:
         return "disabled"
+    if source == "bundled" and key == "mission_control":
+        return "enabled"
     if names & enabled or names & active:
         return "enabled"
     if dir_path is not None and _default_on(dir_path, source):

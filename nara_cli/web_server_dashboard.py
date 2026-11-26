@@ -722,9 +722,9 @@ def _plugin_auth_hint(name: str, provides_tools: list) -> tuple:
     return False, ""
 
 
-def _plugin_runtime_status(aliases: set, enabled_set: set, disabled_set: set) -> str:
+def _plugin_runtime_status(aliases: set, enabled_set: set, disabled_set: set, *, native: bool = False) -> str:
     """enabled / disabled / inactive for a plugin's name+key alias set (disabled wins)."""
-    return "disabled" if aliases & disabled_set else "enabled" if aliases & enabled_set else "inactive"
+    return "disabled" if aliases & disabled_set else "enabled" if native or aliases & enabled_set else "inactive"
 
 
 def _merged_plugins_hub(force_refresh: bool = False) -> dict[str, Any]:
