@@ -7,6 +7,12 @@ public release that was not observed.
 
 ## Authoritative local run
 
+- On the corrected production tree at `21ce2dfced0d0ea67d601021c802c9132af659ad`,
+  `scripts/run_tests.sh -j 8` exited 0 in a clean code worktree at
+  `450e6debd060256ccdc3cbbcb06b0ab694effeb5` (identical Git tree):
+  7,480 files, 74,302 passed, 0 failed, 2,102 skipped, 2,814.5 seconds.
+  Platform-specific skips are reported by the runner; this macOS run is not
+  evidence of a Windows or Linux host execution.
 - On production-code commit `a72116f032e40719336711e8ff10723461cbb338`,
   `scripts/run_tests.sh` exited 0: 7,466 files, 74,220 passed, 0 final failures, 2,097 skipped.
 - Commit `358c7d57041f87886510210f3e6a1deba087ca1c` changes only the pytest process reaper
@@ -183,12 +189,11 @@ refused without a reserved evaluation, and no active skill file. The DMG/ZIP
 passed integrity checks. This satisfies the local media-to-candidate seam only;
 the full real-media-to-new-task transfer gate remains open.
 
-The full-suite pass on the earlier production commit `a72116f` remains the last
-completed zero-failure integral run recorded here. A later integral run on
+An integral run on
 `dac95d6` completed with 74,277 passing tests, 27 failures and 2,100 skips;
 PR #49 repaired the observed categories, and PR #50 repaired one additional
 Desktop test expectation found during the next run. The latter run was stopped
 after the correction had merged, so it is not counted as a full pass. The
-current local product code is packaged and its CLI and archives were checked
-as described in the publication report. A zero-failure integral run on this
-newer code must be recorded separately before calling that gate passed.
+subsequent corrected-tree run passed in full as recorded above. The current
+local product code is packaged and its CLI and archives were checked as
+described in the publication report.
