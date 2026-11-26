@@ -11,6 +11,7 @@ from nara_constants import get_nara_home
 from plugins.memory import import_provider_module
 from plugins.mission_control.consolidation import MissionConsolidator, learning_status_tool
 from plugins.mission_control.learning import LearningLab
+from plugins.mission_control.learning_fabric import LearningFabric
 from plugins.mission_control.learning_runner import ProcessEvaluator
 from plugins.mission_control.store import MissionStore
 from plugins.mission_control.learning_fabric_cli import media_command
@@ -80,16 +81,12 @@ def _evaluate(lab: LearningLab, args: argparse.Namespace, candidates: Path) -> d
 def learning_command(store: MissionStore, args: argparse.Namespace) -> dict[str, Any]:
     if args.mission_action == "learn-status":
         return learning_status_tool()
-    home = get_nara_home()
-    candidates = store.path.parent / "learning" / "candidates"
-    provider_module = import_provider_module("nara_temporal")
-    lab = LearningLab(
-        store,
-        provider_module.TemporalMemoryStore(home / "memories" / "nara-temporal.db"),
-        candidates,
-        home / "skills",
-    )
+    lab = open_learning_lab(store)
+    candidates = lab.candidate_root
     actions = {
+        "learn-media-procedure": lambda: lab.propose_from_media(
+            args.source_id, args.repo_claim, args.name, args.step, args.quote,
+        ).to_dict(),
         "learn-extract": lambda: lab.extract(args.mission_id, name=args.name).to_dict(),
         "learn-show": lambda: _show(lab, args, candidates),
         "learn-evaluate": lambda: _evaluate(lab, args, candidates),
@@ -108,7 +105,23 @@ def learning_command(store: MissionStore, args: argparse.Namespace) -> dict[str,
     return actions[args.mission_action]()
 
 
+def open_learning_lab(store: MissionStore | None = None) -> LearningLab:
+    store = store or MissionStore.open_default()
+    home = get_nara_home()
+    candidates = store.path.parent / "learning" / "candidates"
+    provider_module = import_provider_module("nara_temporal")
+    return LearningLab(
+        store,
+        provider_module.TemporalMemoryStore(home / "memories" / "nara-temporal.db"),
+        candidates,
+        home / "skills",
+        source_fabric=LearningFabric.open_default(),
+    )
+
+
 def dispatch_learning(store: MissionStore, args: argparse.Namespace) -> dict[str, Any]:
+    if args.mission_action == "learn-media-procedure":
+        return learning_command(store, args)
     if args.mission_action.startswith(("learn-media-", "learn-repo-")):
         return media_command(args)
     return learning_command(store, args)

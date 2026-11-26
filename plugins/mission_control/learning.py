@@ -7,10 +7,13 @@ import json
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Any, Callable, Iterable, Protocol
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Protocol
 
 from plugins.mission_control.contracts import EffectStatus, MissionStatus, load_contract, utc_now
 from plugins.mission_control.store import MissionNotFoundError, MissionStore, completion_blockers
+
+if TYPE_CHECKING:
+    from plugins.mission_control.learning_fabric import LearningFabric
 
 
 class ProceduralMemory(Protocol):
@@ -56,11 +59,13 @@ class LearningLab:
         memory: ProceduralMemory,
         candidate_root: Path | str,
         skill_root: Path | str,
+        source_fabric: LearningFabric | None = None,
     ):
         self.missions = missions
         self.memory = memory
         self.candidate_root = Path(candidate_root)
         self.skill_root = Path(skill_root)
+        self.source_fabric = source_fabric
 
     def _candidate_path(self, candidate_id: str) -> Path:
         return self.candidate_root / f"{candidate_id}.json"
@@ -136,7 +141,10 @@ class LearningLab:
         return candidate
 
     def load(self, candidate_id: str) -> ProcedureCandidate:
-        payload = json.loads(self._candidate_path(candidate_id).read_text(encoding="utf-8-sig"))
+        path = self._candidate_path(candidate_id)
+        if not path.is_file():
+            raise ValueError(f"unknown procedural candidate: {candidate_id}")
+        payload = json.loads(path.read_text(encoding="utf-8-sig"))
         payload["steps"] = tuple(payload["steps"])
         payload["evidence_artifact_ids"] = tuple(payload["evidence_artifact_ids"])
         allowed = {field.name for field in fields(ProcedureCandidate)}
@@ -146,6 +154,127 @@ class LearningLab:
         ) != candidate_id:
             raise ValueError("procedure candidate content does not match its identity")
         return candidate
+
+    def propose_from_media(
+        self, source_id: str, repository_claim_id: str, name: str,
+        steps: list[str], quotes: list[str],
+    ) -> ProcedureCandidate:
+        """Keep a sourced media procedure inactive until reserved transfer passes."""
+        if self.source_fabric is None:
+            raise ValueError("media procedure proposals require a Learning Fabric")
+        from plugins.mission_control.learning_github_source import _check_cited_source
+
+        fabric = self.source_fabric
+        try:
+            source = fabric.source(source_id)
+        except KeyError as exc:
+            raise ValueError(f"unknown learning source: {source_id}") from exc
+        _check_cited_source(source)
+        try:
+            claim = fabric.claim(repository_claim_id)
+        except KeyError as exc:
+            raise ValueError(f"unknown repository claim: {repository_claim_id}") from exc
+        if (claim["source_id"] != source_id or claim["status"] != "verified"
+                or claim["verifier_id"] != "github-public-rest-v1"):
+            raise ValueError("media procedure requires a verified repository from the same source")
+        clean_name = name.strip()
+        clean_steps = [step.strip() for step in steps]
+        if (not clean_name or len(clean_name) > 120 or "\n" in clean_name or "\r" in clean_name
+                or not 1 <= len(clean_steps) <= 12 or len(clean_steps) != len(quotes)
+                or any(not step or len(step) > 500 or "\n" in step or "\r" in step for step in clean_steps)):
+            raise ValueError("provide a name and one bounded step with an exact quote for each step")
+        text = source["extracted_text"] or ""
+        if any(not quote.strip() or len(quote) > 2000 or quote not in text for quote in quotes):
+            raise ValueError("each procedure step requires an exact quote in the extracted source")
+        provenance = {
+            "kind": "media_procedure_provenance", "schema_version": 1,
+            "source_id": source_id, "source_uri": source["source_uri"],
+            "source_hash": source["source_hash"], "version": source["version"],
+            "license": source["license"] or "unknown",
+            "repository_claim_id": repository_claim_id,
+            "name": clean_name, "steps": clean_steps, "quotes": quotes,
+        }
+        raw = json.dumps(provenance, sort_keys=True, ensure_ascii=False).encode()
+        provenance_hash, _ = fabric._store(raw)
+        artifacts = [f"sha256:{source['source_hash']}", f"sha256:{provenance_hash}",
+                     *claim["evidence_artifact_ids"]]
+        origin = f"media:{source_id}"
+        fingerprint = _candidate_fingerprint(origin, clean_name, clean_steps, artifacts)
+        candidate = ProcedureCandidate(
+            candidate_id=fingerprint, mission_id=origin, name=clean_name,
+            description=f"Unverified media procedure from {source['source_uri']}; use only after reserved transfer evaluation.",
+            steps=tuple(clean_steps), evidence_artifact_ids=tuple(sorted(set(artifacts))),
+            source_event_count=0, created_at=utc_now(),
+        )
+        existing_path = self._candidate_path(candidate.candidate_id)
+        if existing_path.exists():
+            existing = self.load(candidate.candidate_id)
+            try:
+                self.memory.get(f"procedure:{candidate.candidate_id}")
+            except KeyError:
+                if existing.status != "candidate":
+                    raise ValueError("promoted media procedure has no matching memory; manual repair required")
+            else:
+                return existing
+        self._write_json(existing_path, candidate.to_dict())
+        self.memory.add(
+            "\n".join(candidate.steps), layer="procedural", source_type="external_media",
+            source_ref=f"{origin}:candidate:{candidate.candidate_id}",
+            source_hash=source["source_hash"], status="candidate", confidence=0.3,
+            memory_id=f"procedure:{candidate.candidate_id}",
+            metadata={"candidate": candidate.to_dict(), "provenance_hash": provenance_hash},
+        )
+        return candidate
+
+    def _check_media_origin(self, candidate: ProcedureCandidate) -> None:
+        if not candidate.mission_id.startswith("media:"):
+            return
+        if self.source_fabric is None:
+            raise ValueError("media procedure evaluation requires a Learning Fabric")
+        from plugins.mission_control.learning_github_source import _check_cited_source
+
+        fabric = self.source_fabric
+        source_id = candidate.mission_id.removeprefix("media:")
+        try:
+            source = fabric.source(source_id)
+        except KeyError as exc:
+            raise ValueError(f"media procedure source is missing: {source_id}") from exc
+        _check_cited_source(source)
+        expected_artifacts = set(candidate.evidence_artifact_ids)
+        if f"sha256:{source['source_hash']}" not in expected_artifacts:
+            raise ValueError("media procedure lost its source evidence")
+        provenance = None
+        for artifact_id in expected_artifacts:
+            if not artifact_id.startswith("sha256:") or artifact_id == f"sha256:{source['source_hash']}":
+                continue
+            fabric._check_archived_evidence([artifact_id])
+            digest = artifact_id[7:]
+            path = fabric.root / "sources" / digest[:2] / digest
+            if path.stat().st_size > 100_000:
+                continue
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8-sig"))
+            except (UnicodeError, json.JSONDecodeError):
+                continue
+            if isinstance(payload, dict) and payload.get("kind") == "media_procedure_provenance":
+                provenance = payload
+        if provenance is None or (
+            provenance.get("source_id") != source_id
+            or provenance.get("source_hash") != source["source_hash"]
+            or provenance.get("name") != candidate.name
+            or provenance.get("steps") != list(candidate.steps)
+            or any(quote not in (source["extracted_text"] or "") for quote in provenance.get("quotes", []))
+            or len(provenance.get("quotes", [])) != len(candidate.steps)
+        ):
+            raise ValueError("media procedure provenance is missing or has changed")
+        try:
+            claim = fabric.claim(provenance["repository_claim_id"])
+        except KeyError as exc:
+            raise ValueError("media procedure repository claim is missing") from exc
+        if (claim["source_id"] != source_id or claim["status"] != "verified"
+                or claim["verifier_id"] != "github-public-rest-v1"
+                or not set(claim["evidence_artifact_ids"]) <= expected_artifacts):
+            raise ValueError("media procedure repository evidence is no longer verified")
 
     def evaluate_transfer(
         self,
@@ -158,6 +287,7 @@ class LearningLab:
         evaluator_path: str | None = None,
     ) -> dict[str, Any]:
         candidate = self.load(candidate_id)
+        self._check_media_origin(candidate)
         case_list = list(cases)
         holdout = [case for case in case_list if str(case["case_id"]) not in development_case_ids]
         if not holdout:
@@ -197,7 +327,10 @@ class LearningLab:
 
     def promote(self, candidate_id: str, *, require_evidence: bool = False) -> Path:
         candidate = self.load(candidate_id)
+        self._check_media_origin(candidate)
         report_path = self.candidate_root / f"{candidate_id}.eval.json"
+        if not report_path.is_file():
+            raise ValueError("candidate has no reserved transfer evaluation")
         report = json.loads(report_path.read_text(encoding="utf-8-sig"))
         if not report.get("passed"):
             raise ValueError("candidate did not pass reserved transfer evaluation")
@@ -234,7 +367,7 @@ class LearningLab:
             f"version: 1.0.0\n"
             "author: Nara Evolution Lab\n"
             "metadata:\n"
-            f"  source_mission: {candidate.mission_id}\n"
+            f"  {'source_media' if candidate.mission_id.startswith('media:') else 'source_mission'}: {candidate.mission_id}\n"
             f"  candidate_id: {candidate.candidate_id}\n"
             "---\n\n"
             f"# {candidate.name}\n\n"
