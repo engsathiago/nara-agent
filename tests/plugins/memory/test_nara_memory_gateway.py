@@ -48,6 +48,9 @@ def test_gateway_api_shares_canonical_store_and_enforces_scopes(tmp_path):
         found = client.post("/v1/memory/search", headers=codex, json={"query": "Portuguese"})
         assert found.status_code == 200
         assert [item["memory_id"] for item in found.json()["items"]] == [original["memory_id"]]
+        assert client.post("/v1/memory/search", headers=codex, json={
+            "query": "Portuguese", "max_chars": 256,
+        }).status_code == 400
         receipt_id = found.json()["receipt_id"]
         receipt = client.get(f"/v1/memory/receipt/{receipt_id}", headers=codex)
         assert receipt.json()["memory_ids"] == [original["memory_id"]]
@@ -113,7 +116,7 @@ def test_gateway_mcp_protocol_uses_same_store_and_requires_bearer(tmp_path):
                         assert {tool.name for tool in tools.tools} >= {
                             "memory_search", "memory_get", "memory_propose", "memory_correct", "memory_receipt",
                         }
-                        result = await session.call_tool("memory_search", {"query": "archive"})
+                        result = await session.call_tool("memory_search", {"query": "archive", "max_chars": 512})
                         assert not result.is_error
                         assert result.structured_content["items"][0]["content"] == "mission archive record"
                         memory_id = result.structured_content["items"][0]["memory_id"]
@@ -145,7 +148,7 @@ def test_gateway_refuses_world_readable_token_configuration(tmp_path):
         load_clients(path)
 
 
-def test_installed_provider_registers_real_cli_command(tmp_path, monkeypatch):
+def test_installed_provider_registers_real_cli_command(tmp_path, monkeypatch, capsys):
     import extensions.nara_temporal_memory.nara_temporal as provider_source
 
     target = tmp_path / "plugins" / "nara_temporal"
@@ -167,3 +170,6 @@ def test_installed_provider_registers_real_cli_command(tmp_path, monkeypatch):
     args.func(args)
     assert len(served) == 1
     assert served[0][1]["host"] == "127.0.0.1"
+    status_args = parser.parse_args(["nara_temporal", "status"])
+    status_args.func(status_args)
+    assert json.loads(capsys.readouterr().out)["health"] == "available"

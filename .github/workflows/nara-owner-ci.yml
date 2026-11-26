@@ -49,5 +49,6 @@ jobs:
             tests/plugins/memory/test_nara_temporal.py \
             tests/plugins/memory/test_nara_temporal_discovery.py \
             tests/plugins/memory/test_nara_memory_gateway.py \
+            tests/plugins/memory/test_nara_hybrid_retrieval.py \
             tests/test_session_daemon_reaper.py \
             tests/tools/test_voice_mode.py

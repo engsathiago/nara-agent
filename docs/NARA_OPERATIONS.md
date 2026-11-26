@@ -23,6 +23,11 @@ The command serves authenticated API and MCP on loopback using the selected
 profile's canonical temporal database. See the provider README for endpoint,
 token, scope and candidate rules. This service is optional and has its own
 process lifecycle; start it again after provider code or client-file changes.
+For local semantic recall, pull `embeddinggemma`, select it in the temporal
+provider settings, run `nara nara_temporal index`, and inspect
+`nara nara_temporal status`. The embedding service runs on loopback. If it
+fails, each search reports `lexical_degraded` in its receipt rather than
+silently claiming hybrid retrieval.
 
 The validated offline baseline is Ollama at `http://127.0.0.1:11434/v1` with `qwen3.5:4b` and a
 64,000-token configured context. Confirm the model with a text turn and a real Mission Control tool
