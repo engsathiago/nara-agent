@@ -27,6 +27,15 @@ def register_study_cli(actions: Any) -> None:
     command.add_argument("--timeout", type=float, default=30.0)
     show = actions.add_parser("study-show", help="Inspect a study plan and its gap state")
     show.add_argument("plan_id")
+    cycle = actions.add_parser("study-run", help="Run bounded source study, practice and reserved evaluation")
+    cycle.add_argument("plan_id")
+    cycle.add_argument("source_id")
+    cycle.add_argument("--cases-file", type=Path, required=True)
+    cycle.add_argument("--evaluator", type=Path, required=True)
+    cycle.add_argument("--system-file", type=Path, required=True)
+    cycle.add_argument("--max-attempts", type=int, default=3)
+    cycle.add_argument("--max-seconds", type=float, default=600.0)
+    cycle.add_argument("--timeout", type=float, default=30.0)
 
 
 def _archive(lab: LearningLab, payload: dict[str, Any]) -> tuple[Path, str]:
@@ -44,6 +53,7 @@ def _archive(lab: LearningLab, payload: dict[str, Any]) -> tuple[Path, str]:
 def execute_study(
     registry: CompetenceRegistry, lab: LearningLab, plan_id: str, candidate_id: str,
     *, cases_file: Path, evaluator_path: Path, system: dict[str, Any], timeout: float = 30.0,
+    evaluator: ProcessEvaluator | None = None,
 ) -> dict[str, Any]:
     """Evaluate both variants; never accept caller-supplied scores or activate a skill."""
     plan = registry.study_plan(plan_id)
@@ -58,7 +68,7 @@ def execute_study(
     by_id = {str(case["case_id"]): case for case in cases}
     ordered = [by_id[case_id] for case_id in plan.holdout_case_ids]
     candidate = lab.load(candidate_id)
-    evaluator = ProcessEvaluator(evaluator_path, lab.candidate_root / "evidence", timeout=timeout)
+    evaluator = evaluator or ProcessEvaluator(evaluator_path, lab.candidate_root / "evidence", timeout=timeout)
     bound_system = {
         **system, "procedure_candidate_id": candidate_id,
         "procedure_candidate_sha256": hashlib.sha256(
@@ -108,7 +118,7 @@ def execute_study(
             "receipt_path": str(receipt_path), "receipt_sha256": receipt_hash}
 
 
-def competence_command(store: MissionStore, args: Any) -> dict[str, Any] | list[dict[str, Any]]:
+def competence_command(store: MissionStore, args: Any, *, llm: Any = None) -> dict[str, Any] | list[dict[str, Any]]:
     registry = CompetenceRegistry.open_default()
     handlers = {
         "competence": lambda: registry.current(args.category),
@@ -127,9 +137,14 @@ def competence_command(store: MissionStore, args: Any) -> dict[str, Any] | list[
             return handlers[args.mission_action]()
         if args.mission_action == "study-show":
             plan = registry.study_plan(args.plan_id)
-            return {"plan": plan.to_dict(), "gap": registry.gap(plan.gap_id)}
+            return {"plan": plan.to_dict(), "gap": registry.gap(plan.gap_id),
+                    "cycle": registry.study_cycle(plan.plan_id)}
         from plugins.mission_control.learning_cli import open_learning_lab
 
+        if args.mission_action == "study-run":
+            from plugins.mission_control.study_cycle import run_study_cycle
+
+            return run_study_cycle(registry, open_learning_lab(store), llm, args)
         return execute_study(
             registry, open_learning_lab(store), args.plan_id, args.candidate_id, cases_file=args.cases_file,
             evaluator_path=args.evaluator,

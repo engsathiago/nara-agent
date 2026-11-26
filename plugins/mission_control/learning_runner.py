@@ -48,6 +48,8 @@ class ProcessEvaluator:
             self.archived_path.chmod(self.path.stat().st_mode & 0o777)
 
     def __call__(self, candidate, case: dict[str, Any]) -> dict[str, Any]:
+        if hashlib.sha256(self.archived_path.read_bytes()).hexdigest() != self.sha256:
+            raise ValueError("evaluator source is missing or changed")
         with TemporaryDirectory(prefix="nara-transfer-case-") as temp:
             workdir = Path(temp).resolve()
             (workdir / "profile").mkdir()
@@ -100,4 +102,15 @@ class ProcessEvaluator:
                         staged = Path(output.name)
                     staged.replace(destination)
                 evidence.append({"sha256": digest, "path": str(destination), "bytes": len(content)})
-            return {"score": float(score), "evidence": evidence}
+            response = {"score": float(score), "evidence": evidence}
+            if "cost_usd" in payload:
+                cost = payload["cost_usd"]
+                if isinstance(cost, bool) or not isinstance(cost, (int, float)) or not math.isfinite(cost) or cost < 0:
+                    raise ValueError("evaluator cost_usd must be a finite nonnegative number")
+                response["cost_usd"] = float(cost)
+            if "feedback" in payload:
+                feedback = payload["feedback"]
+                if not isinstance(feedback, str) or len(feedback) > 4000:
+                    raise ValueError("evaluator feedback must be text of at most 4000 characters")
+                response["feedback"] = feedback
+            return response
