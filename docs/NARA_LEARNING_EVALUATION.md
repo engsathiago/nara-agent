@@ -120,3 +120,60 @@ operation when appropriate. It connects evaluation to competence, but does not
 yet schedule research, generate practice iterations, or demonstrate autonomous
 learning on varied real tasks. Each variant has a bounded timeout (default 30s,
 maximum 120s); total execution also depends on the number of reserved cases.
+
+## Run a bounded study and practice cycle
+
+`study-run` joins the configured study model, development practice and reserved
+evaluation. It operates on an archived source explicitly named and versioned in
+the plan (source ID or original URI; version or SHA-256). For a new, unevaluated
+plan:
+
+```sh
+nara mission study-run PLAN_ID SOURCE_ID \
+  --cases-file /absolute/path/cases.json \
+  --evaluator /absolute/path/evaluator.py \
+  --system-file /absolute/path/system.json \
+  --max-attempts 3 --max-seconds 600 --timeout 30
+```
+
+The cycle archives the complete case set and evaluator before generation. The
+model receives the objective and source spans. A candidate is tried on the
+development cases; only their inputs, scores and optional evaluator `feedback`
+(text up to 4,000 characters) reach the next generation. The previous procedure
+is included for revision. All revised steps still require source citations.
+Changing the original case/evaluator files during the cycle does not change
+the frozen experiment. The source archive is rechecked around generation.
+
+Once every development case meets the plan's floor, the candidate is frozen
+and the existing `study-evaluate` implementation executes the reserved baseline
+and candidate. Holdout feedback never returns to generation. There is no retry
+or revision after this evaluation, even when it fails. Identical repeated steps,
+an explicit model decline, exhausted attempts and execution failures terminate
+the cycle with a retained result. No skill is automatically activated.
+
+The competence database journals the cycle and partial attempts. One cycle may
+claim a plan; simultaneous or repeated commands cannot start another cycle with
+that plan. `study-show` exposes its request, progress and result. A killed process
+can leave nonterminal progress: that record alone is not proof that a process is
+still running or has stopped. Inspect the execution before further action; this
+version does not automatically recover an interrupted cycle. New experiments
+need a new plan with genuinely unused reserved cases. Case IDs are operator
+declarations, not a global guarantee that content was never seen elsewhere.
+
+Resource bounds are explicit: 1–5 generation calls (default 3), at most 10
+development and 20 reserved cases, 2,048 output tokens per generation request,
+and a 1–3,600 second deadline (default 600). The deadline prevents new work after
+expiry; an in-flight host request/retry can finish later. The configured host
+router still owns transport retries, so generation-call count is not a physical
+HTTP-request count. Each evaluator subprocess has its own bounded timeout.
+
+If the gap has a monetary budget, Nara checks reported cost after each generation
+and evaluator call and stops when exhausted or unverifiable. Evaluators may
+return a finite nonnegative `cost_usd`; missing cost is recorded as unknown,
+never as verified zero. This is post-call cost accounting, not a prepaid spending
+cap: the last call may exceed the budget, and provider estimates may be incomplete.
+Without a monetary limit, unknown costs remain explicit in the result.
+
+This foreground pipeline supplies the executable study/practice consumer.
+Automatic source discovery, event-driven gap dispatch, interrupted-cycle
+recovery and broad longitudinal learning remain separate completion gates.

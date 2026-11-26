@@ -16,7 +16,7 @@ from plugins.mission_control.learning_acceptance import validate_minimum_score
 from plugins.plugin_storage import plugin_data_dir
 
 
-DB_SCHEMA_VERSION = 2
+DB_SCHEMA_VERSION = 3
 GAP_STATES = frozenset({"open", "studying", "practicing", "proving", "resolved", "unresolved"})
 
 
@@ -81,11 +81,19 @@ def _initialize(conn: sqlite3.Connection) -> None:
             evaluated_at TEXT NOT NULL,
             FOREIGN KEY (plan_id) REFERENCES study_plans(plan_id)
         );
+        CREATE TABLE IF NOT EXISTS study_cycles (
+            plan_id TEXT PRIMARY KEY REFERENCES study_plans(plan_id),
+            cycle_id TEXT UNIQUE NOT NULL,
+            request_json TEXT NOT NULL,
+            status TEXT NOT NULL,
+            result_json TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
     """)
     # DDL and its version marker must survive or roll back together on interruption.
     conn.execute("BEGIN IMMEDIATE")
     current = int(conn.execute("PRAGMA user_version").fetchone()[0])
-    if current not in {0, 1, DB_SCHEMA_VERSION}:
+    if current not in {0, 1, 2, DB_SCHEMA_VERSION}:
         raise RuntimeError(f"unsupported System Competence schema {current}")
     if current < 2:
         conn.execute("ALTER TABLE study_plans ADD COLUMN minimum_candidate_score REAL NOT NULL DEFAULT 0")
@@ -431,6 +439,52 @@ class CompetenceRegistry:
                          ("failed" if failed else "proving", plan_id))
             conn.execute("UPDATE competence_gaps SET state = ?, updated_at = ? WHERE gap_id = ?",
                          ("unresolved" if failed else "proving", utc_now(), plan.gap_id))
+
+    def claim_study_cycle(self, plan_id: str, request: dict[str, Any]) -> str:
+        cycle_id = uuid.uuid4().hex
+        with transaction(self._connect(), immediate=True) as conn:
+            plan = conn.execute("SELECT status FROM study_plans WHERE plan_id=?", (plan_id,)).fetchone()
+            if plan is None:
+                raise ValueError(f"unknown study plan: {plan_id}")
+            if conn.execute("SELECT 1 FROM study_cycles WHERE plan_id=?", (plan_id,)).fetchone():
+                raise ValueError("study plan already has a cycle; inspect study-show instead of reusing its holdouts")
+            if plan["status"] != "studying" or conn.execute(
+                "SELECT 1 FROM study_evaluations WHERE plan_id=?", (plan_id,)
+            ).fetchone():
+                raise ValueError("study cycle requires a fresh, unevaluated plan")
+            conn.execute("INSERT INTO study_cycles VALUES (?, ?, ?, 'studying', '{}', ?)",
+                         (plan_id, cycle_id, json.dumps(request, sort_keys=True), utc_now()))
+        return cycle_id
+
+    def study_cycle(self, plan_id: str) -> dict[str, Any] | None:
+        with transaction(self._connect()) as conn:
+            row = conn.execute("SELECT * FROM study_cycles WHERE plan_id=?", (plan_id,)).fetchone()
+        if row is None:
+            return None
+        return {"cycle_id": row["cycle_id"], "plan_id": plan_id, "status": row["status"],
+                "request": json.loads(row["request_json"]),
+                "result": json.loads(row["result_json"]), "updated_at": row["updated_at"]}
+
+    def update_study_cycle(self, cycle_id: str, status: str, result: dict[str, Any]) -> None:
+        states = {"studying": "studying", "practicing": "practicing", "proving": "proving"}
+        terminal = {"completed", "exhausted", "holdout_failed", "declined", "no_change",
+                    "failed", "budget_exhausted", "budget_unverifiable"}
+        if status not in states and status not in terminal:
+            raise ValueError("invalid study cycle state")
+        with transaction(self._connect(), immediate=True) as conn:
+            row = conn.execute(
+                "SELECT c.plan_id, p.gap_id FROM study_cycles c JOIN study_plans p USING(plan_id) "
+                "WHERE cycle_id=?", (cycle_id,)).fetchone()
+            if row is None:
+                raise ValueError("unknown study cycle")
+            conn.execute("UPDATE study_cycles SET status=?, result_json=?, updated_at=? WHERE cycle_id=?",
+                         (status, json.dumps(result, sort_keys=True), utc_now(), cycle_id))
+            if status != "completed":
+                gap_state = states.get(status, "unresolved")
+                conn.execute("UPDATE study_plans SET status=? WHERE plan_id=?",
+                             (states.get(status, "failed"), row["plan_id"]))
+                conn.execute("UPDATE competence_gaps SET state=?, updated_at=? WHERE gap_id=?",
+                             (gap_state, utc_now(), row["gap_id"]))
 
 
 COMPETENCE_STATUS_SCHEMA = {

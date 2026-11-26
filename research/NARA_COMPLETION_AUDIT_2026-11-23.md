@@ -43,6 +43,19 @@ The multimodal contract still has these concrete implementation gaps:
   minimum cannot resolve a gap. Evaluation, observation and gap completion are
   committed atomically. This closes the manual score-entry seam for that CLI
   path; automatic research/practice dispatch and broad transfer remain open.
+- `study-run` now supplies a bounded source-generation/development-practice
+  cycle before that reserved evaluation, with one-use plans and partial-progress
+  receipts. Synthetic process tests exercise automatic revision, exclusion of
+  reserved inputs from generation, exhaustion and failure. This does not yet
+  establish autonomous source discovery, background dispatch, interrupted-cycle
+  recovery or real-model transfer; a separately frozen local-model probe is in
+  `evals/media_transfer/run_study_cycle.py`.
+- That frozen probe subsequently ran three real local-model generations and
+  development executions. Each scored 0.5 against a required 1.0. The cycle
+  exhausted its attempt limit without consuming holdouts, resolving the gap or
+  activating a skill. Independently replayed receipts confirm the feedback chain
+  and scores; see `NARA_BOUNDED_STUDY_CYCLE_2026-11-26.md`. Successful autonomous
+  transfer remains unproved.
 
 Reingestion also previously accepted an existing archive without checking its
 bytes. The ingestion path now verifies its SHA-256 before reuse and reports
