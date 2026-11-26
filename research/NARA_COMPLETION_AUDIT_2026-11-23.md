@@ -160,3 +160,11 @@ temporal-store tests and authenticated Memory Gateway API exercise duplicate
 recall, correction, history, scope isolation and an explicit reversal. This is
 an exact-content rule; semantic equivalence and conflict adjudication remain
 unproven and are not promoted by embedding similarity alone.
+
+The clean public `main` package at `6ae29a3283ac48048da2f078f0eb405107c4dc71`
+also reproduced exact grouping, correction suppression and full history with
+its own bundled Python in a fresh temporary profile. The bundled CLI reported
+the same commit, and the DMG/ZIP integrity checks passed. The exact hashes and
+the extracted app's ad-hoc signature boundary are recorded in
+`research/NARA_PUBLICATION_2026-11-25.md`. This local smoke does not establish
+semantic consolidation or real-task learning transfer.
