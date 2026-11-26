@@ -21,7 +21,7 @@ from plugins.mission_control.contracts import (
 )
 from plugins.mission_control.kanban_bridge import create_mission_task
 from plugins.mission_control.ledger import ExperienceLedger
-from plugins.mission_control.learning import LearningLab
+from plugins.mission_control.learning_cli import learning_command
 from plugins.mission_control.goal_bridge import bind_mission_goal
 from plugins.mission_control.receipts import ReceiptStore
 from plugins.mission_control.schedule_bridge import schedule_mission
@@ -180,6 +180,14 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     learn_show = actions.add_parser(
         "learn-show", help="Inspect a procedural candidate and its reserved-transfer eval")
     learn_show.add_argument("candidate_id")
+
+    learn_evaluate = actions.add_parser(
+        "learn-evaluate", help="Run reserved transfer cases with an executable evaluator")
+    learn_evaluate.add_argument("candidate_id")
+    learn_evaluate.add_argument("--cases-file", type=Path, required=True)
+    learn_evaluate.add_argument("--evaluator", type=Path, required=True)
+    learn_evaluate.add_argument("--development-case", action="append", required=True)
+    learn_evaluate.add_argument("--timeout", type=float, default=30.0)
 
     learn_promote = actions.add_parser(
         "learn-promote", help="Promote only a candidate whose reserved-transfer eval passed")
@@ -368,35 +376,13 @@ def mission_command(
                 development_case_ids=args.development_case,
                 holdout_case_ids=args.holdout_case,
             ).to_dict())
-        elif action in {"learn-extract", "learn-show", "learn-promote", "learn-rollback"}:
-            from nara_constants import get_nara_home
-            from plugins.memory import import_provider_module
-            home = get_nara_home()
-            candidates = store.path.parent / "learning" / "candidates"
-            provider_module = import_provider_module("nara_temporal")
-            lab = LearningLab(
-                store,
-                provider_module.TemporalMemoryStore(home / "memories" / "nara-temporal.db"),
-                candidates,
-                home / "skills",
-            )
-            if action == "learn-extract":
-                _print(lab.extract(args.mission_id, name=args.name).to_dict())
-            elif action == "learn-show":
-                payload = lab.load(args.candidate_id).to_dict()
-                eval_path = candidates / f"{args.candidate_id}.eval.json"
-                payload["evaluation"] = (
-                    json.loads(eval_path.read_text(encoding="utf-8-sig")) if eval_path.exists() else None)
-                _print(payload)
-            elif action == "learn-promote":
-                _print({"skill_path": str(lab.promote(args.candidate_id)), "status": "promoted"})
-            else:
-                _print({"skill_path": str(lab.rollback(args.candidate_id)), "status": "rolled_back"})
+        elif action in {"learn-extract", "learn-show", "learn-evaluate", "learn-promote", "learn-rollback"}:
+            _print(learning_command(store, args))
         elif action == "rebuild":
             mission = store.rebuild_projection(args.mission_id)
             _print({"mission": mission.to_dict(), "projection_verified": store.verify_projection(args.mission_id)})
         return 0
-    except (ContractError, MissionStoreError) as exc:
+    except (ContractError, MissionStoreError, ValueError) as exc:
         _print({"error": type(exc).__name__, "message": str(exc)})
         return 1
 

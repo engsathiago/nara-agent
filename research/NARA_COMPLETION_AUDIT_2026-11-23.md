@@ -112,3 +112,11 @@ and API tests in owner CI. A separate optional hybrid-retrieval change is under
 local validation; its PT-BR synthetic holdout and limitations are recorded in
 `research/NARA_MEMORY_RETRIEVAL_2026-11-26.md`. Neither step constitutes VPS
 installation or real external-service connectivity.
+
+The procedural learning CLI was subsequently closed end to end: `learn-evaluate`
+now executes a frozen evaluator against separate baseline and candidate runs,
+archives evidence hashes, and refuses promotion when candidate or evidence
+changes. The local vertical test covers extraction, evaluation, promotion and
+tamper refusal in a temporary profile. Automatic background consolidation and
+varied real-task transfer remain separate requirements; the test does not
+convert them into proven capabilities.

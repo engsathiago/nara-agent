@@ -42,6 +42,13 @@ def _slug(value: str) -> str:
     return "-".join(part for part in normalized.split("-") if part)[:60] or "learned-procedure"
 
 
+def _candidate_fingerprint(mission_id: str, name: str, steps: list[str] | tuple[str, ...],
+                           artifacts: list[str] | tuple[str, ...]) -> str:
+    return hashlib.sha256(json.dumps(
+        [mission_id, name, list(steps), sorted(set(artifacts))], sort_keys=True,
+    ).encode()).hexdigest()[:20]
+
+
 class LearningLab:
     def __init__(
         self,
@@ -92,10 +99,7 @@ class LearningLab:
         if not steps:
             raise ValueError("verified mission contains no reusable observed procedure")
         candidate_name = name or f"Procedure learned from {mission.objective}"
-        fingerprint = hashlib.sha256(json.dumps(
-            [mission_id, candidate_name, steps, sorted(set(artifacts))],
-            sort_keys=True,
-        ).encode()).hexdigest()[:20]
+        fingerprint = _candidate_fingerprint(mission_id, candidate_name, steps, artifacts)
         candidate = ProcedureCandidate(
             candidate_id=fingerprint,
             mission_id=mission_id,
@@ -125,15 +129,22 @@ class LearningLab:
         payload["steps"] = tuple(payload["steps"])
         payload["evidence_artifact_ids"] = tuple(payload["evidence_artifact_ids"])
         allowed = {field.name for field in fields(ProcedureCandidate)}
-        return ProcedureCandidate(**{key: value for key, value in payload.items() if key in allowed})
+        candidate = ProcedureCandidate(**{key: value for key, value in payload.items() if key in allowed})
+        if candidate.candidate_id != candidate_id or _candidate_fingerprint(
+            candidate.mission_id, candidate.name, candidate.steps, candidate.evidence_artifact_ids,
+        ) != candidate_id:
+            raise ValueError("procedure candidate content does not match its identity")
+        return candidate
 
     def evaluate_transfer(
         self,
         candidate_id: str,
         cases: Iterable[dict[str, Any]],
-        runner: Callable[[ProcedureCandidate | None, dict[str, Any]], float],
+        runner: Callable[[ProcedureCandidate | None, dict[str, Any]], float | dict[str, Any]],
         *,
         development_case_ids: set[str],
+        evaluator_sha256: str | None = None,
+        evaluator_path: str | None = None,
     ) -> dict[str, Any]:
         candidate = self.load(candidate_id)
         case_list = list(cases)
@@ -142,19 +153,26 @@ class LearningLab:
             raise ValueError("transfer evaluation requires at least one reserved holdout case")
         rows = []
         for case in holdout:
-            baseline = float(runner(None, case))
-            learned = float(runner(candidate, case))
+            baseline_result = runner(None, case)
+            candidate_result = runner(candidate, case)
+            baseline = float(baseline_result["score"] if isinstance(baseline_result, dict) else baseline_result)
+            learned = float(candidate_result["score"] if isinstance(candidate_result, dict) else candidate_result)
             rows.append({
                 "case_id": str(case["case_id"]),
                 "baseline": baseline,
                 "candidate": learned,
                 "delta": learned - baseline,
+                "baseline_evidence": baseline_result.get("evidence", []) if isinstance(baseline_result, dict) else [],
+                "candidate_evidence": candidate_result.get("evidence", []) if isinstance(candidate_result, dict) else [],
             })
         mean_delta = sum(row["delta"] for row in rows) / len(rows)
         regressions = sum(row["delta"] < 0 for row in rows)
         report = {
             "schema_version": 1,
             "candidate_id": candidate_id,
+            "candidate_hash": hashlib.sha256(json.dumps(candidate.to_dict(), sort_keys=True).encode()).hexdigest(),
+            "evaluator_sha256": evaluator_sha256,
+            "evaluator_path": evaluator_path,
             "development_case_ids": sorted(development_case_ids),
             "holdout_case_ids": [row["case_id"] for row in rows],
             "mean_delta": mean_delta,
@@ -166,12 +184,33 @@ class LearningLab:
         self._write_json(self.candidate_root / f"{candidate_id}.eval.json", report)
         return report
 
-    def promote(self, candidate_id: str) -> Path:
+    def promote(self, candidate_id: str, *, require_evidence: bool = False) -> Path:
         candidate = self.load(candidate_id)
         report_path = self.candidate_root / f"{candidate_id}.eval.json"
         report = json.loads(report_path.read_text(encoding="utf-8-sig"))
         if not report.get("passed"):
             raise ValueError("candidate did not pass reserved transfer evaluation")
+        expected_hash = hashlib.sha256(json.dumps(candidate.to_dict(), sort_keys=True).encode()).hexdigest()
+        if report.get("candidate_id") != candidate_id or (
+            report.get("candidate_hash") is not None and report["candidate_hash"] != expected_hash
+        ):
+            raise ValueError("candidate changed after transfer evaluation")
+        if require_evidence:
+            if report.get("candidate_hash") != expected_hash or not report.get("evaluator_sha256"):
+                raise ValueError("promotion requires an executable evaluator and exact candidate hash")
+            evaluator_path = Path(report.get("evaluator_path") or "")
+            if not evaluator_path.is_file() or hashlib.sha256(evaluator_path.read_bytes()).hexdigest() != report["evaluator_sha256"]:
+                raise ValueError("evaluator source is missing or changed")
+            if not report.get("cases"):
+                raise ValueError("promotion requires reserved transfer cases")
+            for row in report["cases"]:
+                for key in ("baseline_evidence", "candidate_evidence"):
+                    if not row.get(key):
+                        raise ValueError("promotion requires evidence from both variants")
+                    for artifact in row[key]:
+                        path = Path(artifact["path"])
+                        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != artifact["sha256"]:
+                            raise ValueError("transfer evidence is missing or changed")
         skill_name = f"nara-learned-{_slug(candidate.name)}-{candidate.candidate_id[:8]}"
         destination = self.skill_root / skill_name
         destination.mkdir(parents=True, exist_ok=True)
