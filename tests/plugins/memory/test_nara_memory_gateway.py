@@ -39,6 +39,8 @@ def test_gateway_api_shares_canonical_store_and_enforces_scopes(tmp_path):
     store = TemporalMemoryStore(tmp_path / "memories" / "nara-temporal.db")
     original = store.add("Nara speaks Portuguese", layer="semantic", source_type="user",
                          source_ref="session:1", scope="project:nara", status="active")
+    duplicate = store.add("Nara speaks Portuguese", layer="semantic", source_type="verified_mission",
+                          source_ref="mission:2", scope="project:nara", status="active")
     app = create_app(MemoryGateway(store, load_clients(_clients_file(tmp_path))))
     with TestClient(app) as client:
         assert client.post("/v1/memory/search", json={"query": "Portuguese"}).status_code == 401
@@ -47,13 +49,14 @@ def test_gateway_api_shares_canonical_store_and_enforces_scopes(tmp_path):
         other = {"Authorization": "Bearer other-secret"}
         found = client.post("/v1/memory/search", headers=codex, json={"query": "Portuguese"})
         assert found.status_code == 200
-        assert [item["memory_id"] for item in found.json()["items"]] == [original["memory_id"]]
+        assert [item["memory_id"] for item in found.json()["items"]] == [duplicate["memory_id"]]
+        assert found.json()["items"][0]["supporting_memory_ids"] == [original["memory_id"]]
         assert client.post("/v1/memory/search", headers=codex, json={
             "query": "Portuguese", "max_chars": 256,
         }).status_code == 400
         receipt_id = found.json()["receipt_id"]
         receipt = client.get(f"/v1/memory/receipt/{receipt_id}", headers=codex)
-        assert receipt.json()["memory_ids"] == [original["memory_id"]]
+        assert receipt.json()["memory_ids"] == [duplicate["memory_id"]]
         assert client.get(f"/v1/memory/receipt/{receipt_id}", headers=claude).status_code == 404
         assert client.get(f"/v1/memory/get/{original['memory_id']}", headers=other).status_code == 404
 
@@ -80,9 +83,11 @@ def test_gateway_api_shares_canonical_store_and_enforces_scopes(tmp_path):
         assert corrected.json()["memory_id"] not in client.get(
             f"/v1/memory/get/{original['memory_id']}", headers=claude,
         ).json()["superseded_by"]
-        assert client.post("/v1/memory/search", headers=claude, json={"query": "Portuguese"}).json()["items"][0]["memory_id"] == original["memory_id"]
+        assert client.post("/v1/memory/search", headers=claude, json={"query": "Portuguese"}).json()["items"][0]["memory_id"] == duplicate["memory_id"]
         store.promote(corrected.json()["memory_id"])
-        assert client.post("/v1/memory/search", headers=claude, json={"query": "Portuguese"}).json()["items"][0]["memory_id"] == corrected.json()["memory_id"]
+        current = client.post("/v1/memory/search", headers=claude, json={"query": "Portuguese"}).json()
+        assert [item["memory_id"] for item in current["items"]] == [corrected.json()["memory_id"]]
+        assert current["suppressed_stale_duplicates"] == 1
         stale = client.post("/v1/memory/correct", headers=codex, json={
             "memory_id": original["memory_id"], "content": "Nara speaks another language",
             "source_ref": "document:3",
@@ -156,12 +161,20 @@ def test_gateway_refuses_world_readable_token_configuration(tmp_path):
 
 def test_installed_provider_registers_real_cli_command(tmp_path, monkeypatch, capsys):
     import extensions.nara_temporal_memory.nara_temporal as provider_source
+    from plugins.memory import import_provider_module
 
     target = tmp_path / "plugins" / "nara_temporal"
     target.parent.mkdir()
     shutil.copytree(Path(provider_source.__file__).parent, target)
     (tmp_path / "config.yaml").write_text("memory:\n  provider: nara_temporal\n", encoding="utf-8")
     monkeypatch.setenv("NARA_HOME", str(tmp_path))
+    installed = import_provider_module("nara_temporal")
+    installed_store = installed.TemporalMemoryStore(tmp_path / "installed-memory.db")
+    installed_store.add("One verified Nara fact", layer="semantic", source_type="mission",
+                        source_ref="mission:one", status="active")
+    installed_store.add("One verified Nara fact", layer="semantic", source_type="mission",
+                        source_ref="mission:two", status="active")
+    assert installed_store.search("verified Nara fact")["items"][0]["consolidated_memory_count"] == 2
     monkeypatch.setattr(sys, "argv", ["nara", "nara_temporal", "serve"])
     from nara_cli.main import _build_cli_parser
 

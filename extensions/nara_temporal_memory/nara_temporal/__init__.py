@@ -21,6 +21,8 @@ from typing import Any
 from agent.memory_provider import MemoryProvider, RecallStatus
 from nara_cli.sqlite_util import open_db, transaction
 
+from .consolidation import current_rows
+
 
 LAYERS = frozenset({"working", "episodic", "semantic", "procedural", "reflective"})
 STATUSES = frozenset({"candidate", "active", "rejected"})
@@ -83,6 +85,10 @@ def _initialize(conn: sqlite3.Connection) -> None:
             ON memories (status, valid_to, layer, scope);
         CREATE INDEX IF NOT EXISTS memories_source
             ON memories (source_type, source_ref);
+        CREATE INDEX IF NOT EXISTS memories_supersedes
+            ON memories (supersedes_id);
+        CREATE INDEX IF NOT EXISTS memories_exact_current
+            ON memories (scope, layer, content_hash, status, valid_to);
         CREATE TABLE IF NOT EXISTS retrieval_receipts (
             receipt_id TEXT PRIMARY KEY,
             query TEXT NOT NULL,
@@ -102,7 +108,7 @@ def _initialize(conn: sqlite3.Connection) -> None:
             FOREIGN KEY (memory_id) REFERENCES memories(memory_id)
         );
     """)
-    conn.execute("PRAGMA user_version=2")
+    conn.execute("PRAGMA user_version=3")
     conn.commit()
 
 
@@ -253,6 +259,30 @@ class TemporalMemoryStore:
                 f"SELECT * FROM memories WHERE {' AND '.join(clauses)} ORDER BY created_at DESC",
                 params,
             ).fetchall() if query_tokens else []
+            stale_keys = set()
+            if rows and not include_history:
+                stale_keys = {
+                    (row["scope"], row["layer"], row["content_hash"])
+                    for row in conn.execute(
+                        """SELECT DISTINCT previous.scope, previous.layer, previous.content_hash
+                           FROM memories previous JOIN memories successor
+                             ON successor.supersedes_id = previous.memory_id
+                           WHERE previous.status = 'active' AND previous.valid_to IS NOT NULL
+                             AND previous.content_hash != successor.content_hash
+                             AND previous.scope = successor.scope AND previous.layer = successor.layer
+                             AND NOT EXISTS (
+                               SELECT 1 FROM memories restored
+                               WHERE restored.scope = previous.scope AND restored.layer = previous.layer
+                                 AND restored.content_hash = previous.content_hash
+                                 AND restored.status = 'active' AND restored.valid_to IS NULL
+                                 AND restored.supersedes_id IS NOT NULL
+                             )"""
+                    )
+                }
+        supporting: dict[str, list[str]] = {}
+        suppressed_stale = 0
+        if not include_history:
+            rows, supporting, suppressed_stale = current_rows(rows, stale_keys)
         lexical_scores = {}
         for row in rows:
             overlap = len(query_tokens & _tokens(row["content"]))
@@ -297,6 +327,8 @@ class TemporalMemoryStore:
             items.append({
                 **dict(row), "content": excerpt, "truncated": len(excerpt) < len(content),
                 "score": ranks[memory_id], "metadata": json.loads(row["metadata_json"]),
+                "supporting_memory_ids": supporting.get(memory_id, [])[:8],
+                "consolidated_memory_count": len(supporting.get(memory_id, [])) + 1,
             })
         receipt_id = uuid.uuid4().hex
         reasons = {
@@ -306,6 +338,8 @@ class TemporalMemoryStore:
                 "semantic_rank": semantic_order.index(item["memory_id"]) + 1 if item["memory_id"] in semantic_scores else None,
                 "semantic_similarity": semantic_scores.get(item["memory_id"]),
                 "truncated": item["truncated"],
+                "supporting_memory_ids": item["supporting_memory_ids"],
+                "consolidated_memory_count": item["consolidated_memory_count"],
             } for item in items
         }
         with transaction(self._connect(), immediate=True) as conn:
@@ -317,14 +351,15 @@ class TemporalMemoryStore:
                                 "mode": mode, "embedding_model": getattr(embedder, "model", None),
                                 "embedding_index_key": getattr(embedder, "index_key", getattr(embedder, "model", None)),
                                 "degraded_reason": degraded_reason, "pending_embeddings": pending_embeddings,
-                                "max_chars": max_chars}),
+                                "max_chars": max_chars, "suppressed_stale_duplicates": suppressed_stale}),
                     json.dumps([item["memory_id"] for item in items]),
                     json.dumps(reasons, sort_keys=True), _now(),
                 ),
             )
         return {"receipt_id": receipt_id, "query": query, "items": items, "reasons": reasons,
                 "mode": mode, "degraded_reason": degraded_reason,
-                "pending_embeddings": pending_embeddings}
+                "pending_embeddings": pending_embeddings,
+                "suppressed_stale_duplicates": suppressed_stale}
 
     def _cached_embeddings(self, rows: list[sqlite3.Row], embedder: Any) -> tuple[dict[str, list[float]], int]:
         ids = [row["memory_id"] for row in rows]
