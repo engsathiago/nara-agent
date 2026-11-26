@@ -86,3 +86,20 @@ quotes, including one nonliteral quote. The CLI rejected it and archived the
 failure; no candidate or transfer scores were created. See
 `research/NARA_MODEL_MEDIA_STUDY_2026-11-26.md` for the negative result and
 evidence hashes. The model output was not manually repaired or regenerated.
+
+## Source-ID proposal protocol (version 2)
+
+The negative result exposed two structural problems: independently generated
+step/quote lists and model-copied citations. The production study format now
+pairs each instruction with an ID from numbered source excerpts. The host
+resolves that ID to exact archived text. Original version 1 receipts remain
+untouched; this is a new protocol, not a repair of the rejected proposal.
+
+Before the version 2 call, freeze the code and prompt in Git. Use the same
+archived source, objective, local model, reasoning-off configuration and the
+still-unused cases in `model_study_protocol.json`. Generate once, with no manual
+repair or holdout-guided retries. The scoring evaluator is unchanged. Temporary
+promotion additionally requires every candidate score to be 1.0; partial gain
+alone leaves the candidate inactive. This is a more stringent local experiment
+condition, not a change to the generic LearningLab gate. Full source, generation
+and evaluation receipts stay local; the public report records hashes and counts.

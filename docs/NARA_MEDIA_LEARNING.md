@@ -79,6 +79,14 @@ No package is installed and no skill is activated by this command.
 
 The source is verified before generation and again before candidate creation.
 Nara checks output types and exact citations independently of the model.
+The model receives numbered source excerpts and returns each instruction paired
+with an existing excerpt ID. Nara attaches the exact archived text itself;
+there are no independently generated lists of steps and quotations to reconcile.
+Each excerpt carries character offsets and at most 1,200 characters. Highly
+fragmented sources are regrouped into bounded chunks to keep the catalog small.
+Unknown IDs, model-supplied quotes and malformed steps are rejected. Selecting
+a real excerpt does not prove that an instruction follows from it: the separate
+transfer evaluation remains required.
 Content-addressed request and result receipts preserve the objective, source,
 prompt, model/provider, response and token usage. The result points to the
 candidate and receipt hash. Failed attempts preserve a receipt too; transport
@@ -92,6 +100,8 @@ reasoning effort can be configured under `auxiliary.nara_media_study`; by
 default it follows the active model. For a bounded local extraction experiment,
 the probe sets this slot's `reasoning_effort: none` and disables host transient
 retries; these probe settings do not change the owner's profile.
+New study receipts use schema version 2 for paired instruction/excerpt IDs;
+version 1 receipts and already created procedure candidates remain unchanged.
 
 Extraction uses local `ffmpeg` to decode mono 16 kHz WAV, then
 Nara's installed local STT backend. It never falls through to a cloud STT

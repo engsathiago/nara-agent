@@ -27,8 +27,9 @@ def _model(payload, calls, before_return=lambda: None):
 
 
 def _valid():
-    return {"name": "Inspect repository", "steps": ["inspect the pinned commit"],
-            "quotes": [STEP_QUOTE], "decline_reason": ""}
+    return {"name": "Inspect repository", "steps": [
+        {"instruction": "inspect the pinned commit", "source_span_id": "s0001"},
+    ], "decline_reason": ""}
 
 
 def _study(parser, source, llm, capsys):
@@ -57,8 +58,12 @@ def test_model_candidate_cli_has_provenance_and_reserved_transfer_gate(tmp_path,
         assert len(calls) == 1
         assert calls[0]["task"] in context.auxiliary_tasks
         model_input = json.loads(calls[0]["input"][0]["text"])
-        assert model_input == {"objective": "Check a repository before use",
-                               "source_text": source["extracted_text"]}
+        assert model_input["objective"] == "Check a repository before use"
+        spans = model_input["source_spans"]
+        for span in spans:
+            assert span["text"] == source["extracted_text"][span["start"]:span["end"]]
+        selected = next(span for span in spans if span["id"] == "s0001")
+        assert STEP_QUOTE in selected["text"]
         evidence = Path(result["evidence"]["path"]).read_bytes()
         assert hashlib.sha256(evidence).hexdigest() == result["evidence"]["sha256"]
         archived = json.loads(evidence)
@@ -67,6 +72,18 @@ def test_model_candidate_cli_has_provenance_and_reserved_transfer_gate(tmp_path,
         request = json.loads((fabric.root / "sources" / request_hash[:2] / request_hash).read_bytes())
         assert request["input"] == model_input
         candidate_id = result["candidate"]["candidate_id"]
+        provenance = []
+        for artifact in result["candidate"]["evidence_artifact_ids"]:
+            digest = artifact.removeprefix("sha256:")
+            path = fabric.root / "sources" / digest[:2] / digest
+            if path.exists():
+                try:
+                    item = json.loads(path.read_bytes())
+                except json.JSONDecodeError:
+                    continue
+                if item.get("kind") == "media_procedure_provenance":
+                    provenance.append(item)
+        assert len(provenance) == 1 and provenance[0]["quotes"] == [selected["text"]]
         code, denied = _command(parser, capsys, "learn-promote", candidate_id)
         assert code == 1 and "no reserved transfer evaluation" in denied["message"]
         assert not list((home / "skills").glob("nara-learned-*"))
@@ -87,8 +104,9 @@ def test_model_candidate_cli_has_provenance_and_reserved_transfer_gate(tmp_path,
 @pytest.mark.parametrize("payload", [
     None,
     {**_valid(), "steps": "wrong type"},
-    {**_valid(), "quotes": [42]},
-    {**_valid(), "quotes": ["invented evidence"]},
+    {**_valid(), "steps": [{"instruction": "inspect", "source_span_id": 42}]},
+    {**_valid(), "steps": [{"instruction": "inspect", "source_span_id": "invented"}]},
+    {**_valid(), "steps": [{"instruction": "inspect", "quote": "invented evidence"}]},
     {**_valid(), "decline_reason": "cannot support this"},
 ])
 def test_invalid_model_output_archived_without_candidate(tmp_path, monkeypatch, capsys, payload):
@@ -127,7 +145,7 @@ def test_study_rechecks_source_around_model_call(tmp_path, monkeypatch, capsys, 
 def test_model_can_decline_without_inventing_a_skill(tmp_path, monkeypatch, capsys):
     home, token, parser, _, source, _, _, _ = _setup(tmp_path, monkeypatch)
     try:
-        payload = {"name": "", "steps": [], "quotes": [], "decline_reason": "No usable procedure"}
+        payload = {"name": "", "steps": [], "decline_reason": "No usable procedure"}
         code, result = _study(parser, source, _model(payload, []), capsys)
         assert code == 0 and result["status"] == "no_procedure" and "candidate" not in result
         assert not list((home / "skills").glob("nara-learned-*"))
