@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from plugins.mission_control.learning_fabric import LearningFabric, MODALITIES
+from plugins.mission_control.learning_github_source import verify_quoted_repository
 from plugins.mission_control.learning_media import extract_local_media
 from plugins.mission_control.learning_video_ocr import extract_video_local, extract_video_screen_text
 
@@ -54,6 +55,19 @@ def learning_frame_extract_tool(source_id: str, **_: Any) -> dict[str, Any]:
     return extract_video_screen_text(LearningFabric.open_default(), source_id)
 
 
+REPOSITORY_VERIFY_SCHEMA = {
+    "name": "nara_learning_repo_verify",
+    "description": "Verify a source-quoted public GitHub repository identity at a pinned commit.",
+    "parameters": {"type": "object", "properties": {
+        "source_id": {"type": "string"}, "quote": {"type": "string"},
+    }, "required": ["source_id", "quote"]},
+}
+
+
+def learning_repo_verify_tool(source_id: str, quote: str, **_: Any) -> dict[str, Any]:
+    return verify_quoted_repository(LearningFabric.open_default(), source_id, quote)
+
+
 CLAIM_PROPOSE_SCHEMA = {
     "name": "nara_learning_claim_propose",
     "description": "Propose a candidate claim with an exact quote from an archived source or transcript.",
@@ -82,3 +96,6 @@ def register_learning_tools(ctx: Any, adapt: Any) -> None:
     ctx.register_tool(
         name="nara_learning_frame_extract", toolset="mission_control",
         schema=FRAME_EXTRACT_SCHEMA, handler=adapt(learning_frame_extract_tool), emoji="🎞️")
+    ctx.register_tool(
+        name="nara_learning_repo_verify", toolset="mission_control",
+        schema=REPOSITORY_VERIFY_SCHEMA, handler=adapt(learning_repo_verify_tool), emoji="🔎")

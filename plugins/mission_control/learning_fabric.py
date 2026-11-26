@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import mimetypes
+import re
 import sqlite3
 import uuid
 from pathlib import Path
@@ -170,6 +171,8 @@ class LearningFabric:
     ) -> dict[str, Any]:
         if not evidence_artifact_ids:
             raise ValueError("claim verification requires evidence")
+        if verifier_id == "github-public-rest-v1":
+            self._check_archived_evidence(evidence_artifact_ids)
         with transaction(self._connect(), immediate=True) as conn:
             result = conn.execute(
                 """UPDATE learning_claims SET status = ?, verifier_id = ?, evidence_json = ?,
@@ -185,7 +188,19 @@ class LearningFabric:
             row = conn.execute("SELECT * FROM learning_claims WHERE claim_id = ?", (claim_id,)).fetchone()
         if row is None:
             raise KeyError(claim_id)
-        return {**dict(row), "evidence_artifact_ids": json.loads(row["evidence_json"])}
+        evidence = json.loads(row["evidence_json"])
+        if row["verifier_id"] == "github-public-rest-v1":
+            self._check_archived_evidence(evidence)
+        return {**dict(row), "evidence_artifact_ids": evidence}
+
+    def _check_archived_evidence(self, evidence_ids: list[str]) -> None:
+        for artifact_id in evidence_ids:
+            if not re.fullmatch(r"sha256:[0-9a-f]{64}", artifact_id):
+                raise ValueError("GitHub verification requires a full archived evidence hash")
+            digest = artifact_id[7:]
+            stored = self.root / "sources" / digest[:2] / digest
+            if not stored.is_file() or hashlib.sha256(stored.read_bytes()).hexdigest() != digest:
+                raise ValueError("archived claim evidence has changed")
 
     def search(self, query: str, *, verified_only: bool = True) -> list[dict[str, Any]]:
         tokens = {token.casefold() for token in query.split() if len(token) > 1}
