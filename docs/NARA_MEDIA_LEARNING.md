@@ -19,8 +19,9 @@ nara mission learn-promote CANDIDATE_ID
 The `nara_learning_ingest` agent tool accepts the same `path`, `modality`,
 `extract_local: true`, and optional `language` fields (Portuguese by default).
 The `nara_learning_fetch` tool accepts a public video URL and the same extraction
-options. Fetch uses an installed `yt-dlp` with configuration and browser cookies
-disabled. It accepts one public Instagram post/Reel, YouTube video, or Vimeo
+options. Fetch uses the pinned `media-fetch` package extra or an installed
+`yt-dlp` command, with configuration and browser cookies disabled. The bundled
+Desktop package includes the pinned extra. It accepts one public Instagram post/Reel, YouTube video, or Vimeo
 video over HTTPS, then sends the temporary download through the local file
 ingestion path. The download directory is removed; the content-addressed source
 archive remains for provenance and later re-extraction. `learn-media-fetch-status`
@@ -80,6 +81,7 @@ An installed local STT backend is required for speech extraction; screen OCR
 can still succeed on a silent video. The bundled Desktop runtime has
 the optional local Whisper dependencies; a source checkout can install the
 `stt-whisper` extra or configure Nara's local STT command. `ffmpeg` and
-`ffprobe` must be on `PATH`. URL acquisition also needs `yt-dlp` on `PATH`.
+`ffprobe` must be on `PATH`. Source installs without the `media-fetch` extra
+also need a `yt-dlp` command on `PATH`.
 Larger media, full scene/clip understanding, word timestamps, and broad
 automated claim verification require separate adapters and evaluations.

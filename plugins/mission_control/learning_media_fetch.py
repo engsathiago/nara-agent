@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+import sys
 import urllib.parse
+from importlib.util import find_spec
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING, Any
@@ -21,6 +23,15 @@ SUPPORTED_HOSTS = frozenset({
 })
 
 
+def _extractor_command() -> list[str] | None:
+    binary = shutil.which("yt-dlp")
+    if binary:
+        return [binary]
+    if find_spec("yt_dlp") is not None:
+        return [sys.executable, "-m", "yt_dlp"]
+    return None
+
+
 def _public_media_url(url: str) -> str:
     parsed = urllib.parse.urlsplit(url)
     if (parsed.scheme != "https" or parsed.hostname not in SUPPORTED_HOSTS
@@ -34,11 +45,11 @@ def _public_media_url(url: str) -> str:
 
 
 def media_fetch_status() -> dict[str, Any]:
-    binary = shutil.which("yt-dlp")
+    command = _extractor_command()
     probe = shutil.which("ffprobe")
     return {
-        "status": "available" if binary and probe else "unavailable",
-        "provider": "yt-dlp", "executable": binary, "ffprobe": probe,
+        "status": "available" if command and probe else "unavailable",
+        "provider": "yt-dlp", "command": command, "ffprobe": probe,
         "scope": "one public HTTPS video; no browser cookies or user configuration",
         "supported_hosts": sorted(SUPPORTED_HOSTS),
     }
@@ -49,16 +60,16 @@ def fetch_public_media(
 ) -> dict[str, Any]:
     """Acquire one bounded video and feed the same local ingestion path as files."""
     canonical_url = _public_media_url(url)
-    binary = shutil.which("yt-dlp")
-    if not binary:
-        raise ValueError("yt-dlp is unavailable; install it to fetch public media URLs")
+    extractor = _extractor_command()
+    if not extractor:
+        raise ValueError("yt-dlp is unavailable; install the media-fetch extra to fetch public media URLs")
     ffprobe = shutil.which("ffprobe")
     if not ffprobe:
         raise ValueError("ffprobe is unavailable; install ffmpeg to validate media duration")
     with TemporaryDirectory(prefix="nara-learning-fetch-") as temp:
         root = Path(temp)
         command = [
-            binary, "--ignore-config", "--no-playlist",
+            *extractor, "--ignore-config", "--no-playlist",
             "--no-cookies-from-browser", "--no-cache-dir", "--no-exec",
             "--no-progress", "--no-warnings", "--no-part", "--no-continue",
             "--no-mtime", "--socket-timeout", "15", "--retries", "2",
