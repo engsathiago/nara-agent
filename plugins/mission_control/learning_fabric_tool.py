@@ -89,19 +89,19 @@ def learning_repo_verify_tool(source_id: str, quote: str, **_: Any) -> dict[str,
 
 MEDIA_PROCEDURE_SCHEMA = {
     "name": "nara_learning_media_procedure_propose",
-    "description": "Propose an inactive procedure from a source-verified repository, with one exact source quote per step. Evaluation is still required.",
+    "description": "Propose an inactive procedure with one exact archived-source quote per step. Attach a verified repository claim when the source cites one. Reserved transfer evaluation is still required.",
     "parameters": {"type": "object", "properties": {
         "source_id": {"type": "string"}, "repository_claim_id": {"type": "string"},
         "name": {"type": "string"},
         "steps": {"type": "array", "items": {"type": "string"}},
         "quotes": {"type": "array", "items": {"type": "string"}},
-    }, "required": ["source_id", "repository_claim_id", "name", "steps", "quotes"]},
+    }, "required": ["source_id", "name", "steps", "quotes"]},
 }
 
 
 def learning_media_procedure_propose_tool(
-    source_id: str, repository_claim_id: str, name: str,
-    steps: list[str], quotes: list[str], **_: Any,
+    source_id: str, name: str, steps: list[str], quotes: list[str],
+    repository_claim_id: str | None = None, **_: Any,
 ) -> dict[str, Any]:
     from plugins.mission_control.learning_cli import open_learning_lab
 

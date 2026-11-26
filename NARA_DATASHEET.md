@@ -217,10 +217,12 @@ repositório GitHub citado literalmente pode ser conferido na API pública ofici
 respostas arquivadas por hash; isso verifica existência e identidade, não as demais alegações do
 vídeo. Vídeos públicos do Instagram, YouTube e Vimeo podem ser adquiridos por URL com `yt-dlp`
 opcional, sem cookies, e entram no mesmo caminho de ingestão local; fontes que exigem autenticação
-ficam indisponíveis até uma integração específica. Uma fonte com repositório verificado pode gerar
-uma candidata de procedimento inativa, com citação exata para cada passo; sua promoção usa o
-avaliador executável e os casos reservados da bancada existente, após nova conferência da
-procedência. A mesma fixture ingere documento e áudio com
+ficam indisponíveis até uma integração específica. Uma fonte arquivada pode gerar
+uma candidata de procedimento inativa, com citação exata para cada passo, mesmo sem link de
+repositório. Quando a mídia cita um repositório, a candidata também pode carregar a prova da
+API oficial do GitHub. A promoção sempre usa o avaliador executável e os casos reservados da
+bancada existente, após nova conferência da procedência. Citações exatas não demonstram, por si,
+que o passo proposto é verdadeiro ou útil. A mesma fixture ingere documento e áudio com
 transcrição e prova a procedência. Entendimento completo de cenas, timestamps por palavra,
 GEPA/DSPy e otimização por modelos continuam sujeitos aos gates desta fase antes de `operational`.
 

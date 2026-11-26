@@ -44,9 +44,9 @@ def register_media_cli(actions: Any) -> None:
     propose.add_argument("--quote", required=True)
 
     procedure = actions.add_parser(
-        "learn-media-procedure", help="Propose an inactive procedure grounded in a verified repository and exact media quotes")
+        "learn-media-procedure", help="Propose an inactive procedure with exact media quotes; optionally attach a verified repository")
     procedure.add_argument("source_id")
-    procedure.add_argument("--repo-claim", required=True)
+    procedure.add_argument("--repo-claim")
     procedure.add_argument("--name", required=True)
     procedure.add_argument("--step", action="append", required=True)
     procedure.add_argument("--quote", action="append", required=True)
