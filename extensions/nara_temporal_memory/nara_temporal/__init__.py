@@ -24,6 +24,12 @@ from nara_cli.sqlite_util import open_db, transaction
 LAYERS = frozenset({"working", "episodic", "semantic", "procedural", "reflective"})
 STATUSES = frozenset({"candidate", "active", "rejected"})
 TOKEN_RE = re.compile(r"[\wÀ-ÿ-]+", re.UNICODE)
+_RETRIEVAL_STOP_WORDS = frozenset({
+    "a", "an", "and", "apenas", "answer", "call", "chame", "diga", "do",
+    "faça", "faca", "just", "me", "now", "o", "ok", "only", "please",
+    "por", "reply", "responda", "respond", "the", "to", "um", "uma",
+    "use", "você", "voce",
+})
 
 
 def _now() -> str:
@@ -31,7 +37,10 @@ def _now() -> str:
 
 
 def _tokens(text: str) -> set[str]:
-    return {token.casefold() for token in TOKEN_RE.findall(text) if len(token) > 1}
+    return {
+        folded for token in TOKEN_RE.findall(text)
+        if len(folded := token.casefold()) > 1 and folded not in _RETRIEVAL_STOP_WORDS
+    }
 
 
 def _initialize(conn: sqlite3.Connection) -> None:
@@ -209,11 +218,11 @@ class TemporalMemoryStore:
             rows = conn.execute(
                 f"SELECT * FROM memories WHERE {' AND '.join(clauses)} ORDER BY created_at DESC",
                 params,
-            ).fetchall()
+            ).fetchall() if query_tokens else []
         scored = []
         for row in rows:
             overlap = len(query_tokens & _tokens(row["content"]))
-            if query_tokens and overlap == 0:
+            if overlap == 0:
                 continue
             score = overlap / max(1, len(query_tokens)) + float(row["confidence"]) * 0.1
             scored.append((score, row))
