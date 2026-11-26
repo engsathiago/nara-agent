@@ -103,3 +103,18 @@ promotion additionally requires every candidate score to be 1.0; partial gain
 alone leaves the candidate inactive. This is a more stringent local experiment
 condition, not a change to the generic LearningLab gate. Full source, generation
 and evaluation receipts stay local; the public report records hashes and counts.
+
+The version 2 live call at `9c93fdf532` produced seven source-ID-linked steps.
+All three reserved cases improved from 0.0 to 0.5: refresh timing was correct,
+but label mapping was not. The predeclared full-score condition prevented
+temporary promotion. The candidate remains inactive; this is partial transfer,
+not full mastery of the convention. The separate offline verifier checks the
+original source offsets, selected citations, unedited candidate, six model
+responses and scores: `scripts/nara-python evals/media_transfer/verify_study_result.py PROFILE`.
+
+The generic LearningLab/CLI subsequently gained `--minimum-candidate-score`,
+so ordinary evaluations can enforce the same declared acceptance floor.
+Replaying the already archived observations with minimum 1.0 (no new model
+calls) marked every case below minimum and blocked the production promotion
+path. Original generation, evaluation and source artifacts were preserved.
+Future probe runs pass this floor into LearningLab directly.

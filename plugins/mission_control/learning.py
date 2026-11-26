@@ -10,6 +10,7 @@ from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING, Any, Callable, Iterable, Protocol
 
 from plugins.mission_control.contracts import EffectStatus, MissionStatus, load_contract, utc_now
+from plugins.mission_control.learning_acceptance import check_minimum_score, validate_minimum_score
 from plugins.mission_control.store import MissionNotFoundError, MissionStore, completion_blockers
 
 if TYPE_CHECKING:
@@ -289,7 +290,9 @@ class LearningLab:
         development_case_ids: set[str],
         evaluator_sha256: str | None = None,
         evaluator_path: str | None = None,
+        minimum_candidate_score: float = 0.0,
     ) -> dict[str, Any]:
+        minimum = validate_minimum_score(minimum_candidate_score)
         candidate = self.load(candidate_id)
         self._check_media_origin(candidate)
         case_list = list(cases)
@@ -312,6 +315,7 @@ class LearningLab:
             })
         mean_delta = sum(row["delta"] for row in rows) / len(rows)
         regressions = sum(row["delta"] < 0 for row in rows)
+        below_minimum = [row["case_id"] for row in rows if row["candidate"] < minimum]
         report = {
             "schema_version": 1,
             "candidate_id": candidate_id,
@@ -322,7 +326,9 @@ class LearningLab:
             "holdout_case_ids": [row["case_id"] for row in rows],
             "mean_delta": mean_delta,
             "regressions": regressions,
-            "passed": mean_delta > 0 and regressions == 0,
+            "minimum_candidate_score": minimum,
+            "below_minimum": below_minimum,
+            "passed": mean_delta > 0 and regressions == 0 and not below_minimum,
             "cases": rows,
             "evaluated_at": utc_now(),
         }
@@ -338,6 +344,7 @@ class LearningLab:
         report = json.loads(report_path.read_text(encoding="utf-8-sig"))
         if not report.get("passed"):
             raise ValueError("candidate did not pass reserved transfer evaluation")
+        check_minimum_score(report)
         expected_hash = hashlib.sha256(json.dumps(candidate.to_dict(), sort_keys=True).encode()).hexdigest()
         if report.get("candidate_id") != candidate_id or (
             report.get("candidate_hash") is not None and report["candidate_hash"] != expected_hash

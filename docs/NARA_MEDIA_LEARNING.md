@@ -14,7 +14,7 @@ nara mission learn-media-propose SOURCE_ID "The lesson recommends X" --quote "ex
 nara mission learn-media-frames SOURCE_ID
 nara mission learn-repo-verify SOURCE_ID --quote "github.com/OWNER/REPOSITORY"
 nara mission learn-media-procedure SOURCE_ID --repo-claim VERIFIED_CLAIM_ID --name "Inspect repository" --step "Inspect the pinned commit" --quote "exact words from the video"
-nara mission learn-evaluate CANDIDATE_ID --cases-file /absolute/path/cases.json --evaluator /absolute/path/evaluator.py --development-case DEVELOPMENT_CASE_ID
+nara mission learn-evaluate CANDIDATE_ID --cases-file /absolute/path/cases.json --evaluator /absolute/path/evaluator.py --development-case DEVELOPMENT_CASE_ID --minimum-candidate-score 1
 nara mission learn-promote CANDIDATE_ID
 ```
 

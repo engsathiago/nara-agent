@@ -81,6 +81,7 @@ def main():
         report = lab.evaluate_transfer(
             candidate_id, protocol["cases"], run, development_case_ids={"development"},
             evaluator_sha256=evaluator.sha256, evaluator_path=str(evaluator.archived_path),
+            minimum_candidate_score=1.0,
         )
         complete_convention = all(row["candidate"] == 1.0 for row in report["cases"])
         outcome = {"study": study, "evaluation": report, "complete_convention": complete_convention,

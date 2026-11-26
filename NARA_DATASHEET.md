@@ -181,6 +181,14 @@ citação alterada), que foi rejeitada antes da avaliação. Isso valida a integ
 e a rejeição, não a competência de autoria autônoma; ver
 `research/NARA_MODEL_MEDIA_STUDY_2026-11-26.md`.
 
+O protocolo seguinte vincula cada passo a um trecho numerado e anexa a citação
+literal pelo runtime. O modelo local gerou sete passos sem edição humana; três
+casos novos melhoraram de 0 para 0,5, mas erraram a disposição dos rótulos. A
+candidata ficou inativa. A avaliação agora permite declarar nota mínima por
+caso (`--minimum-candidate-score`), conferida novamente na promoção. O ganho
+parcial não atende ao critério de acerto completo desse ensaio; ver
+`research/NARA_MODEL_STUDY_SPANS_2026-11-26.md`.
+
 A recuperação atual também reúne conteúdos exatamente idênticos dentro da mesma camada e escopo,
 mantendo os IDs das fontes originais no recibo. Após uma correção explícita, cópias idênticas do
 texto substituído deixam de aparecer como fatos atuais; o histórico continua consultável.

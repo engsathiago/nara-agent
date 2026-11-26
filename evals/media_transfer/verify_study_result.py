@@ -88,6 +88,22 @@ def _verify_case(row, robots, steps):
     return scores["candidate"] - scores["baseline"], models
 
 
+def _current_evaluation(root, candidate_id, original):
+    path = root / "plugin-data/mission-control/learning/candidates" / f"{candidate_id}.eval.json"
+    current = json.loads(path.read_bytes())
+    if current == original:
+        return current
+    replay = json.loads((root / "minimum-score-recheck.json").read_bytes())
+    if (replay["report"] != current or replay["new_model_calls"] != 0
+            or replay["original_result_sha256"] != hashlib.sha256((root / "result.json").read_bytes()).hexdigest()):
+        raise ValueError("current evaluation is not the archived-score replay")
+    for key in ("candidate_id", "candidate_hash", "evaluator_sha256", "evaluator_path", "cases",
+                "development_case_ids", "holdout_case_ids", "mean_delta", "regressions"):
+        if current[key] != original[key]:
+            raise ValueError("acceptance-floor replay changed observations or evaluator")
+    return current
+
+
 def verify(root):
     outcome = json.loads((root / "result.json").read_text(encoding="utf-8-sig"))
     study, report = outcome["study"], outcome["evaluation"]
@@ -110,14 +126,21 @@ def verify(root):
         deltas.append(delta)
         models.update(digests)
     mean, regressions = sum(deltas) / len(deltas), sum(delta < 0 for delta in deltas)
-    passed = mean > 0 and regressions == 0
+    minimum = report.get("minimum_candidate_score", 0.0)
+    passed = mean > 0 and regressions == 0 and all(row["candidate"] >= minimum for row in report["cases"])
     if len(models) != 1 or (mean, regressions, passed) != (report["mean_delta"], report["regressions"], report["passed"]):
         raise ValueError("model or aggregate result changed")
+    current = _current_evaluation(root, candidate["candidate_id"], report)
+    minimum = current.get("minimum_candidate_score", 0.0)
+    below = [row["case_id"] for row in current["cases"] if row["candidate"] < minimum]
+    current_passed = mean > 0 and regressions == 0 and not below
+    if current["passed"] != current_passed or current.get("below_minimum", []) != below:
+        raise ValueError("current minimum-score acceptance disagrees with observations")
     complete = all(row["candidate"] == 1.0 for row in report["cases"])
     persisted = json.loads((root / "plugin-data/mission-control/learning/candidates" / f"{candidate['candidate_id']}.json").read_bytes())
     if outcome["complete_convention"] != complete or list((root / "skills").glob("nara-learned-*")):
         raise ValueError("completion flag changed or a temporary skill remains active")
-    if passed and complete:
+    if current_passed and complete:
         if persisted["status"] != "rolled_back" or not Path(outcome["rolled_back_skill"], "SKILL.md").is_file():
             raise ValueError("temporary promotion/rollback evidence is missing")
     elif persisted["status"] != "candidate":
@@ -125,7 +148,9 @@ def verify(root):
     return {"candidate_id": candidate["candidate_id"], "steps": len(candidate["steps"]),
             "study_sha256": study["evidence"]["sha256"], "request_sha256": study["request_sha256"],
             "model_digest": next(iter(models)), "cases": len(deltas), "mean_delta": mean,
-            "regressions": regressions, "passed": passed, "complete_convention": complete,
+            "regressions": regressions, "original_evaluation_passed": passed,
+            "minimum_candidate_score": minimum, "below_minimum": below,
+            "passed": current_passed, "complete_convention": complete,
             "candidate_status": persisted["status"]}
 
 
