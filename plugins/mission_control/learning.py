@@ -156,7 +156,7 @@ class LearningLab:
         return candidate
 
     def propose_from_media(
-        self, source_id: str, repository_claim_id: str, name: str,
+        self, source_id: str, repository_claim_id: str | None, name: str,
         steps: list[str], quotes: list[str],
     ) -> ProcedureCandidate:
         """Keep a sourced media procedure inactive until reserved transfer passes."""
@@ -170,13 +170,15 @@ class LearningLab:
         except KeyError as exc:
             raise ValueError(f"unknown learning source: {source_id}") from exc
         _check_cited_source(source)
-        try:
-            claim = fabric.claim(repository_claim_id)
-        except KeyError as exc:
-            raise ValueError(f"unknown repository claim: {repository_claim_id}") from exc
-        if (claim["source_id"] != source_id or claim["status"] != "verified"
-                or claim["verifier_id"] != "github-public-rest-v1"):
-            raise ValueError("media procedure requires a verified repository from the same source")
+        claim = None
+        if repository_claim_id is not None:
+            try:
+                claim = fabric.claim(repository_claim_id)
+            except KeyError as exc:
+                raise ValueError(f"unknown repository claim: {repository_claim_id}") from exc
+            if (claim["source_id"] != source_id or claim["status"] != "verified"
+                    or claim["verifier_id"] != "github-public-rest-v1"):
+                raise ValueError("media procedure requires a verified repository from the same source")
         clean_name = name.strip()
         clean_steps = [step.strip() for step in steps]
         if (not clean_name or len(clean_name) > 120 or "\n" in clean_name or "\r" in clean_name
@@ -197,7 +199,7 @@ class LearningLab:
         raw = json.dumps(provenance, sort_keys=True, ensure_ascii=False).encode()
         provenance_hash, _ = fabric._store(raw)
         artifacts = [f"sha256:{source['source_hash']}", f"sha256:{provenance_hash}",
-                     *claim["evidence_artifact_ids"]]
+                     *(claim["evidence_artifact_ids"] if claim else [])]
         origin = f"media:{source_id}"
         fingerprint = _candidate_fingerprint(origin, clean_name, clean_steps, artifacts)
         candidate = ProcedureCandidate(
@@ -267,14 +269,16 @@ class LearningLab:
             or len(provenance.get("quotes", [])) != len(candidate.steps)
         ):
             raise ValueError("media procedure provenance is missing or has changed")
-        try:
-            claim = fabric.claim(provenance["repository_claim_id"])
-        except KeyError as exc:
-            raise ValueError("media procedure repository claim is missing") from exc
-        if (claim["source_id"] != source_id or claim["status"] != "verified"
-                or claim["verifier_id"] != "github-public-rest-v1"
-                or not set(claim["evidence_artifact_ids"]) <= expected_artifacts):
-            raise ValueError("media procedure repository evidence is no longer verified")
+        repository_claim_id = provenance.get("repository_claim_id")
+        if repository_claim_id is not None:
+            try:
+                claim = fabric.claim(repository_claim_id)
+            except KeyError as exc:
+                raise ValueError("media procedure repository claim is missing") from exc
+            if (claim["source_id"] != source_id or claim["status"] != "verified"
+                    or claim["verifier_id"] != "github-public-rest-v1"
+                    or not set(claim["evidence_artifact_ids"]) <= expected_artifacts):
+                raise ValueError("media procedure repository evidence is no longer verified")
 
     def evaluate_transfer(
         self,

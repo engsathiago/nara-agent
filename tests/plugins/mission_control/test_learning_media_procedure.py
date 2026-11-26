@@ -9,6 +9,7 @@ from extensions.nara_temporal_memory.nara_temporal import TemporalMemoryStore
 from nara_constants import reset_nara_home_override, set_nara_home_override
 from plugins.mission_control.cli import mission_command, register_cli
 from plugins.mission_control.learning_fabric import LearningFabric
+from plugins.mission_control.learning_fabric_tool import learning_media_procedure_propose_tool
 from plugins.mission_control.learning_github_source import verify_quoted_repository
 
 
@@ -117,6 +118,57 @@ def test_media_candidate_requires_quote_and_transfer_before_skill(tmp_path, monk
         assert "source_media:" in Path(promoted["skill_path"], "SKILL.md").read_text()
         assert memory.get(f"procedure:{candidate['candidate_id']}")["status"] == "active"
         assert fabric.claim(repo["claim_id"])["status"] == "verified"
+    finally:
+        reset_nara_home_override(token)
+
+
+def test_quoted_media_without_repository_stays_inactive_until_transfer(tmp_path, monkeypatch, capsys):
+    home, token, parser, _fabric, source, _repo, evaluator, cases = _setup(tmp_path, monkeypatch)
+    try:
+        code, failed = _command(
+            parser, capsys, "learn-media-procedure", source["source_id"],
+            "--name", "Invented source", "--step", "inspect the pinned commit",
+            "--quote", "a quote that is not in the source",
+        )
+        assert code == 1 and "exact quote" in failed["message"]
+        code, candidate = _command(
+            parser, capsys, "learn-media-procedure", source["source_id"],
+            "--name", "Inspect a pinned source", "--step", "inspect the pinned commit",
+            "--quote", STEP_QUOTE,
+        )
+        assert code == 0
+        assert candidate["status"] == "candidate"
+        assert not list((home / "skills").glob("nara-learned-*"))
+        code, denied = _command(parser, capsys, "learn-promote", candidate["candidate_id"])
+        assert code == 1 and "no reserved transfer evaluation" in denied["message"]
+        code, report = _command(
+            parser, capsys, "learn-evaluate", candidate["candidate_id"],
+            "--cases-file", str(cases), "--evaluator", str(evaluator),
+            "--development-case", "development",
+        )
+        assert code == 0 and report["passed"] is True
+        code, promoted = _command(parser, capsys, "learn-promote", candidate["candidate_id"])
+        assert code == 0 and Path(promoted["skill_path"], "SKILL.md").exists()
+    finally:
+        reset_nara_home_override(token)
+
+
+def test_agent_tool_checks_archived_media_without_repository(tmp_path, monkeypatch, capsys):
+    home, token, parser, _fabric, source, _repo, evaluator, cases = _setup(tmp_path, monkeypatch)
+    try:
+        candidate = learning_media_procedure_propose_tool(
+            source_id=source["source_id"], name="Inspect a pinned source",
+            steps=["inspect the pinned commit"], quotes=[STEP_QUOTE],
+        )
+        assert candidate["status"] == "candidate"
+        assert not list((home / "skills").glob("nara-learned-*"))
+        Path(source["stored_path"]).write_text("tampered")
+        code, failed = _command(
+            parser, capsys, "learn-evaluate", candidate["candidate_id"],
+            "--cases-file", str(cases), "--evaluator", str(evaluator),
+            "--development-case", "development",
+        )
+        assert code == 1 and "cited source archive has changed" in failed["message"]
     finally:
         reset_nara_home_override(token)
 

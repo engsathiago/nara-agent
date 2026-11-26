@@ -168,3 +168,11 @@ the same commit, and the DMG/ZIP integrity checks passed. The exact hashes and
 the extracted app's ad-hoc signature boundary are recorded in
 `research/NARA_PUBLICATION_2026-11-25.md`. This local smoke does not establish
 semantic consolidation or real-task learning transfer.
+
+The local media-procedure path now accepts an exact-quoted source even when no
+GitHub repository appears in it. Its candidate remains inactive until the
+existing frozen evaluator passes reserved cases, and source tampering blocks
+evaluation. The three additional public Instagram posts checked with the
+`6ae29a3` bundle had no extractable `github.com/owner/repo` URL. None yielded a
+promoted procedure or a real Reel-to-new-task transfer proof; details are in
+`research/NARA_MEDIA_PROCEDURE_TRANSFER_2026-11-26.md`.
