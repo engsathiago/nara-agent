@@ -55,6 +55,12 @@ def register_media_cli(actions: Any) -> None:
     procedure.add_argument("--step", action="append", required=True)
     procedure.add_argument("--quote", action="append", required=True)
 
+    study = actions.add_parser(
+        "learn-media-study", help="Ask the configured model to propose an inactive source-quoted procedure")
+    study.add_argument("source_id")
+    study.add_argument("--objective", required=True)
+    study.add_argument("--repo-claim")
+
 
 def media_command(args: argparse.Namespace) -> dict[str, Any]:
     fabric = LearningFabric.open_default()

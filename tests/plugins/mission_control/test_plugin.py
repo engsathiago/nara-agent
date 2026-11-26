@@ -14,6 +14,10 @@ class _Context:
         self.command = None
         self.hooks = {}
         self.tools = {}
+        self.auxiliary_tasks = {}
+
+    def register_auxiliary_task(self, name, **kwargs):
+        self.auxiliary_tasks[name] = kwargs
 
     def register_cli_command(self, **kwargs):
         self.command = kwargs

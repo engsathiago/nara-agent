@@ -113,7 +113,8 @@ def register(ctx) -> None:
     )
 
     def handle_cli(args):
-        return mission_command(args, dispatch_tool=ctx.dispatch_tool)
+        llm = ctx.llm if args.mission_action == "learn-media-study" else None
+        return mission_command(args, dispatch_tool=ctx.dispatch_tool, llm=llm)
 
     def on_completed(*, task_id, run_id=None, **kwargs):
         sync_task_status(task_id=task_id, status="done", run_id=run_id)
@@ -121,6 +122,11 @@ def register(ctx) -> None:
     def on_blocked(*, task_id, run_id=None, **kwargs):
         sync_task_status(task_id=task_id, status="blocked", run_id=run_id)
 
+    ctx.register_auxiliary_task(
+        "nara_media_study", display_name="Nara media study",
+        description="Generate source-quoted inactive procedures from archived learning material.",
+        defaults={"timeout": 120},
+    )
     ctx.register_cli_command(
         name="mission",
         help="Create and inspect durable Nara missions",

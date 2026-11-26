@@ -172,6 +172,15 @@ avaliar a transferência com um executável congelado, casos reservados e artefa
 antes da promoção. Deduplicação e correção semântica entre experiências diversas ainda exigem
 avaliação adicional.
 
+O comando `nara mission learn-media-study` agora usa o modelo configurado para
+redigir uma candidata a partir de fonte arquivada e objetivo, pela rota auxiliar
+`nara_media_study`. Ele preserva pedido, resposta, uso de tokens e procedência,
+aceita descarte explícito e não ativa habilidades. O primeiro ensaio com modelo
+local real produziu uma proposta inválida (dez passos, oito citações e uma
+citação alterada), que foi rejeitada antes da avaliação. Isso valida a integração
+e a rejeição, não a competência de autoria autônoma; ver
+`research/NARA_MODEL_MEDIA_STUDY_2026-11-26.md`.
+
 A recuperação atual também reúne conteúdos exatamente idênticos dentro da mesma camada e escopo,
 mantendo os IDs das fontes originais no recibo. Após uma correção explícita, cópias idênticas do
 texto substituído deixam de aparecer como fatos atuais; o histórico continua consultável.

@@ -52,3 +52,37 @@ quote. This tests use of a sourced procedure supplied in context, not autonomous
 candidate discovery, model weight changes or persistence of improved behavior
 without retrieving the procedure. It measures one convention with one model and
 three inputs; larger real-task and regression datasets are still required.
+
+## Model-authored follow-up protocol
+
+`run_model_study.py --source-root LOCAL_FABRIC_ROOT` exercises the registered
+`nara mission learn-media-study` CLI in a new temporary profile with local
+Ollama `qwen3.5:4b`. The model receives the archived transcript and the objective
+in `model_study_protocol.json`; it is not given the prior hand-authored
+candidate, evaluator, reserved cases or expected answers. Its first valid
+candidate is evaluated unchanged on three newly frozen inputs using the same
+office-convention scoring rubric. A declined or invalid response is reported;
+there is no manual repair or selection among multiple candidate attempts.
+
+The evaluator/rubric was developed for the earlier experiment, so this is a
+follow-up on the same known task family, not an independent broad benchmark.
+Cases, study prompt and code are committed before the live call. Successful
+evaluation permits only temporary-profile promotion followed by rollback.
+Full source text and study input receipts remain local. This measures model
+authorship of a proposal from a selected source; automatic source discovery,
+independent evaluator design and unattended self-improvement remain unproved.
+
+The first launch failed before inference because the probe removed the managed
+Python dependency path. After restoring that path, the default model route
+timed out without a candidate or evaluation: its reasoning was enabled and the
+host retried the request. The follow-up uses the newly registered study slot,
+sets `reasoning_effort: none`, and disables transient retries in the temporary
+profile. Prompt, source, cases and scoring stay unchanged; no holdout result was
+seen before this configuration correction. The outer 180-second timeout now
+also retains partial output for diagnosis.
+
+The follow-up at `d914e4051c` generated an invalid proposal: ten steps, eight
+quotes, including one nonliteral quote. The CLI rejected it and archived the
+failure; no candidate or transfer scores were created. See
+`research/NARA_MODEL_MEDIA_STUDY_2026-11-26.md` for the negative result and
+evidence hashes. The model output was not manually repaired or regenerated.

@@ -119,7 +119,12 @@ def open_learning_lab(store: MissionStore | None = None) -> LearningLab:
     )
 
 
-def dispatch_learning(store: MissionStore, args: argparse.Namespace) -> dict[str, Any]:
+def dispatch_learning(store: MissionStore, args: argparse.Namespace, *, llm: Any = None) -> dict[str, Any]:
+    if args.mission_action == "learn-media-study":
+        from plugins.mission_control.learning_study import study_media
+
+        return study_media(open_learning_lab(store), llm, args.source_id, args.objective,
+                           repository_claim_id=args.repo_claim)
     if args.mission_action == "learn-media-procedure":
         return learning_command(store, args)
     if args.mission_action.startswith(("learn-media-", "learn-repo-")):
