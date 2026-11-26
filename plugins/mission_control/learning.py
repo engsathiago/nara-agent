@@ -141,7 +141,10 @@ class LearningLab:
         return candidate
 
     def load(self, candidate_id: str) -> ProcedureCandidate:
-        payload = json.loads(self._candidate_path(candidate_id).read_text(encoding="utf-8-sig"))
+        path = self._candidate_path(candidate_id)
+        if not path.is_file():
+            raise ValueError(f"unknown procedural candidate: {candidate_id}")
+        payload = json.loads(path.read_text(encoding="utf-8-sig"))
         payload["steps"] = tuple(payload["steps"])
         payload["evidence_artifact_ids"] = tuple(payload["evidence_artifact_ids"])
         allowed = {field.name for field in fields(ProcedureCandidate)}
@@ -162,9 +165,15 @@ class LearningLab:
         from plugins.mission_control.learning_github_source import _check_cited_source
 
         fabric = self.source_fabric
-        source = fabric.source(source_id)
+        try:
+            source = fabric.source(source_id)
+        except KeyError as exc:
+            raise ValueError(f"unknown learning source: {source_id}") from exc
         _check_cited_source(source)
-        claim = fabric.claim(repository_claim_id)
+        try:
+            claim = fabric.claim(repository_claim_id)
+        except KeyError as exc:
+            raise ValueError(f"unknown repository claim: {repository_claim_id}") from exc
         if (claim["source_id"] != source_id or claim["status"] != "verified"
                 or claim["verifier_id"] != "github-public-rest-v1"):
             raise ValueError("media procedure requires a verified repository from the same source")
@@ -226,7 +235,10 @@ class LearningLab:
 
         fabric = self.source_fabric
         source_id = candidate.mission_id.removeprefix("media:")
-        source = fabric.source(source_id)
+        try:
+            source = fabric.source(source_id)
+        except KeyError as exc:
+            raise ValueError(f"media procedure source is missing: {source_id}") from exc
         _check_cited_source(source)
         expected_artifacts = set(candidate.evidence_artifact_ids)
         if f"sha256:{source['source_hash']}" not in expected_artifacts:
@@ -255,7 +267,10 @@ class LearningLab:
             or len(provenance.get("quotes", [])) != len(candidate.steps)
         ):
             raise ValueError("media procedure provenance is missing or has changed")
-        claim = fabric.claim(provenance["repository_claim_id"])
+        try:
+            claim = fabric.claim(provenance["repository_claim_id"])
+        except KeyError as exc:
+            raise ValueError("media procedure repository claim is missing") from exc
         if (claim["source_id"] != source_id or claim["status"] != "verified"
                 or claim["verifier_id"] != "github-public-rest-v1"
                 or not set(claim["evidence_artifact_ids"]) <= expected_artifacts):

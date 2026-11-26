@@ -68,6 +68,18 @@ def test_media_candidate_requires_quote_and_transfer_before_skill(tmp_path, monk
     home, token, parser, fabric, source, repo, evaluator, cases = _setup(tmp_path, monkeypatch)
     try:
         code, failed = _command(
+            parser, capsys, "learn-media-procedure", "source:missing",
+            "--repo-claim", repo["claim_id"], "--name", "Missing source",
+            "--step", "inspect the pinned commit", "--quote", STEP_QUOTE,
+        )
+        assert code == 1 and "unknown learning source" in failed["message"]
+        code, failed = _command(
+            parser, capsys, "learn-media-procedure", source["source_id"],
+            "--repo-claim", "missing", "--name", "Missing claim",
+            "--step", "inspect the pinned commit", "--quote", STEP_QUOTE,
+        )
+        assert code == 1 and "unknown repository claim" in failed["message"]
+        code, failed = _command(
             parser, capsys, "learn-media-procedure", source["source_id"],
             "--repo-claim", repo["claim_id"], "--name", "Invented step",
             "--step", "download secrets", "--quote", "the video never said this",
