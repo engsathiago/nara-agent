@@ -11,11 +11,15 @@ to the selected `NARA_HOME` profile, not to the source checkout.
 1. Clone or unpack the Nara source release.
 2. Run `scripts/install.sh` on macOS/Linux, `scripts/install.ps1` in PowerShell, or
    `scripts/install.cmd` from Command Prompt.
-3. Install/copy the temporal provider as documented in
+3. Run `nara plugins enable mission_control` for each new `NARA_HOME` profile. A
+   bundled plugin is available in the package but its commands and tools are
+   registered only after it is enabled in that profile. Enable `rea` separately
+   when that optional adapter is configured.
+4. Install/copy the temporal provider as documented in
    `extensions/nara_temporal_memory/README.md` and select `memory.provider: nara_temporal`.
-4. Run `nara pm repair`, `nara plugins validate plugins/mission_control`, `nara memory status`, and
+5. Run `nara pm repair`, `nara plugins validate plugins/mission_control`, `nara memory status`, and
    `nara doctor`.
-5. Verify `nara --version`, `nara mission list`, and the authenticated Nara Office dashboard.
+6. Verify `nara --version`, `nara mission list`, and the authenticated Nara Office dashboard.
 
 For external memory access, configure the owner-only client file and start
 `nara nara_temporal serve --clients-file /absolute/private/path/memory-clients.json`.
