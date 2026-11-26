@@ -59,11 +59,19 @@ The original pre-floor evaluation and result remain archived separately.
 
 The updated source-ID lifecycle regression failed on the preceding production
 format; the minimum-score CLI regression initially failed because that option
-did not exist. After implementation, 83 focused tests across 14 learning/plugin
+did not exist. After implementation, 84 focused tests across 14 learning/plugin
 files passed, including source corruption, unknown IDs, Unicode/long-source
 coverage, partial-score rejection, full-score promotion and existing rollback.
 All 16 `scripts/check --staged` checks passed. The offline verifier also checked
 that the floor replay preserved the original six observations and evaluator.
+
+Final review reproduced a stale-result bug: after a passing evaluation, a new
+stricter evaluation whose executable failed could still promote using the old
+pass. The new regression failed with an unexpected successful promotion in its
+temporary profile. Evaluation requests are now persisted before executing cases,
+and promotion binds to the latest request ID, candidate/evaluator hashes,
+threshold and reserved case IDs. An interrupted request is visible as pending
+in `learn-show`; the prior pass remains explicitly historical.
 
 This proves model-authored source-linked candidate creation and partial transfer
 on one small UI task family. It does not close broad autonomous learning, source

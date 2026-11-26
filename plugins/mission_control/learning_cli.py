@@ -58,6 +58,14 @@ def _show(lab: LearningLab, args: argparse.Namespace, candidates: Path) -> dict[
     payload["evaluation"] = (
         json.loads(eval_path.read_text(encoding="utf-8-sig")) if eval_path.exists() else None
     )
+    request_path = candidates / f"{args.candidate_id}.eval.request.json"
+    request = json.loads(request_path.read_text(encoding="utf-8-sig")) if request_path.exists() else None
+    payload["evaluation_request"] = request
+    payload["evaluation_pending"] = bool(request and request["evaluation_request_id"] != (
+        payload["evaluation"] or {}).get("evaluation_request_id"))
+    if payload["evaluation_pending"]:
+        payload["previous_evaluation"] = payload["evaluation"]
+        payload["evaluation"] = None
     return payload
 
 

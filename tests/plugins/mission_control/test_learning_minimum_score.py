@@ -76,3 +76,25 @@ def test_complete_transfer_can_be_promoted_with_floor(tmp_path, monkeypatch, cap
         assert code == 0 and Path(promoted["skill_path"], "SKILL.md").is_file()
     finally:
         reset_nara_home_override(token)
+
+
+def test_interrupted_stricter_evaluation_cannot_reuse_previous_pass(tmp_path, monkeypatch, capsys):
+    home, token, parser, evaluator, cases = _prepare(tmp_path, monkeypatch)
+    try:
+        _, candidate = _command(parser, capsys, "learn-extract", "mission-a")
+        common = ["learn-evaluate", candidate["candidate_id"], "--cases-file", str(cases),
+                  "--evaluator", str(evaluator), "--development-case", "dev-a"]
+        _, passed = _command(parser, capsys, *common)
+        assert passed["passed"]
+        evaluator.write_text("raise RuntimeError('interrupted evaluation')\n", encoding="utf-8")
+        code, failure = _command(parser, capsys, *common, "--minimum-candidate-score", "1.0")
+        assert code == 1 and "evaluator exited" in failure["message"]
+        code, state = _command(parser, capsys, "learn-show", candidate["candidate_id"])
+        assert code == 0 and state["evaluation_pending"] is True and state["evaluation"] is None
+        assert state["evaluation_request"]["minimum_candidate_score"] == 1.0
+        assert state["previous_evaluation"]["passed"] is True
+        code, denied = _command(parser, capsys, "learn-promote", candidate["candidate_id"])
+        assert code == 1 and "latest evaluation" in denied["message"]
+        assert not list((home / "skills").glob("nara-learned-*"))
+    finally:
+        reset_nara_home_override(token)

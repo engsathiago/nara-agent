@@ -53,6 +53,12 @@ case IDs; promotion checks the scores against that threshold again. A positive
 average improvement cannot compensate for a case below the declared floor.
 The default remains `0` for existing callers and reports, which require relative
 improvement only. Set the threshold before observing reserved results.
+Nara persists an evaluation request before the first case, binding its ID,
+candidate hash, threshold, evaluator hash and reserved case IDs. Promotion must
+match that latest request. If an evaluation stops or fails, an older passing
+report cannot satisfy it. `learn-show` exposes `evaluation_pending` and the
+request, while any older report is shown as `previous_evaluation`. Re-run the
+evaluation after resolving the failure; the previous artifacts remain available.
 `nara mission learn-rollback CANDIDATE_ID` disables the promoted skill and
 rejects its memory. A synthetic local fixture proves this command chain and
 tamper refusal. Real-task transfer quality still needs varied missions and
