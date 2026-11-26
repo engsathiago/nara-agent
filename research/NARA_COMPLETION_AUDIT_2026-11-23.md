@@ -72,7 +72,9 @@ The following requirements cannot be truthfully completed from the current machi
 2. A real VPS/SSH host pair to exercise transport, host identity, incompatibility and failover.
 3. Owner-selected cloud/model and messaging accounts for their real connectivity and actor mapping.
 4. A future paper quote feed and an agreed observation period; no live-capital path is authorized.
-5. External authenticated Memory Gateway clients.
+5. External authenticated Memory Gateway clients on the intended external
+   services. The local gateway code and two-client API/MCP protocol test now
+   exist; connectivity to those services is not claimed by this fixture.
 6. A varied real-task/model dataset large enough for statistical competence, team and evolution
    claims.
 7. Apple Developer credentials and explicit publication authority for Developer ID signing,
