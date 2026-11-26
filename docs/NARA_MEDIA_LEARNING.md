@@ -66,7 +66,7 @@ provider. The transcript is stored by content hash, linked to the original
 source hash and duration. The original remains available even if decode or STT
 fails; the source keeps `needs_extraction` and records the error for a retry.
 Re-running extraction on an intact local transcript returns the same source.
-With faster-whisper, `learn-media-show` also exposes
+With faster-whisper or a supported timestamp-producing local command, `learn-media-show` also exposes
 `metadata.local_extraction.timing`: native speech segments with `start` and
 `end` in seconds and their text, plus the JSON archive path and SHA-256.
 The segments use the same confidence filter as the transcript. Their evidence
@@ -77,6 +77,16 @@ Text-only local command backends report `timing.status: unavailable`; Nara
 does not infer timestamps from text length. Earlier sources without a timing
 record remain readable. Segment boundaries are model estimates, not word
 alignment or a guarantee of acoustic accuracy.
+
+The automatically selected Whisper CLI requests all output formats; managed
+whisper.cpp requests text plus JSON with timestamp inference enabled. A custom
+local command can supply a JSON file with the same basename as its `.txt` file:
+Whisper's `segments` entries carry `start`, `end` (seconds) and `text`;
+whisper.cpp's `transcription` entries carry `offsets.from`, `offsets.to`
+(milliseconds) and `text`. Nara converts to seconds and rejects invalid intervals
+or disagreement with the text transcript. JSON evidence is limited to 4 MB.
+See the [Whisper output writers](https://github.com/openai/whisper/blob/main/whisper/utils.py)
+and the [pinned whisper.cpp b5130 CLI](https://github.com/ggml-org/whisper.cpp/blob/b5130/examples/cli/cli.cpp).
 Duration is checked with `ffprobe` when present, or the installed PyAV backend
 when `ffprobe` is absent. The Desktop bundle carries PyAV and the pinned
 FFmpeg executable; a source install needs `ffmpeg` and either `ffprobe` or PyAV.
