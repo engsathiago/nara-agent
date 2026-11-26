@@ -13,6 +13,20 @@ from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Any
 
 
+def load_evaluation_cases(path: Path, development_case_ids: set[str]) -> list[dict[str, Any]]:
+    cases = json.loads(path.read_text(encoding="utf-8-sig"))
+    if isinstance(cases, dict):
+        cases = cases.get("cases")
+    if not isinstance(cases, list) or any(
+        not isinstance(case, dict) or not case.get("case_id") for case in cases
+    ):
+        raise ValueError("cases file must contain cases with unique case_id values")
+    ids = [str(case["case_id"]) for case in cases]
+    if len(ids) != len(set(ids)) or not development_case_ids <= set(ids):
+        raise ValueError("case ids must be unique and development cases must exist")
+    return cases
+
+
 class ProcessEvaluator:
     def __init__(self, path: Path | str, evidence_root: Path | str, *, timeout: float = 30.0):
         self.path = Path(path).resolve()

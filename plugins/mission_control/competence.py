@@ -12,10 +12,11 @@ from typing import Any, Iterable
 
 from nara_cli.sqlite_util import open_db, transaction
 from plugins.mission_control.contracts import utc_now
+from plugins.mission_control.learning_acceptance import validate_minimum_score
 from plugins.plugin_storage import plugin_data_dir
 
 
-DB_SCHEMA_VERSION = 1
+DB_SCHEMA_VERSION = 2
 GAP_STATES = frozenset({"open", "studying", "practicing", "proving", "resolved", "unresolved"})
 
 
@@ -81,9 +82,13 @@ def _initialize(conn: sqlite3.Connection) -> None:
             FOREIGN KEY (plan_id) REFERENCES study_plans(plan_id)
         );
     """)
+    # DDL and its version marker must survive or roll back together on interruption.
+    conn.execute("BEGIN IMMEDIATE")
     current = int(conn.execute("PRAGMA user_version").fetchone()[0])
-    if current not in {0, DB_SCHEMA_VERSION}:
+    if current not in {0, 1, DB_SCHEMA_VERSION}:
         raise RuntimeError(f"unsupported System Competence schema {current}")
+    if current < 2:
+        conn.execute("ALTER TABLE study_plans ADD COLUMN minimum_candidate_score REAL NOT NULL DEFAULT 0")
     conn.execute(f"PRAGMA user_version={DB_SCHEMA_VERSION}")
     conn.commit()
 
@@ -103,6 +108,7 @@ class StudyPlan:
     holdout_case_ids: tuple[str, ...]
     status: str
     created_at: str
+    minimum_candidate_score: float = 0.0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -137,6 +143,19 @@ class CompetenceRegistry:
         task_id: str | None = None,
         observation_id: str | None = None,
     ) -> dict[str, Any]:
+        with transaction(self._connect(), immediate=True) as conn:
+            identity = self._insert_observation(
+                conn, category, system, score, verified=verified,
+                evidence_artifact_ids=evidence_artifact_ids, mission_id=mission_id,
+                task_id=task_id, observation_id=observation_id)
+        return self.observation(identity)
+
+    def _insert_observation(
+        self, conn: sqlite3.Connection, category: str, system: dict[str, Any], score: float,
+        *, verified: bool, evidence_artifact_ids: Iterable[str],
+        mission_id: str | None = None, task_id: str | None = None,
+        observation_id: str | None = None,
+    ) -> str:
         if not category.strip():
             raise ValueError("competence category is required")
         if not 0.0 <= float(score) <= 1.0:
@@ -147,17 +166,16 @@ class CompetenceRegistry:
         fingerprint, encoded_system = _canonical_system(system)
         identity = observation_id or uuid.uuid4().hex
         status = "demonstrated" if verified and score >= 0.8 else "practicing"
-        with transaction(self._connect(), immediate=True) as conn:
-            conn.execute(
-                """INSERT OR IGNORE INTO competence_observations VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-                )""",
-                (
-                    identity, category.strip(), fingerprint, encoded_system, mission_id, task_id,
-                    float(score), int(verified), json.dumps(evidence), status, utc_now(),
-                ),
-            )
-        return self.observation(identity)
+        conn.execute(
+            """INSERT OR IGNORE INTO competence_observations VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            )""",
+            (
+                identity, category.strip(), fingerprint, encoded_system, mission_id, task_id,
+                float(score), int(verified), json.dumps(evidence), status, utc_now(),
+            ),
+        )
+        return identity
 
     def observation(self, observation_id: str) -> dict[str, Any]:
         with transaction(self._connect()) as conn:
@@ -296,7 +314,9 @@ class CompetenceRegistry:
         development_case_ids: Iterable[str],
         holdout_case_ids: Iterable[str],
         plan_id: str | None = None,
+        minimum_candidate_score: float = 0.8,
     ) -> StudyPlan:
+        minimum = validate_minimum_score(minimum_candidate_score)
         self.gap(gap_id)
         source_list = tuple(sources)
         development = tuple(dict.fromkeys(str(item) for item in development_case_ids))
@@ -311,11 +331,11 @@ class CompetenceRegistry:
         created_at = utc_now()
         with transaction(self._connect(), immediate=True) as conn:
             conn.execute(
-                "INSERT INTO study_plans VALUES (?, ?, ?, ?, ?, ?, 'studying', ?)",
+                "INSERT INTO study_plans VALUES (?, ?, ?, ?, ?, ?, 'studying', ?, ?)",
                 (
                     identity, gap_id, objective.strip(),
                     json.dumps(source_list, sort_keys=True), json.dumps(development),
-                    json.dumps(holdout), created_at,
+                    json.dumps(holdout), created_at, minimum,
                 ),
             )
         self.transition_gap(gap_id, "studying")
@@ -332,6 +352,7 @@ class CompetenceRegistry:
             development_case_ids=tuple(json.loads(row["development_case_ids_json"])),
             holdout_case_ids=tuple(json.loads(row["holdout_case_ids_json"])),
             status=row["status"], created_at=row["created_at"],
+            minimum_candidate_score=row["minimum_candidate_score"],
         )
 
     def evaluate_study(
@@ -363,9 +384,15 @@ class CompetenceRegistry:
             })
         mean_delta = sum(item["delta"] for item in rows) / len(rows)
         regressions = sum(item["delta"] < 0 for item in rows)
-        passed = mean_delta > 0 and regressions == 0
+        below_minimum = [row["case_id"] for row in rows
+                         if row["candidate"] < plan.minimum_candidate_score]
+        passed = mean_delta > 0 and regressions == 0 and not below_minimum
         evaluation_id = hashlib.sha256(json.dumps(
-            [plan_id, rows, evidence], sort_keys=True).encode()).hexdigest()[:24]
+            [plan_id, rows, evidence, system], sort_keys=True).encode()).hexdigest()[:24]
+        gap = self.gap(plan.gap_id)
+        observation_id = None
+        average = sum(row["candidate"] for row in rows) / len(rows)
+        gap_state = "unresolved"
         with transaction(self._connect(), immediate=True) as conn:
             conn.execute(
                 "INSERT OR REPLACE INTO study_evaluations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -379,22 +406,31 @@ class CompetenceRegistry:
                 "UPDATE study_plans SET status = ? WHERE plan_id = ?",
                 ("passed" if passed else "failed", plan_id),
             )
-        gap = self.gap(plan.gap_id)
-        observation = None
-        if passed:
-            observation = self.record_observation(
-                gap["category"], system, sum(candidate_scores.values()) / len(candidate_scores),
-                verified=True, evidence_artifact_ids=evidence, mission_id=mission_id,
-                observation_id=f"study:{evaluation_id}",
-            )
-            self.transition_gap(plan.gap_id, "resolved")
-        else:
-            self.transition_gap(plan.gap_id, "unresolved")
+            if passed:
+                observation_id = self._insert_observation(
+                    conn, gap["category"], system, average, verified=True,
+                    evidence_artifact_ids=evidence, mission_id=mission_id,
+                    observation_id=f"study:{evaluation_id}")
+                gap_state = "resolved" if average >= 0.8 else "practicing"
+            conn.execute("UPDATE competence_gaps SET state = ?, updated_at = ? WHERE gap_id = ?",
+                         (gap_state, utc_now(), plan.gap_id))
+        observation = self.observation(observation_id) if observation_id else None
         return {
             "evaluation_id": evaluation_id, "plan_id": plan_id, "gap_id": plan.gap_id,
             "passed": passed, "mean_delta": mean_delta, "regressions": regressions,
+            "minimum_candidate_score": plan.minimum_candidate_score,
+            "below_minimum": below_minimum,
             "cases": rows, "observation": observation,
         }
+
+    def mark_study_execution(self, plan_id: str, *, failed: bool = False) -> None:
+        """Make pending or interrupted executions visible without inventing a score."""
+        plan = self.study_plan(plan_id)
+        with transaction(self._connect(), immediate=True) as conn:
+            conn.execute("UPDATE study_plans SET status = ? WHERE plan_id = ?",
+                         ("failed" if failed else "proving", plan_id))
+            conn.execute("UPDATE competence_gaps SET state = ?, updated_at = ? WHERE gap_id = ?",
+                         ("unresolved" if failed else "proving", utc_now(), plan.gap_id))
 
 
 COMPETENCE_STATUS_SCHEMA = {

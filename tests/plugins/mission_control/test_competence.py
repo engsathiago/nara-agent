@@ -64,7 +64,8 @@ def test_study_refuses_leakage_and_promotes_only_reserved_gain(tmp_path):
     plan = registry.create_study_plan(
         gap["gap_id"], "learn nested archive inspection",
         sources=[{"uri": "https://example.test/spec", "version": "v1"}],
-        development_case_ids=["dev-a"], holdout_case_ids=["hold-b", "hold-c"])
+        development_case_ids=["dev-a"], holdout_case_ids=["hold-b", "hold-c"],
+        minimum_candidate_score=0.75)
     with pytest.raises(ValueError, match="exactly the reserved"):
         registry.evaluate_study(
             plan.plan_id, baseline_scores={"hold-b": 0.5},

@@ -37,6 +37,12 @@ The multimodal contract still has these concrete implementation gaps:
   was activated. The generic evaluator now supports a declared per-case minimum;
   archived-score replay confirmed that minimum 1.0 also blocks production
   promotion. See `NARA_MODEL_STUDY_SPANS_2026-11-26.md`.
+- Reserved study plans now feed the executable transfer evaluator through
+  `study-evaluate`, with a predeclared per-case minimum and hashed receipts linking
+  the tested candidate/system to competence. Partial improvement below that
+  minimum cannot resolve a gap. Evaluation, observation and gap completion are
+  committed atomically. This closes the manual score-entry seam for that CLI
+  path; automatic research/practice dispatch and broad transfer remain open.
 
 Reingestion also previously accepted an existing archive without checking its
 bytes. The ingestion path now verifies its SHA-256 before reuse and reports
