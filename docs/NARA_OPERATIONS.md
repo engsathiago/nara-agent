@@ -29,6 +29,12 @@ provider settings, run `nara nara_temporal index`, and inspect
 fails, each search reports `lexical_degraded` in its receipt rather than
 silently claiming hybrid retrieval.
 
+For procedural learning, use `nara mission learn-extract` after a verified
+mission, then `learn-evaluate` on reserved cases, `learn-show`, and
+`learn-promote`. The executable evaluator contract and rollback path are in
+`docs/NARA_LEARNING_EVALUATION.md`. A candidate is not active merely because
+the extraction file exists.
+
 The validated offline baseline is Ollama at `http://127.0.0.1:11434/v1` with `qwen3.5:4b` and a
 64,000-token configured context. Confirm the model with a text turn and a real Mission Control tool
 call; a direct Ollama response alone does not prove agent integration. Other local or cloud providers
