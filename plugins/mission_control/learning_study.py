@@ -76,7 +76,7 @@ def study_media(lab: Any, llm: Any, source_id: str, objective: str,
         "repository_claim_id": repository_claim_id,
         "instructions": STUDY_INSTRUCTIONS, "schema": STUDY_SCHEMA,
         "input": {"objective": objective.strip(), "source_text": text},
-        "temperature": 0.0, "max_tokens": 2048, "timeout": 120.0,
+        "temperature": 0.0, "max_tokens": 2048, "timeout": 120.0, "task": "nara_media_study",
     }
     request_hash, _ = fabric._store(json.dumps(request, sort_keys=True, ensure_ascii=False).encode())
     receipt: dict[str, Any] = {
@@ -88,7 +88,8 @@ def study_media(lab: Any, llm: Any, source_id: str, objective: str,
             instructions=STUDY_INSTRUCTIONS,
             input=[{"type": "text", "text": json.dumps(request["input"], ensure_ascii=False)}],
             json_schema=STUDY_SCHEMA, schema_name="media_study",
-            purpose="mission-control.media-study", temperature=0.0, max_tokens=2048, timeout=120.0,
+            purpose="mission-control.media-study", task="nara_media_study",
+            temperature=0.0, max_tokens=2048, timeout=120.0,
         )
         receipt.update(provider=result.provider, model=result.model,
                        usage=asdict(result.usage), response=result.text, parsed=result.parsed)

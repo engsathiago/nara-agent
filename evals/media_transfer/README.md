@@ -71,3 +71,12 @@ evaluation permits only temporary-profile promotion followed by rollback.
 Full source text and study input receipts remain local. This measures model
 authorship of a proposal from a selected source; automatic source discovery,
 independent evaluator design and unattended self-improvement remain unproved.
+
+The first launch failed before inference because the probe removed the managed
+Python dependency path. After restoring that path, the default model route
+timed out without a candidate or evaluation: its reasoning was enabled and the
+host retried the request. The follow-up uses the newly registered study slot,
+sets `reasoning_effort: none`, and disables transient retries in the temporary
+profile. Prompt, source, cases and scoring stay unchanged; no holdout result was
+seen before this configuration correction. The outer 180-second timeout now
+also retains partial output for diagnosis.

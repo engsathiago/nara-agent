@@ -38,6 +38,7 @@ def main():
         "model": {"provider": "custom", "default": protocol["model"],
                   "base_url": "http://127.0.0.1:11434/v1"},
         "memory": {"provider": "nara_temporal"},
+        "auxiliary": {"transient_retries": 0, "nara_media_study": {"reasoning_effort": "none"}},
     }), encoding="utf-8")
     shutil.copytree(repo / "extensions/nara_temporal_memory/nara_temporal", root / "plugins/nara_temporal")
     token = set_nara_home_override(root)
@@ -49,11 +50,19 @@ def main():
         env = {key: value for key, value in os.environ.items()
                if key in {"PATH", "PYTHONPATH", "SYSTEMROOT", "WINDIR", "TZ", "LANG"}}
         env["NARA_HOME"] = str(root)
-        result = subprocess.run(
-            [sys.executable, "-m", "nara_cli.main", "mission", "learn-media-study",
-             source["source_id"], "--objective", protocol["objective"]],
-            cwd=repo, env=env, capture_output=True, text=True, timeout=180, check=False,
-        )
+        try:
+            result = subprocess.run(
+                [sys.executable, "-m", "nara_cli.main", "mission", "learn-media-study",
+                 source["source_id"], "--objective", protocol["objective"]],
+                cwd=repo, env=env, capture_output=True, text=True, timeout=180, check=False,
+            )
+        except subprocess.TimeoutExpired as exc:
+            (root / "study.timeout.json").write_text(json.dumps({
+                "status": "inconclusive", "timeout": exc.timeout,
+                "stdout": (exc.stdout or b"").decode(errors="replace"),
+                "stderr": (exc.stderr or b"").decode(errors="replace"),
+            }), encoding="utf-8")
+            raise
         (root / "study.stdout").write_text(result.stdout, encoding="utf-8")
         (root / "study.stderr").write_text(result.stderr, encoding="utf-8")
         print(f"study exit: {result.returncode}", flush=True)

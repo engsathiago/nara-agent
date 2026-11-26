@@ -70,7 +70,8 @@ This uses the host's configured model through the plugin LLM router, including
 its normal provider selection; unlike transcription, study is not necessarily
 local. The extracted source text is sent to that model. Each invocation makes
 one bounded structured-generation call (up to 2,048 output tokens and a
-120-second timeout), without tools or access to evaluation cases. Sources over
+120-second per-request timeout), without tools or access to evaluation cases.
+The host's configured transient retries can extend total wall time. Sources over
 48,000 characters require an explicitly selected smaller source. The result can
 be an inactive candidate, an explicit `no_procedure`, or a recorded failure.
 `--repo-claim VERIFIED_CLAIM_ID` optionally attaches existing repository proof.
@@ -85,7 +86,12 @@ errors record their type without copying credential-bearing error messages.
 Use the existing `learn-evaluate`, `learn-promote` and `learn-rollback` commands
 for the subsequent lifecycle. This command automates proposal authoring for a
 selected source; it does not yet schedule autonomous source discovery or design
-an independent evaluation on the user's behalf.
+an independent evaluation on the user's behalf. The registered auxiliary slot
+`nara_media_study` appears in the model-assignment UI. Its provider, model and
+reasoning effort can be configured under `auxiliary.nara_media_study`; by
+default it follows the active model. For a bounded local extraction experiment,
+the probe sets this slot's `reasoning_effort: none` and disables host transient
+retries; these probe settings do not change the owner's profile.
 
 Extraction uses local `ffmpeg` to decode mono 16 kHz WAV, then
 Nara's installed local STT backend. It never falls through to a cloud STT

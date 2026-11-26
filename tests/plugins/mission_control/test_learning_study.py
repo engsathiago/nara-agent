@@ -11,6 +11,7 @@ from agent.plugin_llm import PluginLlmStructuredResult, PluginLlmUsage
 from nara_constants import reset_nara_home_override
 from plugins.mission_control.cli import mission_command
 from tests.plugins.mission_control.test_learning_media_procedure import _command, _setup, STEP_QUOTE
+from tests.plugins.mission_control.test_plugin import _Context
 
 
 def _model(payload, calls, before_return=lambda: None):
@@ -42,9 +43,19 @@ def test_model_candidate_cli_has_provenance_and_reserved_transfer_gate(tmp_path,
     home, token, parser, fabric, source, _, evaluator, cases = _setup(tmp_path, monkeypatch)
     calls = []
     try:
-        code, result = _study(parser, source, _model(_valid(), calls), capsys)
+        from plugins.mission_control import register
+
+        context = _Context()
+        context.llm = _model(_valid(), calls)
+        register(context)
+        args = parser.parse_args([
+            "learn-media-study", source["source_id"], "--objective", "Check a repository before use",
+        ])
+        code = context.command["handler_fn"](args)
+        result = json.loads(capsys.readouterr().out)
         assert code == 0 and result["status"] == "candidate"
         assert len(calls) == 1
+        assert calls[0]["task"] in context.auxiliary_tasks
         model_input = json.loads(calls[0]["input"][0]["text"])
         assert model_input == {"objective": "Check a repository before use",
                                "source_text": source["extracted_text"]}
