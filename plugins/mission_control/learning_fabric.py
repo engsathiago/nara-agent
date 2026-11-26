@@ -84,6 +84,8 @@ class LearningFabric:
         if modality not in MODALITIES:
             raise ValueError(f"unsupported modality: {modality}")
         source_path = Path(path).resolve()
+        if modality in {"audio", "video"} and source_path.stat().st_size > 500_000_000:
+            raise ValueError("media source exceeds 500 MB local ingestion limit")
         content = source_path.read_bytes()
         digest, stored = self._store(content)
         media_type = mimetypes.guess_type(source_path.name)[0] or "application/octet-stream"
@@ -101,6 +103,24 @@ class LearningFabric:
             stored_transcript = str(transcript_store)
             status = "transcript_supplied"
         identity = f"source:{digest}"
+        try:
+            existing = self.source(identity)
+        except KeyError:
+            existing = None
+        if existing is not None:
+            if existing["modality"] != modality:
+                raise ValueError("source bytes are already registered with a different modality")
+            if transcript_path is not None and existing["transcript_hash"] != transcript_hash:
+                if existing["extraction_status"] != "needs_extraction":
+                    raise ValueError("source already has different extraction evidence")
+                with transaction(self._connect(), immediate=True) as conn:
+                    conn.execute(
+                        """UPDATE learning_sources SET extraction_status = ?, extracted_text = ?,
+                           transcript_hash = ?, transcript_path = ? WHERE source_id = ?""",
+                        (status, extracted_text, transcript_hash, stored_transcript, identity),
+                    )
+                return self.source(identity)
+            return existing
         with transaction(self._connect(), immediate=True) as conn:
             conn.execute(
                 """INSERT OR REPLACE INTO learning_sources VALUES (
@@ -174,24 +194,3 @@ class LearningFabric:
             claims = [dict(row) for row in conn.execute(
                 "SELECT status, COUNT(*) AS count FROM learning_claims GROUP BY status").fetchall()]
         return {"sources": sources, "claims": claims}
-
-
-LEARNING_INGEST_SCHEMA = {
-    "name": "nara_learning_ingest",
-    "description": "Ingest a local document, image, audio, or video with source hash and optional transcript; never fabricates extraction.",
-    "parameters": {"type": "object", "properties": {
-        "path": {"type": "string"},
-        "modality": {"type": "string", "enum": sorted(MODALITIES)},
-        "source_uri": {"type": "string"}, "version": {"type": "string"},
-        "license_name": {"type": "string"}, "transcript_path": {"type": "string"},
-    }, "required": ["path", "modality"]},
-}
-
-
-def learning_ingest_tool(
-    path: str, modality: str, source_uri: str = "", version: str = "",
-    license_name: str = "", transcript_path: str = "", **_: Any,
-) -> dict[str, Any]:
-    return LearningFabric.open_default().ingest_file(
-        path, modality=modality, source_uri=source_uri or None, version=version or None,
-        license_name=license_name or None, transcript_path=transcript_path or None)

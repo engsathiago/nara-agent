@@ -40,6 +40,8 @@ reports created, unchanged, skipped, and failed missions.
 Use `nara mission learn-status` or the `nara_learning_status` tool to inspect
 pending missions, the last gateway pass, and visible extraction errors.
 
+For local audio/video source learning, see `docs/NARA_MEDIA_LEARNING.md`.
+
 The validated offline baseline is Ollama at `http://127.0.0.1:11434/v1` with `qwen3.5:4b` and a
 64,000-token configured context. Confirm the model with a text turn and a real Mission Control tool
 call; a direct Ollama response alone does not prove agent integration. Other local or cloud providers

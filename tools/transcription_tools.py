@@ -588,7 +588,9 @@ def transcribe_audio(
             shutil.rmtree(cleanup_dir, ignore_errors=True)
 
 
-def transcribe_audio_local_fallback(file_path: str, model: Optional[str] = None) -> dict[str, Any]:
+def transcribe_audio_local_fallback(
+    file_path: str, model: Optional[str] = None, *, language: Optional[str] = None,
+) -> dict[str, Any]:
     """Try an already-installed local STT backend without changing config: passive inbound-media
     recovery after the configured provider failed — never lazy-installs or falls through to cloud."""
     error = _validate_audio_file(file_path, enforce_size_limit=False)
@@ -596,7 +598,7 @@ def transcribe_audio_local_fallback(file_path: str, model: Optional[str] = None)
         return error
     local_model = model or (_load_stt_config().get("local") or {}).get("model", DEFAULT_LOCAL_MODEL)
     if _HAS_FASTER_WHISPER:
-        return _transcribe_local(file_path, _normalize_local_model(local_model))
+        return _transcribe_local(file_path, _normalize_local_model(local_model), language=language)
     if _has_local_command():
-        return _transcribe_local_command(file_path, _normalize_local_model(local_model))
+        return _transcribe_local_command(file_path, _normalize_local_model(local_model), language=language)
     return _error_result("No installed local STT backend is available.", provider="local")
