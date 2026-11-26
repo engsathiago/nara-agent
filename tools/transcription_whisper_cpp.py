@@ -50,7 +50,7 @@ def whisper_cpp_command() -> str | None:
     # The existing command adapter tokenizes with shlex, including on Windows.
     quote = lambda path: shlex.quote(path.as_posix())
     return (f"{quote(binary)} -m {quote(models / 'ggml-base.bin')} "
-            "-f {input_path} -l {language} -t 4 -bs 5 -bo 5 -ng -nt -otxt "
+            "-f {input_path} -l {language} -t 4 -bs 5 -bo 5 -ng -otxt -oj "
             "-of {output_dir}/transcript --vad "
             f"-vm {quote(models / 'ggml-silero-v6.2.0.bin')} -vsd 500")
 

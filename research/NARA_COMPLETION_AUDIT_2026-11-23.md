@@ -18,8 +18,9 @@ The multimodal contract still has these concrete implementation gaps:
   removed. This is due-time cleanup, not an always-running deletion service.
 - The faster-whisper path now preserves native speech segment timestamps in a
   hashed archive, exposed by the existing media-show source metadata. Local
-  command backends that return only plain text explicitly report timing as
-  unavailable; their timestamp adapters remain incomplete.
+  command backends now accept native Whisper and whisper.cpp JSON sidecars.
+  Text-only commands explicitly report timing as unavailable. Native
+  whisper.cpp execution on Windows ARM64 remains unverified on this Mac.
 - Real Reel-to-new-task transfer remains unproved as described in
   `NARA_MEDIA_PROCEDURE_TRANSFER_2026-11-26.md`.
 
@@ -52,6 +53,19 @@ SHA-256: `24eb4d0f9db8580181de644a1d0aa5f5fb1e1e474ee9af356b205e03c5ec23dd`.
 This proves the local lifecycle with a simulated deadline, not 24 hours of
 unattended operation or learned competence. The Desktop binary still predates
 these changes and will need a later rebuild.
+
+The command timestamp adapter was checked against the pinned whisper.cpp
+`b5130` CLI source and Whisper's official output writers. The managed command
+now requests JSON and enables timestamp inference; Whisper CLI requests all
+formats. Two subprocess regressions failed on the previous adapter, then
+passed with second-based and millisecond-based outputs. Invalid intervals and
+text disagreement are rejected. The local vertical fixture decodes WAV,
+executes a real child command, and persists/reopens its timing archive through
+the Learning Fabric. The child emits deterministic data: this proves the
+integration, not actual Whisper CLI acoustic quality or Windows ARM64 runtime
+compatibility. The broader focused run passed 98 tests before the final command
+flag change; the updated command files passed 7 tests afterward, plus the
+vertical fixture. No new Desktop binary is claimed here.
 
 ## Authoritative local run
 

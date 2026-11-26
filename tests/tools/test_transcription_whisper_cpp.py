@@ -1,6 +1,7 @@
 """The managed command remains passive until transcription and caches verified models."""
 
 import hashlib
+import json
 import threading
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -89,11 +90,16 @@ def test_local_resolution_is_passive_and_command_override_wins(tmp_path, monkeyp
         assert command[command.index("-f") + 1] == str(audio)
         assert command[command.index("-l") + 1] == "en"
         assert "-ng" in command and "--vad" in command
+        assert "-oj" in command and "-nt" not in command
         Path(command[command.index("-of") + 1] + ".txt").write_text("hello")
+        Path(command[command.index("-of") + 1] + ".json").write_text(json.dumps({
+            "transcription": [{"text": "hello", "offsets": {"from": 100, "to": 800}}],
+        }), encoding="utf-8")
 
     monkeypatch.setattr(local, "_run_quiet", run)
     result = local._transcribe_local_command(str(audio), "base", language="en")
     assert result["success"] and result["transcript"] == "hello"
+    assert result["speech_segments"] == [{"start": 0.1, "end": 0.8, "text": "hello"}]
     assert calls == ["base"]
     monkeypatch.setenv("NARA_LOCAL_STT_COMMAND", "custom-command {input_path}")
     assert local._get_local_command_template() == "custom-command {input_path}"

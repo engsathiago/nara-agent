@@ -69,7 +69,7 @@ def _get_local_command_template() -> Optional[str]:
     if managed_command:
         return managed_command
     whisper_binary = _find_whisper_binary()
-    return (f"{shlex.quote(whisper_binary)} {{input_path}} --model {{model}} --output_format txt "
+    return (f"{shlex.quote(whisper_binary)} {{input_path}} --model {{model}} --output_format all "
             "--output_dir {output_dir} --language {language}") if whisper_binary else None
 
 
@@ -347,10 +347,13 @@ def _transcribe_local_command(
             txt_files = sorted(Path(output_dir).glob("*.txt"))
             if not txt_files:
                 return _error_result("Local STT command completed but did not produce a .txt transcript")
-            transcript_text = txt_files[0].read_text(encoding="utf-8-sig").strip()
+            from tools.transcription_command_timing import read_command_transcript
+
+            parsed = read_command_transcript(txt_files[0])
+            transcript_text = parsed["transcript"]
             logger.info("Transcribed %s via local STT command (%s, %d chars)",
                         Path(file_path).name, normalized_model, len(transcript_text))
-            return _ok_result(transcript_text, "local_command")
+            return {**_ok_result(transcript_text, "local_command"), **parsed}
     except KeyError as e:
         return _error_result(f"Invalid {LOCAL_STT_COMMAND_ENV} template, missing placeholder: {e}")
     except subprocess.CalledProcessError as e:
