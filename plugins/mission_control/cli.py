@@ -28,6 +28,7 @@ from plugins.mission_control.receipts import ReceiptStore
 from plugins.mission_control.schedule_bridge import schedule_mission
 from plugins.mission_control.store import MissionNotFoundError, MissionStore, MissionStoreError
 from plugins.mission_control.supervisor import MissionSupervisor
+from plugins.mission_control.study_execution import register_study_cli, competence_command
 from plugins.mission_control.verification import VerificationService
 
 
@@ -172,7 +173,9 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     study_plan.add_argument("--source", action="append", type=_json_object, required=True)
     study_plan.add_argument("--development-case", action="append", required=True)
     study_plan.add_argument("--holdout-case", action="append", required=True)
+    study_plan.add_argument("--minimum-candidate-score", type=float, default=0.8)
 
+    register_study_cli(actions)
     register_learning_cli(actions)
     register_media_cli(actions)
 
@@ -339,23 +342,8 @@ def mission_command(
             ))
         elif action == "ledger":
             _print(ExperienceLedger.open_default().mission_tree(store, args.mission_id))
-        elif action == "competence":
-            _print(CompetenceRegistry.open_default().current(args.category))
-        elif action == "gap-list":
-            _print(CompetenceRegistry.open_default().gaps(args.state))
-        elif action == "gap-record":
-            _print(CompetenceRegistry.open_default().record_gap(
-                args.category, args.title, args.diagnosis,
-                impact=args.impact, budget_usd=args.budget_usd,
-                source_mission_id=args.mission_id, source_task_id=args.task_id,
-                evidence_artifact_ids=args.evidence or (),
-            ))
-        elif action == "study-plan":
-            _print(CompetenceRegistry.open_default().create_study_plan(
-                args.gap_id, args.objective, sources=args.source,
-                development_case_ids=args.development_case,
-                holdout_case_ids=args.holdout_case,
-            ).to_dict())
+        elif action in {"competence", "gap-list", "gap-record", "study-plan", "study-evaluate", "study-show"}:
+            _print(competence_command(store, args))
         elif action.startswith("learn-"):
             _print(dispatch_learning(store, args, llm=llm))
         elif action == "rebuild":

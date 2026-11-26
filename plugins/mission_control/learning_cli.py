@@ -12,7 +12,7 @@ from plugins.memory import import_provider_module
 from plugins.mission_control.consolidation import MissionConsolidator, learning_status_tool
 from plugins.mission_control.learning import LearningLab
 from plugins.mission_control.learning_fabric import LearningFabric
-from plugins.mission_control.learning_runner import ProcessEvaluator
+from plugins.mission_control.learning_runner import ProcessEvaluator, load_evaluation_cases
 from plugins.mission_control.store import MissionStore
 from plugins.mission_control.learning_fabric_cli import media_command
 
@@ -70,16 +70,7 @@ def _show(lab: LearningLab, args: argparse.Namespace, candidates: Path) -> dict[
 
 
 def _evaluate(lab: LearningLab, args: argparse.Namespace, candidates: Path) -> dict[str, Any]:
-    cases = json.loads(args.cases_file.read_text(encoding="utf-8-sig"))
-    if isinstance(cases, dict):
-        cases = cases.get("cases")
-    if not isinstance(cases, list) or any(
-        not isinstance(case, dict) or not case.get("case_id") for case in cases
-    ):
-        raise ValueError("cases file must contain cases with unique case_id values")
-    ids = [str(case["case_id"]) for case in cases]
-    if len(ids) != len(set(ids)) or not set(args.development_case) <= set(ids):
-        raise ValueError("case ids must be unique and development cases must exist")
+    cases = load_evaluation_cases(args.cases_file, set(args.development_case))
     evaluator = ProcessEvaluator(args.evaluator, candidates / "evidence", timeout=args.timeout)
     return lab.evaluate_transfer(
         args.candidate_id, cases, evaluator,

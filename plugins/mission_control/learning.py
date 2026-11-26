@@ -341,7 +341,8 @@ class LearningLab:
         self._write_json(self.candidate_root / f"{candidate_id}.eval.json", report)
         return report
 
-    def promote(self, candidate_id: str, *, require_evidence: bool = False) -> Path:
+    def verified_evaluation(self, candidate_id: str, *, require_evidence: bool = True) -> dict[str, Any]:
+        """Read the latest result and verify its candidate, evaluator, and evidence bytes."""
         candidate = self.load(candidate_id)
         self._check_media_origin(candidate)
         report_path = self.candidate_root / f"{candidate_id}.eval.json"
@@ -349,9 +350,6 @@ class LearningLab:
             raise ValueError("candidate has no reserved transfer evaluation")
         report = json.loads(report_path.read_text(encoding="utf-8-sig"))
         check_evaluation_request(report, self.candidate_root / f"{candidate_id}.eval.request.json")
-        if not report.get("passed"):
-            raise ValueError("candidate did not pass reserved transfer evaluation")
-        check_minimum_score(report)
         expected_hash = hashlib.sha256(json.dumps(candidate.to_dict(), sort_keys=True).encode()).hexdigest()
         if report.get("candidate_id") != candidate_id or (
             report.get("candidate_hash") is not None and report["candidate_hash"] != expected_hash
@@ -373,6 +371,14 @@ class LearningLab:
                         path = Path(artifact["path"])
                         if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != artifact["sha256"]:
                             raise ValueError("transfer evidence is missing or changed")
+        return report
+
+    def promote(self, candidate_id: str, *, require_evidence: bool = False) -> Path:
+        report = self.verified_evaluation(candidate_id, require_evidence=require_evidence)
+        if not report.get("passed"):
+            raise ValueError("candidate did not pass reserved transfer evaluation")
+        check_minimum_score(report)
+        candidate = self.load(candidate_id)
         skill_name = f"nara-learned-{_slug(candidate.name)}-{candidate.candidate_id[:8]}"
         destination = self.skill_root / skill_name
         procedure = "\n".join(
