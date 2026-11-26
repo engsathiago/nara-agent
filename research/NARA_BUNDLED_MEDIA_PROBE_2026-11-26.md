@@ -22,6 +22,10 @@ or OCR error. The media bytes differed from the earlier host downloader's
 selection, so the content hash also differed; the archive recorded the bytes
 actually processed.
 
-The focused tests cover PyAV duration and bundled FFmpeg discovery. A new
-clean build from the follow-up commit is still required to confirm that the
-same behavior is present without `PYTHONPATH` or source-tree assistance.
+The focused tests cover PyAV duration and bundled FFmpeg discovery. The new
+clean build from `0231f909ff3ff5186d84c3f128e4fe7d7a5e93ba` then confirmed
+the same behavior with the app's own `nara` command, no `PYTHONPATH`, and the
+same restricted PATH. It reported acquisition available and processed the
+public Instagram post with local speech, 20 OCR frames and no extraction error.
+Exact archive hashes and signature evidence are in
+`research/NARA_PUBLICATION_2026-11-25.md`.

@@ -122,3 +122,16 @@ creates inactive candidates from newly verified missions and retries interrupted
 writes. Cross-experience semantic consolidation and varied real-task transfer
 remain separate requirements; these tests do not convert them into proven
 capabilities.
+
+The Learning Fabric has since gained local media extraction, frame OCR,
+source-quoted GitHub verification, public URL acquisition and an inactive
+procedure candidate path through the existing executable transfer evaluator.
+The clean macOS bundle on `0231f909ff3ff5186d84c3f128e4fe7d7a5e93ba`
+processed one real public Instagram post through the bundled CLI with a
+minimal PATH: local speech and 20 OCR frames, without extraction errors.
+The repository verification and candidate transfer fixtures are separate;
+the build-contract proof of useful transfer from a real Reel to a new task
+still needs a reserved real-task evaluation. See
+`research/NARA_PUBLICATION_2026-11-25.md` and
+`research/NARA_MEDIA_PROCEDURE_TRANSFER_2026-11-26.md`. The owner has deferred
+VPS installation and remote failover validation to a separate later stage.
