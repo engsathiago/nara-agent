@@ -46,7 +46,11 @@ def register(ctx) -> None:
         competence_status_tool,
         gap_record_tool,
     )
-    from plugins.mission_control.consolidation import LEARNING_STATUS_SCHEMA, learning_status_tool
+    from plugins.mission_control.consolidation import (
+        LEARNING_STATUS_SCHEMA,
+        learning_status_tool,
+        maybe_run_gateway_consolidation,
+    )
     from plugins.mission_control.effect_hooks import post_tool_call, pre_tool_call
     from plugins.mission_control.evolution import EVOLUTION_STATUS_SCHEMA, evolution_status_tool
     from plugins.mission_control.fleet import FLEET_STATUS_SCHEMA, fleet_status_tool
@@ -126,6 +130,7 @@ def register(ctx) -> None:
     )
     ctx.register_hook("kanban_task_completed", on_completed)
     ctx.register_hook("kanban_task_blocked", on_blocked)
+    ctx.register_hook("on_gateway_housekeeping", maybe_run_gateway_consolidation)
     ctx.register_hook("pre_tool_call", pre_tool_call)
     ctx.register_hook("post_tool_call", post_tool_call)
     ctx.register_hook("kanban_task_claimed", claim_from_kanban)
