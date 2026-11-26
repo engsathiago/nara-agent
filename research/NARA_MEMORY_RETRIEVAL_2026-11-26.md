@@ -40,6 +40,14 @@ and returned no memory for the four unrelated questions. Four reserved misses
 remain in browser, learning and mission recovery paraphrases. These are visible
 errors, not hidden successes.
 
+A separate manual smoke run used the real Nara CLI parser with a temporary
+profile containing one active procedural memory and the installed provider
+directory. `nara_temporal status` first returned `hybrid_partial` with one
+pending embedding; `nara_temporal index` indexed it; the second `status`
+returned `hybrid` and `available`. A live local `embeddinggemma` paraphrase
+query then returned that memory in `hybrid` mode with a retrieval receipt.
+No real profile memory or VPS was used.
+
 The local gate supports **optional** hybrid retrieval in this environment.
 It does not prove that the model generalizes to varied real conversations,
 large memory banks, or other languages and hardware. The model remains unset
