@@ -8,6 +8,7 @@ platforms:
   - macos
   - windows
 provides_hooks:
+  - on_gateway_housekeeping
   - kanban_task_completed
   - kanban_task_blocked
   - pre_tool_call

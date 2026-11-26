@@ -105,6 +105,20 @@ def test_gateway_consolidates_once_and_cli_can_inspect_candidate(tmp_path, monke
         reset_nara_home_override(token)
 
 
+def test_gateway_housekeeping_reaches_plugin_through_hook(tmp_path, monkeypatch):
+    home, token, _missions = _verified_profile(tmp_path, monkeypatch)
+    try:
+        from gateway.run_learning import housekeeping_plugin_maintenance
+
+        housekeeping_plugin_maintenance()
+        report = MissionConsolidator.open_default().status()
+        assert report["processed"]["candidate"] == 1
+        assert report["pending"] == 0
+        assert list((home / "plugin-data" / "mission-control" / "learning" / "candidates").glob("*.json"))
+    finally:
+        reset_nara_home_override(token)
+
+
 def test_consolidation_retry_repairs_interrupted_memory_write(tmp_path, monkeypatch):
     home, token, missions = _verified_profile(tmp_path, monkeypatch)
     try:

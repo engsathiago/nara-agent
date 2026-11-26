@@ -1,11 +1,9 @@
-"""Gateway housekeeping for Nara's verified mission learning."""
+"""Dispatch profile-scoped gateway housekeeping to registered plugins."""
 
 from __future__ import annotations
 
-import logging
+def housekeeping_plugin_maintenance() -> None:
+    from nara_cli.plugins import has_hook, invoke_hook
 
-
-def housekeeping_mission_learning() -> None:
-    from plugins.mission_control.consolidation import maybe_run_gateway_consolidation
-
-    maybe_run_gateway_consolidation(log=logging.getLogger("gateway.run"))
+    if has_hook("on_gateway_housekeeping"):
+        invoke_hook("on_gateway_housekeeping")

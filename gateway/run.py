@@ -46,7 +46,7 @@ from agent.turn_context import compression_made_progress
 from agent.session_activity import ActivityProvenance, AwakeIdleMeter
 from nara_cli.config import _is_ssh_remote_tilde_cwd, cfg_get, config_exists
 from gateway.run_common import _csv_or_list_to_set
-from gateway.run_learning import housekeeping_mission_learning as _housekeeping_mission_learning
+from gateway.run_learning import housekeeping_plugin_maintenance as _housekeeping_plugin_maintenance
 from gateway.run_plugins import housekeeping_plugin_update_check as _housekeeping_plugin_update_check
 from nara_cli.fallback_config import pre_agent_fallback_notice
 from gateway.turn_executor import _UnboundedThreadExecutor
@@ -4489,7 +4489,7 @@ def _start_gateway_housekeeping(
         # Per served profile: plugins dir, last-run marker and plugins.auto_apply are all the
         # profile's own (get_nara_home()/load_config_readonly() bind to the scope).
         (1, "Plugin update check", profile_scoped_chore(runner, _housekeeping_plugin_update_check)),
-        (5, "Mission learning consolidation", profile_scoped_chore(runner, _housekeeping_mission_learning)),
+        (5, "Plugin maintenance", profile_scoped_chore(runner, _housekeeping_plugin_maintenance)),
         (1, "Deferred FTS retry tick", _housekeeping_deferred_fts_retry),
         (1, "gateway housekeeping memory trim", _housekeeping_memory_trim),
         (1, "MCP config reconcile", _mcp_config_reconciler(runner)),
