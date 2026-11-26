@@ -176,3 +176,9 @@ evaluation. The three additional public Instagram posts checked with the
 `6ae29a3` bundle had no extractable `github.com/owner/repo` URL. None yielded a
 promoted procedure or a real Reel-to-new-task transfer proof; details are in
 `research/NARA_MEDIA_PROCEDURE_TRANSFER_2026-11-26.md`.
+
+The subsequent clean local `be13a3d` bundle confirmed the no-repository CLI
+path on the archived public memory post: inactive candidate created, promotion
+refused without a reserved evaluation, and no active skill file. The DMG/ZIP
+passed integrity checks. This satisfies the local media-to-candidate seam only;
+the full real-media-to-new-task transfer gate remains open.

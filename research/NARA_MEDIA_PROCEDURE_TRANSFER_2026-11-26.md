@@ -52,3 +52,12 @@ and `DdHQhxZRwbq` (`43d7870d65f749036e0f21081f82a99b8434ffc64d1873242ca8c61bd101
 No `github.com/owner/repo` URL appeared in their combined extracted text.
 These posts therefore cannot satisfy the repository-verification fixture; no
 procedure from them was promoted or counted as demonstrated learning.
+
+The clean `be13a3d` macOS bundle was then exercised against the archived
+`DdHAb4hxAWc` source using its own `nara` CLI and no checkout `PYTHONPATH`.
+An exact quote produced inactive candidate `aa99bd3c09f4d47cf8cb` without a
+repository claim. Attempting to promote it returned `candidate has no reserved
+transfer evaluation`, and no `SKILL.md` appeared in that temporary profile.
+This is real-media candidate creation and promotion refusal, not evidence that
+the advice transferred to another task. Package hashes and signature limits
+are in `research/NARA_PUBLICATION_2026-11-25.md`.
