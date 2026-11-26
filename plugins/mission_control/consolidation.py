@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import sqlite3
 import time
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -64,6 +65,43 @@ class MissionConsolidator:
             synchronous_full=True,
             initialize=_initialize,
         )
+
+    def status(self) -> dict[str, Any]:
+        completed = self.missions.list(status=MissionStatus.COMPLETED)
+        known: dict[str, sqlite3.Row] = {}
+        last_claimed = None
+        if self.state_path.exists():
+            with transaction(self._connect()) as conn:
+                known = {
+                    row["mission_id"]: row for row in conn.execute("SELECT * FROM processed_missions")
+                }
+                last_claimed = conn.execute(
+                    "SELECT claimed_at FROM cadence WHERE name = 'consolidation'"
+                ).fetchone()
+        pending = [
+            mission.mission_id for mission in completed
+            if mission.mission_id not in known
+            or known[mission.mission_id]["mission_version"] != mission.version
+            or known[mission.mission_id]["outcome"] == "error"
+        ]
+        errors = [
+            {"mission_id": row["mission_id"], "error": row["error"]}
+            for row in known.values() if row["outcome"] == "error"
+        ]
+        counts = {name: sum(row["outcome"] == name for row in known.values())
+                  for name in ("candidate", "skipped", "error")}
+        return {
+            "state": "degraded" if errors else "available",
+            "completed_missions": len(completed),
+            "processed": counts,
+            "pending": len(pending),
+            "pending_mission_ids": pending[:20],
+            "errors": errors[:20],
+            "last_claimed_at": (
+                datetime.fromtimestamp(last_claimed["claimed_at"], UTC).isoformat()
+                if last_claimed else None
+            ),
+        }
 
     def run_once(self, *, limit: int = 100) -> dict[str, Any]:
         if limit < 1:
@@ -145,4 +183,28 @@ def maybe_run_gateway_consolidation(log: logging.Logger | None = None) -> dict[s
         return None
     if report and (report["created"] or report["errors"]):
         logger.info("Mission learning consolidation: %s", report)
+    return report
+
+
+LEARNING_STATUS_SCHEMA = {
+    "name": "nara_learning_status",
+    "description": "Check automatic mission learning availability, pending work, and failures.",
+    "parameters": {"type": "object", "properties": {}},
+}
+
+
+def learning_status_tool(**_: Any) -> dict[str, Any]:
+    missions = MissionStore.open_default()
+    if not missions.path.exists():
+        return {"state": "unavailable", "reason": "no mission store exists in this profile"}
+    try:
+        report = MissionConsolidator.open_default().status()
+    except (FileNotFoundError, ImportError, RuntimeError) as exc:
+        return {"state": "unavailable", "reason": str(exc)}
+    from nara_cli.config import load_config_readonly
+
+    selected = (load_config_readonly().get("memory") or {}).get("provider")
+    if selected != "nara_temporal":
+        report["state"] = "degraded"
+        report["reason"] = "nara_temporal is installed but not the active memory provider"
     return report

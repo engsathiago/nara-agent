@@ -37,6 +37,8 @@ the extraction file exists. The gateway also runs due-gated consolidation for
 completed missions and proposes inactive candidates. Run
 `nara mission learn-consolidate` to process them immediately; the command
 reports created, unchanged, skipped, and failed missions.
+Use `nara mission learn-status` or the `nara_learning_status` tool to inspect
+pending missions, the last gateway pass, and visible extraction errors.
 
 The validated offline baseline is Ollama at `http://127.0.0.1:11434/v1` with `qwen3.5:4b` and a
 64,000-token configured context. Confirm the model with a text turn and a real Mission Control tool

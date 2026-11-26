@@ -23,6 +23,7 @@ provides_tools:
   - nara_competence_status
   - nara_gap_record
   - nara_evolution_status
+  - nara_learning_status
   - nara_learning_ingest
   - nara_specialist_resolve
   - nara_specialist_get

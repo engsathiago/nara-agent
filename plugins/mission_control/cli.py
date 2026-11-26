@@ -200,6 +200,7 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     consolidate = actions.add_parser(
         "learn-consolidate", help="Extract inactive candidates from newly verified missions")
     consolidate.add_argument("--limit", type=int, default=100)
+    actions.add_parser("learn-status", help="Show learning consolidation health and pending missions")
 
     rebuild = actions.add_parser("rebuild", help="Rebuild and verify a projection from its event log")
     rebuild.add_argument("mission_id")
@@ -380,7 +381,7 @@ def mission_command(
                 development_case_ids=args.development_case,
                 holdout_case_ids=args.holdout_case,
             ).to_dict())
-        elif action in {"learn-extract", "learn-show", "learn-evaluate", "learn-promote", "learn-rollback", "learn-consolidate"}:
+        elif action in {"learn-extract", "learn-show", "learn-evaluate", "learn-promote", "learn-rollback", "learn-consolidate", "learn-status"}:
             _print(learning_command(store, args))
         elif action == "rebuild":
             mission = store.rebuild_projection(args.mission_id)
