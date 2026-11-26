@@ -58,12 +58,15 @@ promotion. `nara mission learn-rollback CANDIDATE_ID` disables a promoted skill.
 The operator must supply meaningful, independent cases and the executable
 evaluator; a passing toy fixture does not establish general competence.
 
-Extraction uses local `ffprobe` and `ffmpeg` to decode mono 16 kHz WAV, then
+Extraction uses local `ffmpeg` to decode mono 16 kHz WAV, then
 Nara's installed local STT backend. It never falls through to a cloud STT
 provider. The transcript is stored by content hash, linked to the original
 source hash and duration. The original remains available even if decode or STT
 fails; the source keeps `needs_extraction` and records the error for a retry.
 Re-running extraction on an intact local transcript returns the same source.
+Duration is checked with `ffprobe` when present, or the installed PyAV backend
+when `ffprobe` is absent. The Desktop bundle carries PyAV and the pinned
+FFmpeg executable; a source install needs `ffmpeg` and either `ffprobe` or PyAV.
 
 For videos, the same ingest also samples up to 60 frames, at least 0.5 seconds
 apart, and runs local OCR. On macOS it uses the system Vision framework through
@@ -81,7 +84,7 @@ An installed local STT backend is required for speech extraction; screen OCR
 can still succeed on a silent video. The bundled Desktop runtime has
 the optional local Whisper dependencies; a source checkout can install the
 `stt-whisper` extra or configure Nara's local STT command. `ffmpeg` and
-`ffprobe` must be on `PATH`. Source installs without the `media-fetch` extra
-also need a `yt-dlp` command on `PATH`.
+Source installs without the `media-fetch` extra also need a `yt-dlp` command
+on `PATH`.
 Larger media, full scene/clip understanding, word timestamps, and broad
 automated claim verification require separate adapters and evaluations.
