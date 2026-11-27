@@ -2316,3 +2316,20 @@ Because `delivery_id` and `timestamp` live **inside the signed body**, a verifie
 - **No consent prompt.** Outbound targets execute no code on your machine — they receive data at a URL you configured. `NARA_SAFE_MODE=1` still skips registration, same as plugins and shell hooks. Note that payloads include tool inputs and event metadata, so only point targets at endpoints you trust, and prefer `https://`.
 
 `nara hooks list` shows configured outbound targets alongside shell hooks, including whether each target is signed.
+
+
+### Operational preparation errors
+
+A `pre_tool_call` hook can return `{"action": "error", "message": "..."}` when
+it cannot prepare the operation, for example when the selected instruction
+snapshot fails its hash check. This returns a tool error before execution even
+when authorization permits the operation. It does not request approval or change
+policy. Use `block`/`approve` for authorization decisions; `error` is for failed
+preconditions, not content-based refusals.
+
+The first nonempty string error message wins over `block`, `approve` and `modify`,
+regardless of hook order. No modified arguments are dispatched on this path.
+Malformed error directives are ignored, matching the existing hook contract.
+Mission Control's specialist snapshot preparation is the concrete consumer.
+Older hosts ignore this new action; plugins requiring this behavior must require
+a host release that supports it.
