@@ -18,6 +18,12 @@ from plugins.mission_control.study_checkpoint import read_checkpoint, study_lock
 
 
 def register_study_cli(actions: Any) -> None:
+    from plugins.mission_control.study_research import register_research_cli
+
+    register_research_cli(actions)
+    from plugins.mission_control.study_background import register_job_cli
+
+    register_job_cli(actions)
     command = actions.add_parser(
         "study-evaluate", help="Execute a reserved study and record verified competence evidence")
     command.add_argument("plan_id")
@@ -138,7 +144,7 @@ def record_study_proof(registry, lab, plan_id, candidate_id, proof):
             "competence": result, "receipt_path": proof["path"], "receipt_sha256": proof["sha256"]}
 
 
-def competence_command(store: MissionStore, args: Any, *, llm: Any = None) -> dict[str, Any] | list[dict[str, Any]]:
+def competence_command(store: MissionStore, args: Any, *, llm: Any = None, dispatch_tool: Any = None) -> dict[str, Any] | list[dict[str, Any]]:
     registry = CompetenceRegistry.open_default()
     handlers = {
         "competence": lambda: registry.current(args.category),
@@ -159,6 +165,14 @@ def competence_command(store: MissionStore, args: Any, *, llm: Any = None) -> di
             plan = registry.study_plan(args.plan_id)
             return {"plan": plan.to_dict(), "gap": registry.gap(plan.gap_id),
                     "cycle": registry.study_cycle(plan.plan_id)}
+        if args.mission_action in {"study-enqueue", "study-work", "study-jobs"}:
+            from plugins.mission_control.study_background import job_command
+
+            return job_command(store, args, dispatch_tool, llm)
+        if args.mission_action == "study-research":
+            from plugins.mission_control.study_research import research_command
+
+            return research_command(store, args, dispatch_tool)
         from plugins.mission_control.learning_cli import open_learning_lab
 
         lab = open_learning_lab(store)

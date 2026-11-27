@@ -5,7 +5,6 @@ from types import SimpleNamespace
 
 from plugins import mission_control
 from plugins.mission_control import cli
-from plugins.mission_control.consolidation import maybe_run_gateway_consolidation
 from plugins.mission_control.store import MissionStore
 
 
@@ -15,6 +14,9 @@ class _Context:
         self.hooks = {}
         self.tools = {}
         self.auxiliary_tasks = {}
+
+    def get_config(self, key, default=None):
+        return default
 
     def register_auxiliary_task(self, name, **kwargs):
         self.auxiliary_tasks[name] = kwargs
@@ -47,7 +49,7 @@ def test_plugin_registers_real_mission_cli():
         "voice_wake_detected", "voice_transcript", "pre_llm_call",
         "on_gateway_housekeeping",
     }
-    assert context.hooks["on_gateway_housekeeping"] is maybe_run_gateway_consolidation
+    assert callable(context.hooks["on_gateway_housekeeping"])
     assert set(context.tools) == {
         "nara_competence_status", "nara_gap_record", "nara_evolution_status",
         "nara_learning_ingest", "nara_learning_fetch", "nara_learning_claim_propose", "nara_learning_frame_extract",

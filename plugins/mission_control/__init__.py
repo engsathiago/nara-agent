@@ -112,8 +112,16 @@ def register(ctx) -> None:
         voice_presence_tool,
     )
 
+    from plugins.mission_control.study_background import StudyBackground
+
+    background_study = StudyBackground(ctx)
+
+    def on_housekeeping(log=None):
+        consolidation = maybe_run_gateway_consolidation(log)
+        return {"consolidation": consolidation, "study": background_study.wake()}
+
     def handle_cli(args):
-        llm = ctx.llm if args.mission_action in {"learn-media-study", "study-run", "study-resume"} else None
+        llm = ctx.llm if args.mission_action in {"learn-media-study", "study-run", "study-resume", "study-work"} else None
         return mission_command(args, dispatch_tool=ctx.dispatch_tool, llm=llm)
 
     def on_completed(*, task_id, run_id=None, **kwargs):
@@ -136,7 +144,7 @@ def register(ctx) -> None:
     )
     ctx.register_hook("kanban_task_completed", on_completed)
     ctx.register_hook("kanban_task_blocked", on_blocked)
-    ctx.register_hook("on_gateway_housekeeping", maybe_run_gateway_consolidation)
+    ctx.register_hook("on_gateway_housekeeping", on_housekeeping)
     ctx.register_hook("pre_tool_call", pre_tool_call)
     ctx.register_hook("post_tool_call", post_tool_call)
     ctx.register_hook("kanban_task_claimed", claim_from_kanban)

@@ -202,6 +202,102 @@ never as verified zero. This is post-call cost accounting, not a prepaid spendin
 cap: the last call may exceed the budget, and provider estimates may be incomplete.
 Without a monetary limit, unknown costs remain explicit in the result.
 
-This foreground pipeline supplies the executable study/practice consumer.
-Automatic source discovery, event-driven gap dispatch and broad longitudinal
-learning remain separate completion gates.
+The foreground pipeline supplies the executable study/practice consumer.
+The source-research and background-queue consumers below extend it. Broad
+longitudinal learning remains a separate completion gate.
+
+
+## Discover sources and run background study
+
+`study-research` uses the configured host `web_search` and `web_extract` tools.
+It searches an explicit public learning objective, filters result URLs by optional
+domains, deduplicates them and acquires up to five pages. It does not send a gap's
+private diagnosis to a search engine. The complete search/extraction responses,
+source hashes and observed failures are artifacts of an ordinary durable mission.
+The archived source is the provider's extracted text, which may be truncated;
+it is not a claim of full-page preservation. A source is an unverified quotation
+source, not a demonstrated capability.
+
+```sh
+nara mission study-research GAP_ID \
+  --objective "Python ZIP application creation documentation" \
+  --domain docs.python.org --max-sources 3 --max-seconds 120
+```
+
+A study job freezes an evaluation protocol **before** research or generation.
+The owner/evaluation author supplies separate development and reserved cases and
+an executable evaluator with the contract described above. Source content cannot
+replace these files. This example is a protocol file; paths must be absolute:
+
+```json
+{
+  "objective": "Inspect a repository's pinned commit before using its code",
+  "domains": ["docs.github.com"],
+  "cases_file": "/absolute/path/cases.json",
+  "evaluator": "/absolute/path/evaluator.py",
+  "system_file": "/absolute/path/system.json",
+  "development_case_ids": ["practice-1"],
+  "minimum_candidate_score": 1.0,
+  "max_sources": 3,
+  "research_seconds": 120,
+  "max_attempts": 3,
+  "max_seconds": 600,
+  "timeout": 30
+}
+```
+
+```sh
+nara mission study-enqueue GAP_ID --protocol-file /absolute/path/protocol.json
+nara mission study-work
+nara mission study-jobs
+```
+
+Jobs are missions, not a second mission database. `study-work` selects one pending
+job by gap impact and age. The worker acquires a process-owned lock, archives web
+sources, selects the first acquired source, creates a reserved plan and runs the
+existing study/practice/transfer cycle. Missing sources, changed protocol bytes,
+unresolved execution and insufficient transfer leave the gap unresolved. Original
+protocol files can disappear after enqueue; their frozen copies remain the inputs.
+A completed study does not activate a skill automatically. Discovery is ranked by
+the configured search provider; semantic source adjudication is not claimed.
+
+To wake this worker from gateway maintenance, configure the plugin's settings:
+
+```yaml
+plugins:
+  entries:
+    mission_control:
+      settings:
+        study_background:
+          enabled: true
+          interval_seconds: 600
+          protocols:
+            repositories:
+              objective: "Inspect a repository's pinned commit before using its code"
+              domains: [docs.github.com]
+              cases_file: /absolute/path/cases.json
+              evaluator: /absolute/path/evaluator.py
+              system_file: /absolute/path/system.json
+              development_case_ids: [practice-1]
+              minimum_candidate_score: 1.0
+              max_seconds: 600
+```
+
+When due, a worker first resumes pending jobs, otherwise queues one open gap whose
+category has a configured protocol. It runs one job and exits; there is no permanent
+LLM loop. Gateway maintenance returns immediately while the worker runs in a copied
+profile context. A second wake cannot duplicate the active worker, and a separate
+process cannot acquire its queue-worker lock. Without a matching protocol a gap
+stays open, visible through `gap-list`; no evaluator or reserved solution is invented.
+Background work is disabled until configured. The same commands remain available
+for explicit operation and inspection.
+
+The job deadline includes research and is not renewed on restart. Confirmed study
+work resumes through `study-resume`; an interrupted research call with unconfirmed
+usage stops for reconciliation instead of repeating potentially billed requests.
+The profile's web providers own transport timeouts: the job deadline blocks new
+calls, but does not claim to interrupt an already-running host request. Web tools
+currently expose no priced-usage contract, so research records unknown cost. For a
+gap with a monetary limit, it stops after the first unpriced request; this is not a
+prepaid spending cap. Neither web research nor deterministic queue tests establish
+that a real model learns successfully or generalizes to arbitrary domains.

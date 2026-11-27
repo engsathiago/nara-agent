@@ -300,3 +300,14 @@ after the correction had merged, so it is not counted as a full pass. The
 subsequent corrected-tree run passed in full as recorded above. The current
 local product code is packaged and its CLI and archives were checked as
 described in the publication report.
+
+
+The source-research and background-study consumers now use the host web tools and
+ordinary mission events/artifacts. A live isolated-profile CLI probe discovered and
+archived Python's public zipapp documentation with two real web calls. Deterministic
+vertical tests cover queued research, practice, reserved proof, profile isolation,
+nonblocking gateway maintenance and interrupted job settlement. The gateway can
+queue an open gap when its category has a predeclared evaluation protocol. Missing
+protocols remain open; automatic curriculum generation, semantic source comparison,
+real-model successful transfer, automatic admitted-skill activation and longitudinal
+improvement remain unproved. See `NARA_AUTOMATIC_SOURCE_STUDY_2026-11-26.md`.
