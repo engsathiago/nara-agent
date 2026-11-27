@@ -21,8 +21,8 @@ learning promotion, or depend on a VPS.
   `6c4611f98ac888a26c72c36214d069d04dbf1a790a0e1e646329b9c1962aed95`.
 - Protocol artifact:
   `sha256:06cb1be6d340c61834d4ce63b9e9e68b81f85df359a598bf10431583a051ac1d`.
-- Each request: up to 8,192 output tokens, requested reasoning `none`, 120-second
-  auxiliary timeout; frozen benchmark budget 600 seconds and outer deadline 630.
+- Each protocol request asked for 8,192 output tokens and reasoning `none`, with a
+  120-second auxiliary timeout (the later wire probe below found no numerical token cap); frozen benchmark budget 600 seconds and outer deadline 630.
 - Installed model digests: `qwen3.5:4b` =
   `7f3251fa6878a78a606bcb3c074283306e5ad2ea411a7774a9dd98a4bc7f2d13`;
   `qwen38-unc-16k:latest` =
@@ -76,5 +76,38 @@ A subsequent read-only `ollama show` identifies the larger alias as qwen35,
 27.3B parameters, Q4_K_M, with `num_ctx=16384` and thinking enabled by default
 (boolean levels). The harness requested reasoning `none`; this probe did not
 capture the HTTP request or prove how that control was interpreted by the local
-server. Effective reasoning-mode validation remains necessary before attributing
-the timeout solely to parameter count or hardware. `ollama ps` was empty after cleanup.
+server. The live server's effective behavior was not observed, so the timeout cannot be attributed solely
+to parameter count or hardware. `ollama ps` was empty after cleanup.
+
+
+## Offline request serialization check
+
+The archived larger-route request was then replayed through the real PluginLlm
+service and auxiliary routing, intercepting `httpx.Client.send` immediately before
+network transport and returning the archived JSON as a deterministic fixture.
+No model was loaded or inferred during this check. A disposable profile retained
+the same model/auxiliary/trust settings, with model-catalog networking pointed at
+a closed loopback port.
+
+The serialized request targeted `qwen38-unc-16k:latest`, contained
+`reasoning_effort: "none"` and `think: false`, and carried no numerical
+`max_tokens` or `max_completion_tokens` value. The generic custom-provider profile
+intentionally leaves output ceilings to the endpoint by default. Therefore, the
+8,192 value in the frozen benchmark is a requested setting, not a demonstrated
+wire-level cap for this run. Future bounded local probes should make their
+endpoint-specific output cap explicit and verify its serialization.
+
+The [official Ollama OpenAI compatibility documentation](https://docs.ollama.com/api/openai-compatibility)
+lists `max_tokens` and reasoning controls, and maps `none` to disabled thinking
+for boolean-control models. The [thinking documentation](https://docs.ollama.com/capabilities/thinking)
+describes model-specific controls returned by `/api/show`. These documents support
+the requested control's meaning; they do not prove that this installed server
+applied it to the earlier live generation.
+
+- Wire-probe profile: `nara-curriculum-wire-probe-yr1o9pn6` in the macOS temp directory.
+- Serialized request SHA-256:
+  `b58ebcaa3b2a77240723abd6cd023ca2120167c371f10bc14038c96f94286c50`.
+- `report.json` SHA-256:
+  `20ed9588ab9c47d7c38f743537c3c92a6324c7241685e123879043fe6f42594c`.
+
+This is transport preparation evidence, not a second live model result.
