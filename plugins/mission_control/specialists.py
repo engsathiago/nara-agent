@@ -6,7 +6,7 @@ import hashlib
 import json
 import os
 import re
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -61,6 +61,7 @@ class ModelCandidate:
     supports_reasoning: bool | None
     context_window: int
     observed_score: float | None = None
+    performance: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -198,19 +199,36 @@ class ModelCapabilityRegistry:
 
     def select(
         self, *, requires_tools: bool, requires_vision: bool, min_context: int = 0,
+        category: str | None = None, benchmark_scope: str | None = None,
     ) -> ModelCandidate | None:
         eligible = [item for item in self._candidates if (
             (not requires_tools or item.supports_tools)
             and (not requires_vision or item.supports_vision is True)
             and item.context_window >= min_context
         )]
-        return max(eligible, key=lambda item: (
-            item.observed_score if item.observed_score is not None else -1,
-            item.supports_reasoning is True, item.context_window,
-        ), default=None)
+        if category is not None:
+            from plugins.mission_control.model_performance import ModelPerformance
+
+            measured = {(row['provider'], row['model']): row for row in
+                        ModelPerformance.open_default().summaries(category, benchmark_scope)}
+            eligible = [replace(item, observed_score=measured[(item.provider, item.model)]['success_rate'],
+                                performance=measured[(item.provider, item.model)])
+                        if (item.provider, item.model) in measured else item for item in eligible]
+        return max(eligible, key=_model_rank, default=None)
 
     def inventory(self) -> list[dict[str, Any]]:
         return [item.to_dict() for item in self._candidates]
+
+
+def _model_rank(item):
+    performance = item.performance or {}
+    cost = performance.get('mean_cost_usd')
+    duration = performance.get('mean_duration_ms')
+    return (item.observed_score if item.observed_score is not None else -1,
+            performance.get('mean_score') if performance.get('mean_score') is not None else -1,
+            -cost if cost is not None else float('-inf'),
+            -duration if duration is not None else float('-inf'),
+            item.supports_reasoning is True, item.context_window)
 
 
 @dataclass(frozen=True)
@@ -227,6 +245,8 @@ class WorkerPlan:
     tools: tuple[str, ...]
     budget_usd: float
     decision_id: str
+    category: str | None = None
+    model_evidence_json: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -239,9 +259,12 @@ class AgentFactory:
     def plan(
         self, *, mission_id: str, task_id: str, task: str, tools: Iterable[str] = (),
         budget_usd: float = 0.0, requires_vision: bool = False,
+        category: str | None = None, benchmark_scope: str | None = None,
     ) -> WorkerPlan:
+        tools = tuple(tools)
         decision = self.resolver.resolve(
-            task, requires_tools=bool(tuple(tools)), requires_vision=requires_vision)
+            task, requires_tools=bool(tools), requires_vision=requires_vision,
+            category=category, benchmark_scope=benchmark_scope)
         selected = decision["selected"] or {}
         model = decision["model"] or {}
         identity = hashlib.sha256(
@@ -252,7 +275,8 @@ class AgentFactory:
             specialist_source=selected.get("source"), specialist_id=selected.get("specialist_id"),
             prompt_hash=selected.get("prompt_hash"), provider=model.get("provider"),
             model=model.get("model"), tools=tuple(tools), budget_usd=max(0.0, float(budget_usd)),
-            decision_id=decision["decision_id"],
+            decision_id=decision["decision_id"], category=category,
+            model_evidence_json=json.dumps(model["performance"], sort_keys=True) if model.get("performance") else None,
         )
 
 
@@ -281,6 +305,7 @@ class SpecialistResolver:
     def resolve(
         self, task: str, *, requires_tools: bool = True, requires_vision: bool = False,
         min_context: int = 0, max_candidates: int = 5,
+        category: str | None = None, benchmark_scope: str | None = None,
     ) -> dict[str, Any]:
         candidates = self.skills.search(task, limit=max_candidates)
         if self.legiao is not None:
@@ -305,15 +330,17 @@ class SpecialistResolver:
             unique.setdefault((item.source, item.specialist_id), item)
         selected_candidates = list(unique.values())[:max_candidates]
         model = self.models.select(
-            requires_tools=requires_tools, requires_vision=requires_vision, min_context=min_context)
+            requires_tools=requires_tools, requires_vision=requires_vision, min_context=min_context,
+            category=category, benchmark_scope=benchmark_scope)
         selected = selected_candidates[0] if selected_candidates and selected_candidates[0].score >= 0.2 else None
         decision = "specialist" if selected else "leader"
         receipt = hashlib.sha256(json.dumps({
-            "task": task, "candidates": [item.to_dict() for item in selected_candidates],
+            "task": task, "category": category, "benchmark_scope": benchmark_scope, "candidates": [item.to_dict() for item in selected_candidates],
             "model": model.to_dict() if model else None, "decision": decision,
         }, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:24]
         return {
-            "decision_id": receipt, "decision": decision,
+            "decision_id": receipt, "decision": decision, "category": category,
+            "model_basis": "verified_category_benchmark" if model and model.performance else "capability_fallback",
             "selected": selected.to_dict() if selected else None,
             "model": model.to_dict() if model else None,
             "candidates": [item.to_dict() for item in selected_candidates],
@@ -358,6 +385,8 @@ SPECIALIST_RESOLVE_SCHEMA = {
     "parameters": {"type": "object", "properties": {
         "task": {"type": "string"}, "requires_tools": {"type": "boolean"},
         "requires_vision": {"type": "boolean"}, "min_context": {"type": "integer"},
+        "category": {"type": "string", "description": "Exact measured task category, if known"},
+        "benchmark_scope": {"type": "string", "description": "Optional frozen comparison cohort hash"},
     }, "required": ["task"]},
 }
 
@@ -373,11 +402,11 @@ SPECIALIST_GET_SCHEMA = {
 
 def specialist_resolve_tool(
     task: str, requires_tools: bool = True, requires_vision: bool = False,
-    min_context: int = 0, **_: Any,
+    min_context: int = 0, category: str | None = None, benchmark_scope: str | None = None, **_: Any,
 ) -> dict[str, Any]:
     return SpecialistResolver.open_default().resolve(
         task, requires_tools=requires_tools, requires_vision=requires_vision,
-        min_context=min_context)
+        min_context=min_context, category=category, benchmark_scope=benchmark_scope)
 
 
 def specialist_get_tool(source: str, specialist_id: str, **_: Any) -> dict[str, Any]:

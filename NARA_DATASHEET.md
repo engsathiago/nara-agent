@@ -636,6 +636,15 @@ Para cada modelo serão registrados:
 O sistema não codificará permanentemente “modelo X é o melhor”. A escolha mudará conforme o
 resultado medido.
 
+**Incremento implementado em 27/11/2026:** benchmarks duráveis por categoria,
+com entradas e avaliador congelados, execução pelo serviço de modelos do host,
+recibos verificáveis, custo conhecido/ausente e taxa de sucesso incluindo falhas.
+O resolver aceita categoria e usa essas evidências na próxima seleção; o plano
+já criado mantém seu modelo. Comandos, formato, critérios e limites estão em
+`docs/NARA_MODEL_BENCHMARKS.md`. Inventário amplo, classificação automática,
+exploração agendada e despacho automático de todos os workers continuam pendentes;
+este incremento não comprova superioridade geral de nenhum modelo.
+
 ### 7.10 Roteamento em camadas
 
 | Trabalho | Camada preferida |
