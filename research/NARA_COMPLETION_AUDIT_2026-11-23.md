@@ -335,3 +335,25 @@ zipapp reference over unrelated colorsys documentation. It did not run practice,
 prove learned competence or activate a skill. Autonomous curriculum generation,
 independently validated evaluators, factual conflict adjudication, automatic
 admitted-skill activation and broad longitudinal model transfer remain open.
+
+## Skill deployment recovery — 2026-11-26
+
+A prerequisite for unattended activation was reproduced: changing a candidate's
+status to promoted invalidated its own transfer hash, so a successful promotion
+could not be replayed. The evaluation now binds the status observed by its request
+and verifies all procedure fields independently of later lifecycle transitions.
+Old reports are matched against only the known lifecycle statuses, preserving
+their exact original hash rather than rewriting evidence.
+
+Publication and rollback now hold an OS-owned candidate lock. Exact matching skill
+bytes are reused; locally edited files are not silently overwritten. Rollback
+reuses the archive, preserves rejected memory versions and prevents revival after
+an interrupted removal. Legacy suffixed archives retain their recorded location.
+Four regressions failed before the correction. Process-kill probes subsequently
+exercised three effect boundaries and resumed through the real learning CLI.
+The broader seven-file run passed 56 tests before the additional active-legacy
+compatibility case; final targeted validation is recorded in the PR.
+
+This corrects deployment recovery and is needed by automatic admission. It does
+not close the remaining automatic Evolution Lab canary/activation consumer,
+independent curriculum/evaluator generation or real-model learning transfer.

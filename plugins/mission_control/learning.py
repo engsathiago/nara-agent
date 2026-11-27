@@ -11,7 +11,7 @@ from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING, Any, Callable, Iterable, Protocol
 
 from plugins.mission_control.contracts import EffectStatus, MissionStatus, load_contract, utc_now
-from plugins.mission_control.learning_acceptance import check_evaluation_request, check_minimum_score, validate_minimum_score
+from plugins.mission_control.learning_acceptance import check_evaluation_request, evaluated_candidate_hash, validate_minimum_score
 from plugins.mission_control.store import MissionNotFoundError, MissionStore, completion_blockers
 
 if TYPE_CHECKING:
@@ -40,11 +40,6 @@ class ProcedureCandidate:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
-
-
-def _slug(value: str) -> str:
-    normalized = "".join(char.lower() if char.isalnum() else "-" for char in value)
-    return "-".join(part for part in normalized.split("-") if part)[:60] or "learned-procedure"
 
 
 def _candidate_fingerprint(mission_id: str, name: str, steps: list[str] | tuple[str, ...],
@@ -303,6 +298,7 @@ class LearningLab:
         request = {
             "evaluation_request_id": uuid.uuid4().hex,
             "candidate_id": candidate_id,
+            "candidate_status": candidate.status,
             "candidate_hash": hashlib.sha256(json.dumps(candidate.to_dict(), sort_keys=True).encode()).hexdigest(),
             "minimum_candidate_score": minimum,
             "evaluator_sha256": evaluator_sha256,
@@ -350,7 +346,7 @@ class LearningLab:
             raise ValueError("candidate has no reserved transfer evaluation")
         report = json.loads(report_path.read_text(encoding="utf-8-sig"))
         check_evaluation_request(report, self.candidate_root / f"{candidate_id}.eval.request.json")
-        expected_hash = hashlib.sha256(json.dumps(candidate.to_dict(), sort_keys=True).encode()).hexdigest()
+        expected_hash = evaluated_candidate_hash(candidate.to_dict(), report)
         if report.get("candidate_id") != candidate_id or (
             report.get("candidate_hash") is not None and report["candidate_hash"] != expected_hash
         ):
@@ -374,60 +370,11 @@ class LearningLab:
         return report
 
     def promote(self, candidate_id: str, *, require_evidence: bool = False) -> Path:
-        report = self.verified_evaluation(candidate_id, require_evidence=require_evidence)
-        if not report.get("passed"):
-            raise ValueError("candidate did not pass reserved transfer evaluation")
-        check_minimum_score(report)
-        candidate = self.load(candidate_id)
-        skill_name = f"nara-learned-{_slug(candidate.name)}-{candidate.candidate_id[:8]}"
-        destination = self.skill_root / skill_name
-        procedure = "\n".join(
-            f"{index}. {step}" for index, step in enumerate(candidate.steps, start=1))
-        body = (
-            "---\n"
-            f"name: {skill_name}\n"
-            f"description: {json.dumps(candidate.description, ensure_ascii=False)}\n"
-            f"version: 1.0.0\n"
-            "author: Nara Evolution Lab\n"
-            "metadata:\n"
-            f"  {'source_media' if candidate.mission_id.startswith('media:') else 'source_mission'}: {candidate.mission_id}\n"
-            f"  candidate_id: {candidate.candidate_id}\n"
-            "---\n\n"
-            f"# {candidate.name}\n\n"
-            "## Procedure\n\n"
-            f"{procedure}\n\n"
-            "## Verification\n\n"
-            "Re-run the target task's independent completion criteria and preserve evidence.\n"
-        )
-        # The skill scanner treats any SKILL.md under this root as loadable.
-        # Promote evidence first, then publish the file with one atomic rename.
-        self.memory.promote(f"procedure:{candidate.candidate_id}")
-        destination.mkdir(parents=True, exist_ok=True)
-        with NamedTemporaryFile("w", encoding="utf-8", dir=destination, delete=False) as handle:
-            handle.write(body)
-            temporary = Path(handle.name)
-        temporary.replace(destination / "SKILL.md")
-        promoted = {**candidate.to_dict(), "status": "promoted", "skill_path": str(destination)}
-        self._write_json(self._candidate_path(candidate_id), promoted)
-        return destination
+        from plugins.mission_control.learning_deployment import promote
+
+        return promote(self, candidate_id, require_evidence=require_evidence)
 
     def rollback(self, candidate_id: str) -> Path:
-        candidate = self.load(candidate_id)
-        active = next(self.skill_root.glob(f"nara-learned-*-{candidate.candidate_id[:8]}"), None)
-        archive = self.skill_root / ".archive"
-        if active is not None:
-            archive.mkdir(parents=True, exist_ok=True)
-            disabled = archive / f"{active.name}.disabled"
-            if disabled.exists():
-                disabled = archive / f"{active.name}.disabled-{hashlib.sha256(utc_now().encode()).hexdigest()[:8]}"
-            active.replace(disabled)
-        else:
-            disabled = next(archive.glob(f"nara-learned-*-{candidate.candidate_id[:8]}.disabled*"), None)
-            if disabled is None:
-                raise ValueError("promoted skill not found")
-        memory = self.memory.get(f"procedure:{candidate.candidate_id}")
-        if memory["status"] == "active":
-            self.memory.reject(memory["memory_id"])
-        rolled_back = {**candidate.to_dict(), "status": "rolled_back", "skill_path": str(disabled)}
-        self._write_json(self._candidate_path(candidate_id), rolled_back)
-        return disabled
+        from plugins.mission_control.learning_deployment import rollback
+
+        return rollback(self, candidate_id)

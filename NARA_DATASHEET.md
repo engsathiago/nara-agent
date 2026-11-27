@@ -239,6 +239,12 @@ de exercícios e provas independentes, a verificação factual de divergências 
 skills admitidas e o ganho longitudinal com modelos reais continuam pendentes. Detalhes e limites:
 `docs/NARA_LEARNING_EVALUATION.md` e `research/NARA_AUTOMATIC_SOURCE_STUDY_2026-11-26.md`.
 
+A publicação de skills avaliadas agora suporta repetição e recuperação após queda do processo.
+A prova continua válida após mudanças de status; arquivos editados não são sobrescritos, e o
+rollback retira a skill da descoberta do runtime antes de rejeitar sua memória. Testes com
+processos encerrados verificam três pontos de interrupção. Isso prepara a ativação automática,
+mas o consumidor de admissão/canário da fila de estudo ainda está pendente.
+
 O primeiro incremento da Fase 4 está `verified`. O Evolution Lab congela desenvolvimento, holdout,
 limite de regressão, ganho mínimo e custo antes da avaliação; armazena cada variante por SHA-256;
 reabre os mesmos bytes antes do canário e da ativação; fixa sessões em andamento à versão anterior;

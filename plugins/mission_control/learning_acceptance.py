@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -33,7 +34,27 @@ def check_evaluation_request(report: dict[str, Any], request_path: Path) -> None
             raise ValueError("latest evaluation request is missing")
         return  # Historical reports predate durable requests.
     request = json.loads(request_path.read_text(encoding="utf-8-sig"))
-    fields = ("evaluation_request_id", "candidate_id", "candidate_hash", "minimum_candidate_score",
+    fields = ("evaluation_request_id", "candidate_id", "candidate_hash", "candidate_status", "minimum_candidate_score",
               "evaluator_sha256", "development_case_ids", "holdout_case_ids")
     if any(request.get(key) != report.get(key) for key in fields):
         raise ValueError("latest evaluation is incomplete or differs from its declared request")
+
+
+def evaluated_candidate_hash(candidate: dict[str, Any], report: dict[str, Any]) -> str:
+    """Preserve the observed lifecycle status without masking any content change."""
+    statuses = ("candidate", "promoted", "rolled_back")
+    if not isinstance(candidate.get("status"), str) or candidate["status"] not in statuses:
+        raise ValueError("unrecognized procedure lifecycle status")
+    if "candidate_status" in report:
+        evaluated_status = report["candidate_status"]
+        if not isinstance(evaluated_status, str) or evaluated_status not in statuses:
+            raise ValueError("unrecognized evaluated procedure lifecycle status")
+        payload = {**candidate, "status": evaluated_status}
+        return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
+    # Legacy requests did not store lifecycle status separately. Recover only
+    # that field from the exact recorded hash; all procedure fields stay intact.
+    for status in statuses:
+        digest = hashlib.sha256(json.dumps({**candidate, "status": status}, sort_keys=True).encode()).hexdigest()
+        if digest == report.get("candidate_hash"):
+            return digest
+    return hashlib.sha256(json.dumps(candidate, sort_keys=True).encode()).hexdigest()
