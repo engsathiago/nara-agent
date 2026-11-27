@@ -573,3 +573,11 @@ and whether the response was clipped. The web extractor may already return a
 partial page; the archived response and its study window are not represented as
 a complete original page. This also accommodates paging footers that exceed the
 requested extractor character limit.
+
+Each ZIP evaluation owns its temporary gateway child and waits for PID-bound
+readiness before invoking the one-shot CLI. The child is terminated and reaped on
+success and failure; the result archives its lifecycle receipt. Incomplete CLI
+turns (including a turn-budget stop) do not receive a task score, even if the last
+sentence claims completion. A numeric usage total marked `cost_status: unknown`
+is not treated as a priced result. Auxiliary calls also leave this oracle's cost
+unknown because their aggregate does not prove every component is priced.

@@ -84,3 +84,40 @@ def test_exported_validator_checks_facts_and_structural_independence(tmp_path, c
     assert result['score'] == float(passed), result
     receipt = json.loads(Path(result['evidence'][0]['path']).read_text(encoding='utf-8-sig'))
     assert receipt['passed'] is passed and receipt['calibration']['passed']
+
+
+@pytest.mark.parametrize('status,cost', [('unknown', None), (None, None), ('estimated', 0.25)])
+def test_terminal_oracle_keeps_unpriced_usage_unknown(tmp_path, monkeypatch, status, cost):
+    from plugins.mission_control import study_oracle_zip as oracle
+
+    monkeypatch.chdir(tmp_path)
+    def run_agent(*args):
+        Path('manifest.json').write_text(json.dumps(oracle.reference_manifest(Path('source.zip'))))
+        Path('usage.json').write_text('{}')
+        Path('agent.stdout').write_text('complete')
+        Path('agent.stderr').write_text('')
+        return {'cost_status': status, 'total_including_auxiliary': {'estimated_cost_usd': 0.25}}
+    monkeypatch.setattr(oracle, '_run_agent', run_agent)
+    result = oracle.execute_case({'candidate': None, 'case': {'case_id': 'cost', 'members': []}},
+                                 {'model': 'fixture', 'runtime_identity': {}})
+    assert result['score'] == 1
+    if cost is None:
+        assert 'cost_usd' not in result
+    else:
+        assert result['cost_usd'] == cost
+
+
+def test_owned_gateway_is_reaped_when_case_execution_raises(tmp_path):
+    import os
+    import sys
+    from plugins.mission_control.study_oracle_zip import owned_gateway
+
+    program = tmp_path / 'gateway.py'
+    program.write_text('import os,json,threading\nfrom pathlib import Path\n'
+                       'Path("gateway_state.json").write_text(json.dumps({"pid":os.getpid(),"gateway_state":"running"}))\n'
+                       'threading.Event().wait(60)\n', encoding='utf-8')
+    with pytest.raises(ValueError, match='case failed'):
+        with owned_gateway([sys.executable, str(program)], dict(os.environ), tmp_path) as child:
+            assert child.poll() is None
+            raise ValueError('case failed')
+    assert child.poll() is not None

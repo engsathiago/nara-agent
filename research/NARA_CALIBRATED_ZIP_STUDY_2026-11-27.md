@@ -49,3 +49,48 @@ source spans; the explanation must equal an actual relevant span. Each split mus
 have a different archive topology. This does not prove semantic independence for
 other domains, or general factual correctness merely because a source is cited.
 Successful task execution without positive improvement is not admission evidence.
+
+## Real source-grounded abstention
+
+After the excerpt correction, frozen code `780c30ea4a` successfully acquired a
+source. Search selected the Python general index instead of explanatory module
+documentation. The real `nara_curriculum` call declined to invent a lesson from
+that index. There were no generated cases, task evaluations or activated skills.
+The result proves the source-grounded abstention path, not positive learning.
+
+- Profile: `/private/var/folders/c4/sn_zf7557_1gcpsyy2qtvwzr0000gn/T/nara-live-zip-study-yagkqe_v`
+- Mission: `study-job-a9f472e622c0572895886013`
+- Source: <https://docs.python.org/3/genindex-all.html>
+- Source SHA-256: `4cd4f689cea3d977407421e0b251e8da1d7bbe4cda8ccc3714f1e370453b188a`
+- Generation receipt SHA-256: `e2ae68a36db521e2ba35dc3a145a8014813c2b7775f9880460ccc6e6264d41d1`
+- Tokens: 16,267 input, 190 output; monetary cost unknown.
+- Work stdout SHA-256: `c5e573d09413df851c290d07281f6332d76dbb4506e522326875d028b3dba61a`
+
+The exported research protocol now uses a less symbol-heavy documentation query
+and acquires up to three sources, allowing the existing relevance-comparison
+consumer to choose among them. This addresses retrieval quality before any
+exercise generation; it does not alter grading thresholds or tune against
+reserved answers. Both prior outcomes remain part of the evidence.
+
+## Independent terminal probe and integration corrections
+
+A separate, hand-authored smoke task exercised the real CLI/gateway/terminal at
+`780c30ea4aa352459890c16ce6564b788724557f`, without using curriculum or reserved
+cases. Profile:
+`/private/var/folders/c4/sn_zf7557_1gcpsyy2qtvwzr0000gn/T/nara-live-zip-terminal-dhxstrch`.
+The model made four API calls (17,523 input and 590 output tokens). A Python tool
+call failed with an undefined variable; subsequent commands produced a malformed
+manifest. The CLI correctly returned exit 2 with
+`max_iterations_reached(4/4)` and `completed: false`, despite a reassuring final
+sentence. The oracle did not assign a task score or count this as improvement.
+
+That probe also exposed two integration issues. A usage receipt can contain a
+numeric accumulated cost while `cost_status` is `unknown`; the oracle now omits
+monetary cost unless the status is priced/included and auxiliary calls introduce
+no further uncertainty. The one-shot CLI auto-starts a gateway, whose normal idle
+lifetime outlasts a temporary case. The oracle now explicitly owns a gateway child,
+waits for its PID-bound readiness, and terminates/reaps that child on every exit.
+It does not identify or stop other processes by command-line substring. Three
+regressions failed before these corrections: two unknown-cost cases and cleanup
+when the case raises. Readiness and cleanup are bounded within the evaluator's
+120-second ceiling; failures never become positive task results.

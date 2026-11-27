@@ -1,11 +1,13 @@
 """Self-contained ZIP oracle, exported byte-for-byte into frozen study protocols."""
 
+from contextlib import contextmanager
 import hashlib
 import json
 import os
 from pathlib import Path, PurePosixPath
 import subprocess
 import sys
+import time
 from tempfile import TemporaryDirectory
 import zipfile
 
@@ -122,13 +124,50 @@ def validate_curriculum(case):
     return {"accepted_cases": len(package["cases"]), "independence": "distinct ZIP member topologies across splits"}
 
 
+def _await_gateway(child, home):
+    deadline = time.monotonic() + 20
+    while time.monotonic() < deadline:
+        if child.poll() is not None:
+            raise RuntimeError("temporary gateway exited before readiness")
+        try:
+            state = json.loads((home / "gateway_state.json").read_text(encoding="utf-8-sig"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            state = {}
+        if state.get("pid") == child.pid and state.get("gateway_state") == "running":
+            return
+        try:
+            child.wait(timeout=0.1)
+        except subprocess.TimeoutExpired:
+            continue
+    raise TimeoutError("temporary gateway readiness exceeded 20 seconds")
+
+
+@contextmanager
+def owned_gateway(command, env, home):
+    with (home / "oracle-gateway.stdout").open("w", encoding="utf-8") as stdout, (home / "oracle-gateway.stderr").open("w", encoding="utf-8") as stderr:
+        child = subprocess.Popen(command, cwd=home, env=env, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr)
+        try:
+            _await_gateway(child, home)
+            yield child
+        finally:
+            if child.poll() is None:
+                child.terminate()
+                try:
+                    child.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    child.kill()
+                    child.wait(timeout=2)
+            (home / "oracle-gateway.json").write_text(json.dumps({"pid": child.pid, "returncode": child.returncode,
+                                                                 "reaped": child.poll() is not None}), encoding="utf-8")
+
+
 def _run_agent(config, prompt, skill_name):
     home = Path(os.environ["NARA_HOME"])
     settings = {"_setup_done": True, "model": {"provider": "custom", "default": config["model"],
                 "base_url": config["base_url"], "api_key": "local-eval"},
                 "agent": {"max_turns": 4, "run_budget_seconds": 85, "reasoning_effort": "none"},
                 "terminal": {"backend": "local", "cwd": str(Path.cwd())},
-                "auxiliary": {"transient_retries": 0}}
+                "auxiliary": {"transient_retries": 0}, "gateway": {"multiplex_profiles": False}}
     (home / "config.yaml").write_text(json.dumps(settings), encoding="utf-8")
     env = {key: value for key, value in os.environ.items()
            if key in {"PATH", "SYSTEMROOT", "WINDIR", "TZ", "LANG", "PYTHONPATH", "NARA_HOME"}}
@@ -137,12 +176,19 @@ def _run_agent(config, prompt, skill_name):
                "--provider", "custom", "-m", config["model"], "--usage-file", str(Path("usage.json").resolve())]
     if skill_name:
         command.extend(["-s", skill_name])
-    result = subprocess.run(command, env=env, capture_output=True, text=True, encoding="utf-8", timeout=105, check=False)
+    gateway = [sys.executable, "-m", "nara_cli.main", "gateway", "run", "--quiet"]
+    with owned_gateway(gateway, env, home):
+        result = subprocess.run(command, env=env, capture_output=True, text=True, encoding="utf-8", timeout=90, check=False)
     Path("agent.stdout").write_text(result.stdout, encoding="utf-8")
     Path("agent.stderr").write_text(result.stderr, encoding="utf-8")
+    usage_path = Path("usage.json")
+    usage = json.loads(usage_path.read_text(encoding="utf-8-sig")) if usage_path.is_file() else {}
     if result.returncode:
-        raise RuntimeError(f"Nara execution did not complete (exit {result.returncode}); no task score assigned")
-    return json.loads(Path("usage.json").read_text(encoding="utf-8-sig"))
+        reason = usage.get("turn_exit_reason") or result.stderr[-300:]
+        raise RuntimeError(f"Nara execution did not complete (exit {result.returncode}, {reason}); no task score assigned")
+    if not usage:
+        raise RuntimeError("Nara execution did not produce a usage receipt")
+    return usage
 
 
 def execute_case(request, config):
@@ -181,11 +227,13 @@ def execute_case(request, config):
               "model": config["model"], "runtime_identity": config["runtime_identity"],
               "native_skill_sha256": observed_skill, "native_preload": skill_name}
     Path("evaluation.json").write_text(json.dumps(report, sort_keys=True), encoding="utf-8")
-    result = {"score": score, "artifact_paths": ["source.zip", "evaluation.json", "agent.stdout", "agent.stderr", "usage.json"],
+    result = {"score": score, "artifact_paths": ["source.zip", "evaluation.json", "agent.stdout", "agent.stderr", "usage.json",
+              "profile/oracle-gateway.json", "profile/oracle-gateway.stdout", "profile/oracle-gateway.stderr"],
               "feedback": json.dumps({"observed": answer, "expected": expected}),
               "observed_skill_sha256": observed_skill}
     cost = usage.get("total_including_auxiliary", {}).get("estimated_cost_usd")
-    if cost is not None:
+    if (cost is not None and usage.get("cost_status") in {"actual", "estimated", "included"}
+            and usage.get("auxiliary", {}).get("api_calls", 0) == 0):
         result["cost_usd"] = cost
     return result
 

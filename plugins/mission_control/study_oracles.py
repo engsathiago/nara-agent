@@ -79,8 +79,8 @@ def prepare(output, model, base_url):
               "runtime": identity, "oracle_sources": hashes}
     (output / "system.json").write_text(json.dumps(system, indent=2), encoding="utf-8")
     (output / "calibration.json").write_text(json.dumps({**calibration, "system": system}, indent=2), encoding="utf-8")
-    protocol = {"objective": "Python zipfile ZipFile.infolist ZipInfo.is_dir file_size: enumerate nested ZIP members and byte sizes",
-                "domains": ["docs.python.org"], "max_sources": 1, "research_seconds": 120,
+    protocol = {"objective": "Python zipfile documentation: inspect ZIP archive members, directories and uncompressed sizes",
+                "domains": ["docs.python.org"], "max_sources": 3, "research_seconds": 120,
                 "evaluator": str(output / "transfer.py"), "system_file": str(output / "system.json"),
                 "max_attempts": 2, "max_seconds": 1200, "timeout": 120, "minimum_candidate_score": 1.0,
                 "curriculum": {"brief_file": str(output / "brief.json"), "validator": str(output / "validator.py"),
