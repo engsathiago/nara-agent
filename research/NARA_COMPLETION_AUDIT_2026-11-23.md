@@ -311,3 +311,27 @@ queue an open gap when its category has a predeclared evaluation protocol. Missi
 protocols remain open; automatic curriculum generation, semantic source comparison,
 real-model successful transfer, automatic admitted-skill activation and longitudinal
 improvement remain unproved. See `NARA_AUTOMATIC_SOURCE_STUDY_2026-11-26.md`.
+
+## Evidence-based source selection — 2026-11-26
+
+Protocol-v2 background jobs now compare distinct acquired sources before study.
+The host auxiliary task `nara_source_selection` must assess every source and cite
+exact spans. Selection, reasons, limitations, raw response and reported usage are
+mission artifacts; replay verifies those artifacts and the source bytes. A single
+source is explicitly not compared; identical bytes at different acquired URLs are
+one source with retained aliases, not independent corroboration. Protocol-v1 jobs
+keep their original declared search-rank behavior.
+
+Seven new selection/abstention/recovery tests failed before implementation; a
+separate mirrored-page case exposed and then covered content-addressed source
+reuse. The broader focused run passed 50 tests; subsequent targeted runs add
+compatibility, changed-source and mirrored-page coverage. All original study,
+queue, resume and research contracts remain exercised. Exact final counts and the
+live comparison receipt are in `NARA_SOURCE_COMPARISON_2026-11-26.md`.
+
+This closes source relevance comparison for acquired material, not independent
+fact checking. The first live local comparison chose the predeclared Python
+zipapp reference over unrelated colorsys documentation. It did not run practice,
+prove learned competence or activate a skill. Autonomous curriculum generation,
+independently validated evaluators, factual conflict adjudication, automatic
+admitted-skill activation and broad longitudinal model transfer remain open.
