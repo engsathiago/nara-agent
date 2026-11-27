@@ -525,7 +525,7 @@ gateway. Broader domain verifiers and live-model evidence remain required.
 
 `nara mission study-oracles` lists shipped domain oracles and runs their local
 calibration without calling a model. The first family, `zip-manifest`, exports a
-protocol-v4 package:
+generated-curriculum package (v5 with bounded source context):
 
 ```bash
 nara mission study-oracle-prepare zip-manifest /absolute/new/zip-study --model qwen3.5:4b

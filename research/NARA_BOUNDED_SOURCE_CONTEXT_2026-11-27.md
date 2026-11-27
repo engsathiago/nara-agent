@@ -53,3 +53,49 @@ the study-profile configuration hash before execution. This changes the disposab
 evaluation configuration, not users' defaults, grading criteria or deadlines.
 It is a separate trial; outcomes cannot isolate context selection as the sole
 cause of any timing difference.
+
+## Aligned-config real run: selection and curriculum generation reached
+
+Frozen code: `140ed2f3aa3620018004a935b3c239f45e712d58`.
+Profile:
+`/private/var/folders/c4/sn_zf7557_1gcpsyy2qtvwzr0000gn/T/nara-live-zip-study-51mpbbtu`.
+Mission: `study-job-fe903f0a401792e6c6477e7c`.
+Protocol SHA-256:
+`332cb50a6a5cd3fbda2d9a7ac3a264ef0f2fbe8e1c062681b19df612dcafda3e`.
+
+Comparison completed and selected the ZIP module documentation, classifying TAR
+as irrelevant and shutil as uncertain. Request/result artifact timestamps span
+37.09 seconds (an observed wall interval, not a general latency guarantee).
+Usage: 7,330 input and 629 output tokens; cost unknown. Receipt:
+`f4d5c235136b515bd2aaf03f9e7a7d0d39df390ffe71666cebbf80884d4ef287`.
+
+The preceding bounded attempt and this attempt had identical comparison input,
+instructions, schema, task, temperature and output cap. The disposable profile's
+source-selection reasoning setting changed from unspecified to explicit `none`.
+The local model identity was unchanged. This supports recording a configuration
+sensitivity; it is not a controlled multi-run latency benchmark and does not
+attribute success solely to the source-context feature.
+
+The curriculum model then returned three questions and three proposed cases using
+3,089 input and 551 output tokens, with cost unknown. Receipt:
+`ba71dbec6ccaf43c7ab4cb6b7ad0eb3ad8a73d7744a6f983c821bfb099a379bf`.
+All three `payload_json` strings failed JSON parsing. The host rejected the package
+before the domain validator, learner, practice, reserved evaluation or native
+admission. No skill was activated, and this is not evidence of useful transfer.
+The next concrete integration need is typed exercise payload generation, avoiding
+nested JSON-in-a-string while preserving old protocol replay and independent
+semantic validation. Invalid model output must not be executed or silently trusted.
+
+Offline reinspection verified 17 and 19 content-addressed files for the two new
+runs, each frozen protocol and work-result hash, and the second run's recorded
+configuration hash. Both had zero admitted skills. The comparison of identical
+inputs and the artifact checks made no new model/web calls.
+
+Final integrated validation passed **69 tests across seven suites**: context (7),
+source selection (10), media study (11), study resume (16), curriculum (9), ZIP
+oracle (10), and study cycle (6). All **16 mandatory checks** passed before the
+live runs; the harness setting/hash addition is checked again for publication.
+The final publication check also passed all 16 gates with the harness update.
+The deterministic tests cover success and rejection, real subprocess validators,
+unchanged legacy inputs, multi-source views, and a practice revision after restart
+without renewing its deadline. No Desktop rebuild or VPS validation is claimed.
