@@ -565,3 +565,11 @@ withdraws any admitted skill before finishing. Invoke it with
 It performs real web/model calls; it is an opt-in evaluation, not a unit test.
 Do not adjust a protocol using already-revealed reserved results. A baseline
 that already solves the task yields no positive gain and must not cause promotion.
+
+The research consumer archives the complete web-tool response (within its 1 MB
+response bound) before preparing a study text window of at most 48,000 characters.
+`text_window` source metadata records start/end offsets, received length and hash,
+and whether the response was clipped. The web extractor may already return a
+partial page; the archived response and its study window are not represented as
+a complete original page. This also accommodates paging footers that exceed the
+requested extractor character limit.

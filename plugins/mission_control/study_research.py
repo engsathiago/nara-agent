@@ -138,8 +138,15 @@ class SourceResearch:
         if row.get("error") or selected_url(row.get("url"), self.domains) != url:
             raise ValueError("web extraction failed or changed the selected URL")
         content = row.get("content")
-        if not isinstance(content, str) or not content.strip() or len(content) > 48000:
-            raise ValueError("extracted source must contain 1-48000 characters")
+        if not isinstance(content, str) or not content.strip():
+            raise ValueError("extracted source must contain nonempty text")
+        # The host may append paging metadata beyond char_limit. Its complete
+        # response is already archived; bound only the text supplied to study.
+        window = {"start": 0, "end": min(len(content), 48000), "received_characters": len(content),
+                  "received_sha256": hashlib.sha256(content.encode()).hexdigest(), "truncated": len(content) > 48000}
+        content = content[:48000]
+        if not content.strip():
+            raise ValueError("extracted source window contains no usable text")
         with TemporaryDirectory(prefix="nara-research-") as temp:
             path = Path(temp) / "source.txt"
             path.write_text(content, encoding="utf-8")
@@ -149,7 +156,7 @@ class SourceResearch:
                 metadata={"acquisition": "host_web_extract", "retrieved_at": utc_now(),
                           "research_mission_id": self.mission_id, "claims_status": "unverified",
                           "search_artifact_id": self.result["search_artifact_id"],
-                          "extraction_artifact_id": receipt.artifact_id})
+                          "extraction_artifact_id": receipt.artifact_id, "text_window": window})
         _check_cited_source(source)
         return {"source_id": source["source_id"], "source_hash": source["source_hash"], "url": url,
                 "extraction_artifact_id": receipt.artifact_id, "claims_status": "unverified"}
