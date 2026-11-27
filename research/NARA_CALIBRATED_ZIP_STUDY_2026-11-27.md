@@ -94,3 +94,49 @@ It does not identify or stop other processes by command-line substring. Three
 regressions failed before these corrections: two unknown-cost cases and cleanup
 when the case raises. Readiness and cleanup are bounded within the evaluator's
 120-second ceiling; failures never become positive task results.
+
+## Final frozen run and limits
+
+Frozen code `d15186004c965e5c1c6270a7f35fdbf98f426746` was exercised in two
+independent ways. The repeated terminal smoke test in
+`/private/var/folders/c4/sn_zf7557_1gcpsyy2qtvwzr0000gn/T/nara-live-zip-terminal-iod96yx0`
+confirmed PID-bound gateway readiness and cleanup. Its owned child (PID 91966)
+was reaped, with a lifecycle receipt. The model again exceeded four turns;
+18,146 input and 762 output tokens were reported, with unknown cost. No task
+score was assigned. This validates the execution/cleanup path, not task success.
+
+The complete queue experiment then acquired three sources: current zipfile
+module documentation, the Python 2.5 ZipInfo reference and the archiving overview.
+The real source-comparison call hit its 120-second API timeout before returning
+a selection. No curriculum or reserved exercises were generated and no skill was
+activated. The queue settled as failed and preserved its original deadline,
+request and failure receipt. The model's monetary cost remains unknown.
+
+- Profile: `/private/var/folders/c4/sn_zf7557_1gcpsyy2qtvwzr0000gn/T/nara-live-zip-study-t_6onlxq`
+- Mission: `study-job-bbe7b1d6b2a29122ed7b011c`
+- Protocol SHA-256: `4cf1c85725d942c4ac2b8e310bf0fc6d45c16b07d7cc82c126fb9192419a0a8d`
+- Comparison failure receipt: `b3bb1c14e74ebb614e84e7ae995eb52843a06a109d4c7c8680d8b25cc115859d`
+- Work stdout SHA-256: `d14bdb4b04e58595222d0fc2ba08b0b1a6b9573e510fdaa14d7178c35f466bf9`
+
+Offline reinspection checked 10, 15 and 17 content-addressed files for the three
+queue experiments respectively, including each frozen protocol and work result.
+The latter two runs' one and three stored source byte hashes were also verified.
+These checks made no additional model or web calls. All profiles contained zero
+admitted native skills. Full web-tool receipts stay local; only compact hashes
+and outcomes are published here.
+
+Final integrated tests passed **41 tests in five files**: oracle (10), research
+(6), queue (11), curriculum (9), plugin registration (5). All **16 mandatory
+checks** passed on the final code. The oracle tests include an actual exported
+validator subprocess, calibration rejection, factual-answer rejection, renamed
+exercise rejection, unknown costs, and an owned-process cleanup failure path.
+They do not substitute for successful real-model curriculum, practice, reserved
+transfer or native canary outcomes.
+
+The next implementation need exposed here is bounded relevant source context:
+sending entire acquired excerpts to the small local model is too expensive for
+this comparison deadline. That change must preserve original spans, provenance
+and replay of existing frozen protocols; increasing a timeout or loosening the
+oracle until a trial passes would not establish improvement. Real generated
+curriculum admission and positive transfer remain open. This increment does not
+rebuild the Desktop binary, validate other hardware, or require a VPS.

@@ -250,7 +250,11 @@ conhecidos sobre arquivos ZIP reais e exporta um protocolo de pesquisa e curríc
 executa a própria CLI da Nara com terminal e verifica o arquivo de resultado. Perguntas ficam
 restritas a fatos verificáveis da API Python; os três conjuntos exigem estruturas diferentes.
 Isso fornece um verificador concreto para essa categoria, sem estabelecer aprendizado geral
-ou ganho com modelo real apenas pela calibração.
+ou ganho com modelo real apenas pela calibração. Ensaios reais já exercitaram aquisição,
+abstenção por fonte inadequada e terminal, mas ainda não demonstraram melhoria: a comparação
+de fontes atingiu o prazo do modelo local e o teste de terminal esgotou o limite de turnos.
+Os resultados e correções estão em `research/NARA_CALIBRATED_ZIP_STUDY_2026-11-27.md`;
+reduzir o contexto de fontes mantendo os trechos originais é a próxima pendência de integração.
 
 A publicação de skills avaliadas agora suporta repetição e recuperação após queda do processo.
 A prova continua válida após mudanças de status; arquivos editados não são sobrescritos, e o
