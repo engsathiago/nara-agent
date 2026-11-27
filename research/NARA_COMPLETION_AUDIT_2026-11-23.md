@@ -557,3 +557,23 @@ three-model team proof. Auxiliary structured-task scores are routing signals;
 child-prompt/tool competence still needs child-task evaluation. Positive real
 learning/transfer/native gain and other datasheet gaps remain open. Usage and
 limits are in `docs/NARA_MODEL_BENCHMARKS.md`; VPS remains later and separate.
+
+
+## Same-source curriculum route calibration — 2026-11-27
+
+The real model benchmark now freezes an archived initial curriculum request and
+bundles the current production validators into its independent hashed evaluator.
+22 focused tests in five suites and all 16 checks passed, including positive and
+negative oracle calibration and a strict-integer fix for the prediction example.
+
+One real generation each from local qwen3.5:4b and llama3.2:3b used identical source,
+brief, instructions and schema. Both were structurally valid but failed the domain
+teaching contract; neither reached learning or activated a skill. All 13 stored
+blobs and grader references were independently rehashed. Full evidence and limits:
+`NARA_CURRICULUM_MODEL_COMPARISON_2026-11-27.md`.
+
+The planned route calibration now has a reproducible path and a first controlled
+negative result. It does not close approved curriculum, transfer or native gain.
+The next learning work is contract-compliant generation or a stronger measured
+route, without weakening the independent criteria. All broader pending items
+remain open; VPS remains separate and later.

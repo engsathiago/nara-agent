@@ -269,6 +269,11 @@ nenhuma skill foi ativada. Outro ensaio com raciocínio solicitado em `low` atin
 A próxima pendência é calibrar qualidade e latência das rotas de currículo com fontes congeladas,
 seguida de currículo aprovado e prova real de transferência e ganho. Detalhes:
 `research/NARA_CURRICULUM_CORRECTION_2026-11-27.md`.
+A comparação controlada com a mesma fonte agora foi executada: uma geração por rota,
+`qwen3.5:4b` e `llama3.2:3b`, usando os validadores de produção congelados. Ambas passaram na
+estrutura, mas falharam no contrato didático; não houve aprendizado nem ativação de skill.
+Isso calibra o caminho de medição, sem estabelecer superioridade estatística ou encerrar a
+pendência de currículo aprovado. Evidências: `research/NARA_CURRICULUM_MODEL_COMPARISON_2026-11-27.md`.
 
 A publicação de skills avaliadas agora suporta repetição e recuperação após queda do processo.
 A prova continua válida após mudanças de status; arquivos editados não são sobrescritos, e o
