@@ -115,3 +115,20 @@ def test_native_skill_preserves_reference_location(dispatch_profile):
     result = invoke(hook, {'goal': 'spectroscopy wavelength'}, 'skill-call')
     assert result['action'] == 'modify'
     assert text in result['args']['context'] and str(path) in result['args']['context']
+
+
+def test_unrelated_task_does_not_receive_a_prompt_for_one_shared_word(dispatch_profile):
+    _, _, hook = dispatch_profile
+    assert invoke(hook, {'goal': 'Criar backend API Python com banco de dados'}) is None
+
+
+def test_ambiguous_metadata_does_not_pick_a_specialist_by_identifier(dispatch_profile):
+    _, catalog, hook = dispatch_profile
+    agents = json.loads(catalog.agents_path.read_text(encoding='utf-8-sig'))
+    commands = json.loads(catalog.commands_path.read_text(encoding='utf-8-sig'))
+    agents['agents'].append({**agents['agents'][0], 'id': 'other-data-specialist'})
+    commands['commands'].append({**commands['commands'][0], 'name': 'other-data-specialist',
+                                 'instructions': 'OTHER-DATA-INSTRUCTIONS'})
+    catalog.agents_path.write_text(json.dumps(agents), encoding='utf-8')
+    catalog.commands_path.write_text(json.dumps(commands), encoding='utf-8')
+    assert invoke(hook, {'goal': 'analise planilha e dashboard'}) is None

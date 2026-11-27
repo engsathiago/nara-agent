@@ -284,6 +284,15 @@ class AgentFactory:
         )
 
 
+def _select_candidate(candidates, rank_score):
+    """Abstain on weak or near-tied lexical evidence; scores are not probabilities."""
+    if not candidates or candidates[0].score < 0.4:
+        return None
+    if len(candidates) > 1 and rank_score(candidates[0]) - rank_score(candidates[1]) < 0.15:
+        return None
+    return candidates[0]
+
+
 class SpecialistResolver:
     def __init__(
         self,
@@ -336,7 +345,7 @@ class SpecialistResolver:
         model = self.models.select(
             requires_tools=requires_tools, requires_vision=requires_vision, min_context=min_context,
             category=category, benchmark_scope=benchmark_scope)
-        selected = selected_candidates[0] if selected_candidates and selected_candidates[0].score >= 0.2 else None
+        selected = _select_candidate(selected_candidates, _effective)
         decision = "specialist" if selected else "leader"
         receipt = hashlib.sha256(json.dumps({
             "task": task, "category": category, "benchmark_scope": benchmark_scope, "candidates": [item.to_dict() for item in selected_candidates],
@@ -351,8 +360,8 @@ class SpecialistResolver:
             "observed_competence": observed_competence,
             "legiao": self.legiao.stats() if self.legiao else {"available": False},
             "reason": (
-                "best matching specialist exceeded the routing threshold"
-                if selected else "no specialist demonstrated enough relevance; keep the task with the leader"),
+                "specialist exceeded the match threshold and candidate margin"
+                if selected else "specialist evidence is weak or ambiguous; keep the task with the leader"),
         }
 
     def load_selected(self, source: str, specialist_id: str) -> dict[str, Any]:

@@ -21,7 +21,10 @@ Automatic composition defaults to enabled when Mission Control is loaded. Set
 `specialist_delegation: false` to retain ordinary delegation. Legacy
 `plugins.mission_control.legiao_path` remains a fallback; an existing
 `NARA_LEGIAO_HOME` override retains precedence. The catalog needs `data/agents.json`
-and `data/commands.json`. No match leaves that task's context unchanged. Single-goal
+and `data/commands.json`. Weak or ambiguous matches leave that task's context unchanged. The current lexical
+resolver requires a score of at least 0.4 and an effective lead of at least 0.15
+over the next candidate. These are heuristic abstention thresholds, not calibrated
+probabilities or a semantic classifier. Single-goal
 and task-list calls are supported; list/steer/stop controls are passed through.
 Skill contexts also name the originating `SKILL.md` so relative references can be resolved.
 
@@ -56,3 +59,12 @@ the configured delegation backend, including `nara-measured`. This feature does 
 freeze a full Agent Profile, apply new per-worker tool/MCP permissions, allocate new
 budgets or memory scopes, or grant orchestrator authority from catalog metadata.
 Those integrations and the real varied-model acceptance remain open.
+
+
+A check against the actual 91-agent Legião catalog found a weak-word false match
+(backend/API development selected a data analyst). The abstention rule corrected
+that case while retaining the analyst for spreadsheet/dashboard work. A pricing
+query still retrieves the negotiation specialist; semantic suitability for financial
+calculation has not been demonstrated. Broad selection-quality evaluation and an
+intent-aware classifier remain open, separate from the proven dispatch wiring.
+Evidence: `research/NARA_SPECIALIST_DISPATCH_2026-11-27.md`.
