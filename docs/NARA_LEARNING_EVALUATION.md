@@ -718,3 +718,8 @@ briefs keep their old free-form format and protocol behavior. New ZIP exports us
 source references and the existing calibrated question set; their fact, topology,
 transfer and native-admission criteria are unchanged. The frozen model comparator
 supports both formats and bundles the teaching resolver with the other validators.
+
+For ZIP facts, citation rejection identifies the question, the public API term
+and the supplied IDs that failed. It asks the generator to cite a supporting span
+or omit an unsupported question. This feedback contains no exercise inputs or
+reserved answers and does not accept the original unsupported citation.

@@ -121,3 +121,23 @@ def test_owned_gateway_is_reaped_when_case_execution_raises(tmp_path):
             assert child.poll() is None
             raise ValueError('case failed')
     assert child.poll() is not None
+
+
+def test_missing_citation_feedback_identifies_question_without_revealing_cases(tmp_path, capsys):
+    from plugins.mission_control.learning_runner import ProcessEvaluator
+
+    _, prepared = invoke(capsys, 'study-oracle-prepare', 'zip-manifest', str(tmp_path / 'oracle'), '--model', 'fixture')
+    protocol = json.loads(Path(prepared['protocol_file']).read_text(encoding='utf-8-sig'))
+    case = zip_curriculum()
+    question = {'question': 'Which ZipInfo attribute holds uncompressed bytes?', 'answer': 'file_size',
+                'citations': case['source']['spans']}
+    case['curriculum']['teaching_material']['questions'].append(question)
+    evaluator = ProcessEvaluator(protocol['curriculum']['validator'], tmp_path / 'evidence')
+    rejected = evaluator(None, case)
+    assert rejected['score'] == 0
+    assert question['question'] in rejected['feedback']
+    assert 'file_size' in rejected['feedback'] and 's0000' in rejected['feedback']
+    assert 'omit' in rejected['feedback']
+    assert 'root.txt' not in rejected['feedback'] and 'folder/item.txt' not in rejected['feedback']
+    case['curriculum']['teaching_material']['questions'].pop()
+    assert evaluator(None, case)['score'] == 1
