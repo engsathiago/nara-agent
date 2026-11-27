@@ -257,8 +257,13 @@ Os resultados e correções estão em `research/NARA_CALIBRATED_ZIP_STUDY_2026-1
 o protocolo v5 agora limita o contexto por trechos originais, com IDs e posições preservados,
 e mantém o mesmo limite após reinício. Uma nova execução real concluiu a comparação de fontes
 e gerou perguntas, mas os dados dos exercícios vieram em JSON inválido e foram rejeitados
-antes da prática. A próxima pendência é gerar esses dados com estrutura tipada, seguida da
-prova real de aprendizado. Detalhes: `research/NARA_BOUNDED_SOURCE_CONTEXT_2026-11-27.md`.
+antes da prática. Detalhes: `research/NARA_BOUNDED_SOURCE_CONTEXT_2026-11-27.md`.
+O protocolo v6 agora congela um contrato tipado para os dados dos exercícios. Um ensaio real
+produziu três objetos válidos, mas repetiu o mesmo grupo entre prática, transferência e canário;
+o pacote foi rejeitado antes do aprendizado. A próxima pendência é a correção limitada do
+currículo com feedback e retomada auditável, mantendo o verificador independente e a separação
+dos conjuntos. A prova real de ganho continua aberta. Evidências:
+`research/NARA_TYPED_STUDY_PAYLOADS_2026-11-27.md`.
 
 A publicação de skills avaliadas agora suporta repetição e recuperação após queda do processo.
 A prova continua válida após mudanças de status; arquivos editados não são sobrescritos, e o
