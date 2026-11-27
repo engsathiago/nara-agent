@@ -324,3 +324,36 @@ currently expose no priced-usage contract, so research records unknown cost. For
 gap with a monetary limit, it stops after the first unpriced request; this is not a
 prepaid spending cap. Neither web research nor deterministic queue tests establish
 that a real model learns successfully or generalizes to arbitrary domains.
+
+## Recover skill publication and rollback
+
+`learn-promote` and `learn-rollback` serialize changes to a candidate with an
+OS-owned deployment lock. If the owner exits, another process can resume; a
+persisted flag is not considered proof that a worker is alive. The transfer
+request records the candidate's lifecycle status as observed during evaluation.
+Verification reconstructs that exact hash while still checking every procedure
+field, evaluator and evidence artifact. Promotion or rollback alone therefore
+cannot invalidate the proof. Legacy reports recover only their original lifecycle
+status from the recorded hash; altered descriptions, steps, versions and evidence
+remain invalid.
+
+Repeating promotion keeps the exact matching native skill and the memory's
+version. An existing edited skill is reported instead of overwritten. Memory
+promotion precedes atomic skill publication, so an unavailable memory provider
+cannot expose a newly loadable skill. If the process exits after memory promotion
+or publication but before candidate metadata is saved, repeating `learn-promote`
+finishes the same operation.
+
+Rollback moves the exact skill directory out of runtime discovery before rejecting
+its procedural memory. Repeating it reuses the archive and does not increment an
+already-rejected memory. A partially removed skill cannot be republished while
+rollback is incomplete. Existing archives with the older suffix format remain
+recoverable; ambiguous multiple archives or simultaneous active/archived copies
+require reconciliation rather than an arbitrary choice. A rolled-back candidate
+is not automatically reactivated.
+
+Process-kill tests exercise memory promotion, native skill publication and removal
+before memory rejection; concurrent attempts cannot acquire the same lock. These
+prove local recovery, not an unattended canary or automatic skill admission.
+The background study worker still leaves newly evaluated candidates inactive;
+the Evolution Lab admission/activation consumer remains a separate pending step.
