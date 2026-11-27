@@ -235,15 +235,22 @@ Com `study_background` habilitado e um protocolo por categoria, o gateway acorda
 perfil, respeita prioridade e limites e retoma trabalho confirmado sem bloquear a manutenção.
 Os protocolos são congelados antes da pesquisa; lacunas sem protocolo continuam abertas. Testes
 verticais verificam isolamento, recuperação e ausência de chamadas duplicadas. A criação autônoma
-de exercícios e provas independentes, a verificação factual de divergências entre fontes, a ativação automática de
-skills admitidas e o ganho longitudinal com modelos reais continuam pendentes. Detalhes e limites:
+de exercícios e provas independentes, a verificação factual de divergências entre fontes e o ganho
+longitudinal com modelos reais continuam pendentes. Detalhes e limites:
 `docs/NARA_LEARNING_EVALUATION.md` e `research/NARA_AUTOMATIC_SOURCE_STUDY_2026-11-26.md`.
 
 A publicação de skills avaliadas agora suporta repetição e recuperação após queda do processo.
 A prova continua válida após mudanças de status; arquivos editados não são sobrescritos, e o
 rollback retira a skill da descoberta do runtime antes de rejeitar sua memória. Testes com
-processos encerrados verificam três pontos de interrupção. Isso prepara a ativação automática,
-mas o consumidor de admissão/canário da fila de estudo ainda está pendente.
+processos encerrados verificam três pontos de interrupção. A fila de estudo agora possui consumidor
+opcional de admissão automática: o protocolo `skill_admission` congela de um a cinco casos novos,
+separados da prática e da prova de transferência, antes da pesquisa. O worker compara baseline e
+skill nativa em perfis temporários, exige ganho positivo e acerto mínimo, publica exatamente os
+bytes aprovados e confirma memória e variante ativa. `study-rollback` retira a skill e restaura a
+variante anterior. Interrupções com execução desconhecida exigem reconciliação; resultados
+confirmados são reutilizados. Os testes verticais cobrem o gateway em segundo plano e três quedas
+reais de processo. São provas de integração com avaliadores preparados, não de ganho geral com LLM
+real. Sem `skill_admission`, o estudo continua produzindo candidatas inativas.
 
 O primeiro incremento da Fase 4 está `verified`. O Evolution Lab congela desenvolvimento, holdout,
 limite de regressão, ganho mínimo e custo antes da avaliação; armazena cada variante por SHA-256;

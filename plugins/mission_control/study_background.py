@@ -70,6 +70,9 @@ def register_job_cli(actions):
     command.add_argument("gap_id")
     command.add_argument("--protocol-file", type=Path, required=True)
     actions.add_parser("study-work", help="Run or resume one pending study job")
+    rollback = actions.add_parser("study-rollback", help="Disable a study's admitted skill and restore its evolution baseline")
+    rollback.add_argument("job_id")
+    rollback.add_argument("--reason", required=True)
     actions.add_parser("study-jobs", help="Inspect durable study jobs and their progress")
 
 
@@ -79,5 +82,7 @@ def job_command(store, args, dispatch, llm):
         return jobs.enqueue(args.gap_id, json.loads(args.protocol_file.read_text(encoding="utf-8-sig")))
     if args.mission_action == "study-work":
         return jobs.run_once()
+    if args.mission_action == "study-rollback":
+        return jobs.rollback(args.job_id, args.reason)
     return [{"job_id": job.mission_id, "status": job.status, "gap_id": job.constraints["gap_id"],
              "progress": job.diagnostics.get("study_state")} for job in jobs.jobs()]

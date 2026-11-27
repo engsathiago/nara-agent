@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import sqlite3
 import uuid
 from pathlib import Path
@@ -24,6 +25,9 @@ def default_evolution_root() -> Path:
 
 
 def _initialize(conn: sqlite3.Connection) -> None:
+    version = int(conn.execute("PRAGMA user_version").fetchone()[0])
+    if version not in {0, 1, 2}:
+        raise RuntimeError(f"unsupported Evolution Lab schema {version}")
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS experiments (
             experiment_id TEXT PRIMARY KEY, name TEXT NOT NULL, kind TEXT NOT NULL,
@@ -54,7 +58,12 @@ def _initialize(conn: sqlite3.Connection) -> None:
             pinned_at TEXT NOT NULL, PRIMARY KEY (session_id, experiment_id)
         );
     """)
-    conn.execute("PRAGMA user_version=1")
+    conn.execute("BEGIN IMMEDIATE")
+    if "cost_known" not in {row[1] for row in conn.execute("PRAGMA table_info(evolution_evaluations)")}:
+        conn.execute("ALTER TABLE evolution_evaluations ADD COLUMN cost_known INTEGER NOT NULL DEFAULT 1")
+    if "min_candidate_score" not in {row[1] for row in conn.execute("PRAGMA table_info(experiments)")}:
+        conn.execute("ALTER TABLE experiments ADD COLUMN min_candidate_score REAL NOT NULL DEFAULT 0")
+    conn.execute("PRAGMA user_version=2")
     conn.commit()
 
 
@@ -88,8 +97,10 @@ class EvolutionLab:
         self, name: str, kind: str, *, development_case_ids: list[str],
         holdout_case_ids: list[str], min_mean_delta: float = 0.01,
         max_regressions: int = 0, max_cost_usd: float | None = None,
-        experiment_id: str | None = None,
+        experiment_id: str | None = None, min_candidate_score: float = 0.0,
     ) -> dict[str, Any]:
+        if isinstance(min_candidate_score, bool) or not isinstance(min_candidate_score, (int, float)) or not 0 <= min_candidate_score <= 1:
+            raise ValueError("evolution minimum score must be from 0 to 1")
         if kind not in VARIANT_KINDS:
             raise ValueError(f"unsupported evolution kind: {kind}")
         if not development_case_ids or not holdout_case_ids:
@@ -99,9 +110,9 @@ class EvolutionLab:
         identity = experiment_id or uuid.uuid4().hex
         with transaction(self._connect(), immediate=True) as conn:
             conn.execute(
-                "INSERT INTO experiments VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, 'open', ?)",
+                "INSERT INTO experiments VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, 'open', ?, ?)",
                 (identity, name, kind, json.dumps(development_case_ids), json.dumps(holdout_case_ids),
-                 float(min_mean_delta), int(max_regressions), max_cost_usd, utc_now()))
+                 float(min_mean_delta), int(max_regressions), max_cost_usd, utc_now(), float(min_candidate_score)))
         return self.experiment(identity)
 
     def experiment(self, experiment_id: str) -> dict[str, Any]:
@@ -116,16 +127,23 @@ class EvolutionLab:
 
     def register_variant(
         self, experiment_id: str, content: bytes | str, *, metadata: dict[str, Any] | None = None,
-        baseline: bool = False,
+        baseline: bool = False, variant_id: str | None = None,
     ) -> dict[str, Any]:
-        self.experiment(experiment_id)
+        experiment = self.experiment(experiment_id)
         raw = content.encode() if isinstance(content, str) else content
         digest, path = self._write_blob(raw)
         with transaction(self._connect(), immediate=True) as conn:
+            existing = conn.execute("SELECT * FROM variants WHERE variant_id = ?", (variant_id,)).fetchone() if variant_id else None
+            if existing is not None:
+                if (existing["experiment_id"] != experiment_id or existing["content_hash"] != digest
+                        or json.loads(existing["metadata_json"]) != (metadata or {})
+                        or baseline != (experiment["baseline_variant_id"] == variant_id)):
+                    raise ValueError("variant identity was already registered with different content or role")
+                return {**dict(existing), "metadata": json.loads(existing["metadata_json"])}
             version = int(conn.execute(
                 "SELECT COALESCE(MAX(version), 0) + 1 FROM variants WHERE experiment_id = ?",
                 (experiment_id,)).fetchone()[0])
-            identity = f"{experiment_id}:v{version}:{digest[:12]}"
+            identity = variant_id or f"{experiment_id}:v{version}:{digest[:12]}"
             status = "baseline" if baseline else "candidate"
             conn.execute(
                 "INSERT INTO variants VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -157,8 +175,11 @@ class EvolutionLab:
 
     def evaluate(
         self, experiment_id: str, variant_id: str, *, baseline_scores: dict[str, float],
-        candidate_scores: dict[str, float], evidence_artifact_ids: list[str], cost_usd: float = 0.0,
+        candidate_scores: dict[str, float], evidence_artifact_ids: list[str], cost_usd: float | None = 0.0,
     ) -> dict[str, Any]:
+        if cost_usd is not None and (isinstance(cost_usd, bool) or not isinstance(cost_usd, (int, float))
+                                     or not math.isfinite(cost_usd) or cost_usd < 0):
+            raise ValueError("evolution cost must be finite and nonnegative, or unknown")
         experiment = self.experiment(experiment_id)
         variant = self.variant(variant_id)
         if variant["experiment_id"] != experiment_id:
@@ -172,29 +193,30 @@ class EvolutionLab:
         deltas = [candidate_scores[key] - baseline_scores[key] for key in experiment["holdout_case_ids"]]
         mean_delta = sum(deltas) / len(deltas)
         regressions = sum(delta < 0 for delta in deltas)
-        within_cost = experiment["max_cost_usd"] is None or cost_usd <= experiment["max_cost_usd"]
+        within_cost = experiment["max_cost_usd"] is None or (cost_usd is not None and cost_usd <= experiment["max_cost_usd"])
         passed = (
             evaluated_hash == variant["content_hash"]
             and mean_delta >= experiment["min_mean_delta"]
             and regressions <= experiment["max_regressions"]
             and within_cost
+            and all(score >= experiment["min_candidate_score"] for score in candidate_scores.values())
         )
         identity = hashlib.sha256(json.dumps(
-            [experiment_id, variant_id, baseline_scores, candidate_scores, evidence_artifact_ids],
+            [experiment_id, variant_id, evaluated_hash, baseline_scores, candidate_scores, evidence_artifact_ids, cost_usd],
             sort_keys=True).encode()).hexdigest()[:24]
         with transaction(self._connect(), immediate=True) as conn:
             conn.execute(
-                "INSERT OR REPLACE INTO evolution_evaluations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT OR REPLACE INTO evolution_evaluations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (identity, experiment_id, variant_id, evaluated_hash,
                  json.dumps(baseline_scores, sort_keys=True), json.dumps(candidate_scores, sort_keys=True),
-                 mean_delta, regressions, float(cost_usd), json.dumps(evidence_artifact_ids),
-                 int(passed), utc_now()))
+                 mean_delta, regressions, float(cost_usd or 0), json.dumps(evidence_artifact_ids),
+                 int(passed), utc_now(), int(cost_usd is not None)))
             conn.execute(
                 "UPDATE variants SET status = ? WHERE variant_id = ?",
                 ("evaluated_pass" if passed else "evaluated_fail", variant_id))
         if self.ledger:
             self.ledger.record(
-                kind="evolution.evaluated", status="passed" if passed else "failed",
+                event_id="evolution.evaluated:" + identity, kind="evolution.evaluated", status="passed" if passed else "failed",
                 cost_usd=cost_usd, payload={
                     "experiment_id": experiment_id, "variant_id": variant_id,
                     "mean_delta": mean_delta, "regressions": regressions,
@@ -220,13 +242,22 @@ class EvolutionLab:
                    ORDER BY created_at DESC LIMIT 1""", (experiment_id,)).fetchone()
         return str(row["variant_id"]) if row else None
 
-    def promote_canary(self, experiment_id: str, variant_id: str) -> dict[str, Any]:
+    def promote_canary(self, experiment_id: str, variant_id: str, *, deployment_id: str | None = None) -> dict[str, Any]:
+        if self.variant(variant_id)["experiment_id"] != experiment_id:
+            raise ValueError("variant belongs to another experiment")
+        if deployment_id is not None:
+            with transaction(self._connect()) as conn:
+                existing = conn.execute("SELECT * FROM deployments WHERE deployment_id = ?", (deployment_id,)).fetchone()
+            if existing is not None:
+                if existing["experiment_id"] != experiment_id or existing["variant_id"] != variant_id:
+                    raise ValueError("deployment identity belongs to another variant")
+                return dict(existing)
         if not self._latest_passed(variant_id):
             raise ValueError("only an evaluated passing variant can enter canary")
         # Re-read immediately before promotion to prove exported identity.
         self.reload_variant(variant_id)
         previous = self.active_variant(experiment_id)
-        identity = uuid.uuid4().hex
+        identity = deployment_id or uuid.uuid4().hex
         with transaction(self._connect(), immediate=True) as conn:
             conn.execute(
                 "INSERT INTO deployments VALUES (?, ?, ?, 'canary', ?, 'active', NULL, ?)",
@@ -236,6 +267,9 @@ class EvolutionLab:
 
     def activate(self, deployment_id: str) -> dict[str, Any]:
         deployment = self.deployment(deployment_id)
+        if deployment["stage"] == "active" and deployment["status"] == "active":
+            self.reload_variant(deployment["variant_id"])
+            return deployment
         if deployment["stage"] != "canary" or deployment["status"] != "active":
             raise ValueError("deployment is not an active canary")
         self.reload_variant(deployment["variant_id"])
@@ -256,12 +290,18 @@ class EvolutionLab:
 
     def rollback(self, deployment_id: str, reason: str) -> dict[str, Any]:
         deployment = self.deployment(deployment_id)
+        if deployment["status"] == "rolled_back":
+            return {"rolled_back": deployment["variant_id"], "restored": deployment["previous_variant_id"],
+                    "reason": deployment["reason"]}
+        if deployment["status"] != "active":
+            raise ValueError("deployment is no longer active")
+        current = self.active_variant(deployment["experiment_id"])
         with transaction(self._connect(), immediate=True) as conn:
             conn.execute(
                 "UPDATE deployments SET status = 'rolled_back', reason = ? WHERE deployment_id = ?",
                 (reason, deployment_id))
             conn.execute("UPDATE variants SET status = 'rolled_back' WHERE variant_id = ?", (deployment["variant_id"],))
-            if deployment["previous_variant_id"]:
+            if deployment["previous_variant_id"] and current == deployment["variant_id"]:
                 restore_id = uuid.uuid4().hex
                 conn.execute(
                     "INSERT INTO deployments VALUES (?, ?, ?, 'active', ?, 'active', ?, ?)",

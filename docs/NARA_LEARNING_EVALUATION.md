@@ -258,7 +258,8 @@ sources, compares their usefulness for the objective, creates a reserved plan an
 existing study/practice/transfer cycle. Missing sources, changed protocol bytes,
 unresolved execution and insufficient transfer leave the gap unresolved. Original
 protocol files can disappear after enqueue; their frozen copies remain the inputs.
-A completed study does not activate a skill automatically. Discovery is ranked by
+Without the optional `skill_admission` protocol described below, a completed study
+leaves its candidate inactive. Discovery is ranked by
 the configured search provider; the acquired set is then assessed by the host's
 `nara_source_selection` auxiliary model task. Each source needs a bounded reason,
 limitations and 1-3 exact source-span citations; the selected source must be one
@@ -274,7 +275,8 @@ recorded as `single_source_not_compared` and incurs no comparison model call.
 Pages with identical archived bytes share one evidence source; acquired URL aliases
 are retained rather than counted as independent corroboration.
 Existing protocol-v1 jobs retain their original first-source choice; new jobs
-freeze protocol v2. This avoids changing an already-declared experiment on replay.
+freeze protocol v2, or v3 when native-skill admission is configured. This avoids
+changing an already-declared experiment on replay.
 
 The model's assessment is a relevance judgment, not independent verification of
 source truth, authority or citation entailment. Contradictions and version limits
@@ -354,6 +356,80 @@ is not automatically reactivated.
 
 Process-kill tests exercise memory promotion, native skill publication and removal
 before memory rejection; concurrent attempts cannot acquire the same lock. These
-prove local recovery, not an unattended canary or automatic skill admission.
-The background study worker still leaves newly evaluated candidates inactive;
-the Evolution Lab admission/activation consumer remains a separate pending step.
+prove local publication recovery. The optional queue consumer below also exercises
+isolated native-skill canaries and automatic admission.
+
+
+## Automatically admit a native skill after study
+
+Add this optional block to the study protocol (including a category protocol in
+`study_background.protocols`) to freeze protocol v3 before research begins:
+
+```json
+"skill_admission": {
+  "cases_file": "/absolute/path/native-canary-cases.json",
+  "evaluator": "/absolute/path/native-canary.py",
+  "minimum_score": 1.0,
+  "minimum_gain": 0.01
+}
+```
+
+The canary file uses the same case format as transfer evaluation. It must contain
+1–5 unique case IDs, disjoint from both development and reserved transfer cases.
+The author must also keep the tasks genuinely separate: distinct IDs alone do not
+prove semantic independence. The positive correctness and improvement floors,
+case bytes and evaluator bytes are frozen at enqueue. No canary case or solution
+is sent to source selection or candidate generation. The original job deadline
+also covers the canaries; restarting does not grant more time.
+
+After reserved transfer succeeds, the worker renders a native `SKILL.md`, registers
+its exact hash in Evolution Lab and runs two subprocesses per canary case. Each
+has a disposable `NARA_HOME`: the baseline has no proposed skill, and the candidate
+has precisely those native skill bytes. Both receive `candidate: null`; the
+procedure is available only through native skill discovery. The request adds:
+
+```json
+"canary": {"skill_name": "nara-learned-example-12345678", "variant": "candidate"}
+```
+
+The trusted evaluator must exercise the task using that profile, return the normal
+score/artifact contract and report `observed_skill_sha256` (the discovered skill's
+SHA-256, or `null` for baseline). The host checks the staged file, returned hash,
+evaluator hash and archived evidence independently. This validates file identity
+and a declared evaluator contract; it cannot make a dishonest or weak grader
+reliable. A temporary profile is not an operating-system filesystem sandbox.
+
+Every candidate score must meet `minimum_score`; mean gain must meet
+`minimum_gain`, with zero regressions. Unknown reported cost stays unknown in the
+ledger, rather than becoming zero; an Evolution experiment with a monetary cap
+cannot pass on unknown cost. Background web research already stops a budgeted gap
+after an unpriced provider call, as explained above. This is not a prepaid cap.
+
+On success the queue publishes the identical bytes, promotes procedural memory,
+activates the Evolution variant and records a separate native-skill verification
+before completing the job. Existing sessions keep their current prompt; new
+runtime discovery can load the skill. Publication failure leaves
+`publication_pending`, visible through `study-jobs`, for an idempotent retry.
+Confirmed canaries are reused. An intent left without a confirmed result becomes
+`reconciliation_required` and is never silently executed again. Changed evidence
+after partial publication triggers withdrawal; failed withdrawal is exposed for
+reconciliation instead of reported as a completed cleanup.
+
+```sh
+nara mission study-jobs
+nara mission study-work
+nara mission study-rollback JOB_ID --reason "Withdraw this learned procedure"
+```
+
+Rollback removes the native skill, rejects its procedural memory and restores the
+previous Evolution variant. Repeating it reuses the same result; cancelling a
+publication that never created a skill does not invent an archive. Withdrawal
+remains available even if the original evaluation files have become unavailable.
+
+Vertical tests exercise real native discovery, the registered CLI, gateway
+housekeeping and process termination at three admission boundaries. Their grader
+is deterministic and checks a prepared procedure; these results establish the
+consumer and recovery behavior, not real-model task improvement. Automatic
+curriculum generation, independent evaluator validation and broad longitudinal
+transfer remain separate gates. Protocols without this option retain their
+existing inactive-candidate behavior.

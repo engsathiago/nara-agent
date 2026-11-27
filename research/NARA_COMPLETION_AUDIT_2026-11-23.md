@@ -357,3 +357,31 @@ compatibility case; final targeted validation is recorded in the PR.
 This corrects deployment recovery and is needed by automatic admission. It does
 not close the remaining automatic Evolution Lab canary/activation consumer,
 independent curriculum/evaluator generation or real-model learning transfer.
+
+
+## Native-skill admission consumer — 2026-11-27
+
+The optional protocol-v3 `skill_admission` consumer now joins the background study
+queue to native-skill evaluation, Evolution activation and recoverable withdrawal.
+It freezes 1–5 additional canary cases before research, separate from development
+and transfer IDs. Baseline and candidate subprocesses use disposable profiles;
+the candidate receives the exact rendered native skill, not procedure JSON.
+Evidence binds the case, evaluator, native file hash, observed score and artifacts.
+Correctness and gain floors plus zero regressions precede publication. Unknown
+cost remains unknown; schema-v1 Evolution data migrates without discarding costs.
+
+The first three admission regressions failed before implementation. A broader
+seven-file run passed 58 tests before the final recovery/migration additions.
+The final admission/evolution run passed 24 tests: 16 admission, five Evolution
+replay/migration and three existing Evolution tests. These include a live gateway
+maintenance thread and three owned child-process kills (unconfirmed intent,
+confirmed observation and activation before its final checkpoint). Restart does
+not repeat confirmed canaries or the earlier web/model calls. A changed receipt
+after partial publication withdraws the skill; explicit rollback also cancels a
+publication that never created a file. The tests use real discovery and durable
+stores, but prepared deterministic graders and fake research/model responses.
+
+This closes the configured automatic-admission consumer previously listed above.
+It does not prove real-model learning gain, independently validated automatic
+curricula/evaluators, factual conflict resolution or longitudinal improvement.
+Those remain open. VPS installation is a later, separate phase.
