@@ -6,7 +6,7 @@ from dataclasses import asdict
 import json
 
 from plugins.mission_control.learning_github_source import _check_cited_source
-from plugins.mission_control.learning_study_sources import source_spans
+from plugins.mission_control.study_source_context import CONTEXT_INSTRUCTION, project_source
 
 
 INSTRUCTIONS = (
@@ -21,7 +21,7 @@ INSTRUCTIONS = (
 )
 
 
-def source_inputs(fabric, sources):
+def source_inputs(fabric, sources, *, objective="", source_context=None):
     if not 1 <= len(sources) <= 5:
         raise ValueError("source comparison requires 1-5 acquired sources")
     inputs, by_id = [], {}
@@ -39,8 +39,11 @@ def source_inputs(fabric, sources):
             if item["url"] not in aliases:
                 aliases.append(item["url"])
             continue
+        spans, view = project_source(text, objective, source_context)
         entry = {"source_id": source["source_id"], "source_hash": source["source_hash"],
-                 "url": item["url"], "spans": source_spans(text)}
+                 "url": item["url"], "spans": spans}
+        if view is not None:
+            entry["source_context"] = view
         inputs.append(entry)
         by_id[source["source_id"]] = entry
     return inputs
@@ -105,8 +108,9 @@ def resolve_comparison(parsed, inputs):
 
 
 class SourceSelection:
-    def __init__(self, artifacts, fabric, llm, mission_id):
+    def __init__(self, artifacts, fabric, llm, mission_id, *, source_context=None):
         self.artifacts, self.fabric, self.llm, self.mission_id = artifacts, fabric, llm, mission_id
+        self.source_context = source_context
 
     def _archive(self, payload):
         return self.artifacts.put_bytes(
@@ -114,11 +118,13 @@ class SourceSelection:
             producer_id="source-selection", media_type="application/json").artifact_id
 
     def run(self, sources, objective, timeout, on_start):
-        inputs = source_inputs(self.fabric, sources)
+        inputs = source_inputs(self.fabric, sources, objective=objective, source_context=self.source_context)
         request = {"kind": "source_selection_request", "schema_version": 1,
                    "instructions": INSTRUCTIONS, "input": {"objective": objective, "sources": inputs},
                    "schema": comparison_schema(inputs), "timeout": timeout,
                    "task": "nara_source_selection", "temperature": 0.0, "max_tokens": 4096}
+        if self.source_context is not None:
+            request["instructions"] += CONTEXT_INSTRUCTION
         request_id = self._archive(request)
         receipt = {"kind": "source_selection_result", "schema_version": 1,
                    "request_artifact_id": request_id, "claims_status": "unverified"}
@@ -133,7 +139,7 @@ class SourceSelection:
         stage = "generation"
         try:
             response = self.llm.complete_structured(
-                instructions=INSTRUCTIONS,
+                instructions=request["instructions"],
                 input=[{"type": "text", "text": json.dumps(request["input"], ensure_ascii=False)}],
                 json_schema=request["schema"], schema_name="source_selection",
                 purpose="mission-control.source-selection", task=request["task"],
@@ -155,7 +161,7 @@ class SourceSelection:
     def restore(self, artifact_id, sources, objective):
         receipt = json.loads(self.artifacts.read_bytes(self.mission_id, artifact_id))
         request = json.loads(self.artifacts.read_bytes(self.mission_id, receipt["request_artifact_id"]))
-        inputs = source_inputs(self.fabric, sources)
+        inputs = source_inputs(self.fabric, sources, objective=objective, source_context=self.source_context)
         if request["input"] != {"objective": objective, "sources": inputs}:
             raise ValueError("source selection evidence no longer matches the job")
         if receipt["method"] == "single_source_not_compared" and len(inputs) == 1:

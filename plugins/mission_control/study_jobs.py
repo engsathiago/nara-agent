@@ -21,6 +21,7 @@ from plugins.mission_control.study_checkpoint import StudyBusyError, read_checkp
 from plugins.mission_control.study_cycle import run_study_cycle
 from plugins.mission_control.study_research import SourceResearch, research_options
 from plugins.mission_control.study_source_selection import SourceSelection
+from plugins.mission_control.study_source_context import validate_source_context
 from plugins.mission_control.study_admission import StudyAdmission, prepare_experiment
 from plugins.mission_control.study_admission_protocol import freeze_admission
 from plugins.mission_control.study_curriculum import StudyCurriculum
@@ -105,6 +106,9 @@ def freeze_protocol(root, spec):
         payload.update(schema_version=4, curriculum=freeze_curriculum(root, spec["curriculum"], _freeze_inputs))
     else:
         payload = _manual_protocol(root, spec, payload)
+    context = validate_source_context(spec.get("source_context"))
+    if context is not None:
+        payload.update(schema_version=5, source_context=context)
     return _freeze_bytes(root, json.dumps(payload, sort_keys=True).encode(), ".json")
 
 
@@ -256,7 +260,8 @@ class StudyJobs:
         # Protocol v1 jobs keep their original search-rank choice on replay.
         if protocol["schema_version"] == 1:
             return sources[0]
-        selection = SourceSelection(self.artifacts, LearningFabric.open_default(), self.llm, job.mission_id)
+        selection = SourceSelection(self.artifacts, LearningFabric.open_default(), self.llm, job.mission_id,
+                                    source_context=protocol.get("source_context"))
         if "selection_artifact_id" not in state:
             remaining = state["deadline_at"] - time.time()
             if remaining < 1:
@@ -297,7 +302,8 @@ class StudyJobs:
             mission_action="study-resume" if cycle else "study-run", plan_id=plan.plan_id,
             source_id=source["source_id"], cases_file=files["cases_file"], evaluator=files["evaluator"],
             system_file=files["system_file"], max_attempts=protocol["max_attempts"],
-            max_seconds=remaining, timeout=protocol["timeout"], teaching_material=protocol.get("teaching_material"))
+            max_seconds=remaining, timeout=protocol["timeout"], teaching_material=protocol.get("teaching_material"),
+            source_context=protocol.get("source_context"))
         return run_study_cycle(self.registry, open_learning_lab(self.missions), self.llm, args)
 
     def _settle(self, job, result):

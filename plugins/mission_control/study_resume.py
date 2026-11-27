@@ -10,6 +10,7 @@ import time
 from plugins.mission_control.learning_github_source import _check_cited_source
 from plugins.mission_control.study_checkpoint import initial_result, read_checkpoint, verify_evaluator_result
 from plugins.mission_control.study_cycle import StudyBudgetStop, StudyCycle, StudyEvaluator
+from plugins.mission_control.study_source_context import validate_source_context
 
 
 def _verify_contract(registry, lab, plan_id, request):
@@ -53,6 +54,7 @@ def _restore(registry, lab, llm, row, request):
     cycle.plan = _verify_contract(registry, lab, row["plan_id"], request)
     cycle.source_id, cycle.system = request["source_id"], request["system"]
     cycle.teaching_material = request.get("teaching_material")
+    cycle.source_context = validate_source_context(request.get("source_context"))
     cycle.max_attempts, cycle.budget_usd = request["max_generation_calls"], request["budget_usd"]
     cycle.deadline = time.monotonic() + request["deadline_at"] - time.time()
     cycle.request_path, cycle.request_hash = Path(row["request"]["path"]), row["request"]["sha256"]
