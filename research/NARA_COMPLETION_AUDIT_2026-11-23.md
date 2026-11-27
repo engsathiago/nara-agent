@@ -385,3 +385,22 @@ This closes the configured automatic-admission consumer previously listed above.
 It does not prove real-model learning gain, independently validated automatic
 curricula/evaluators, factual conflict resolution or longitudinal improvement.
 Those remain open. VPS installation is a later, separate phase.
+
+## Generated curricula for configured task families — 2026-11-27
+
+The protocol-v4 queue now generates source-cited questions and new development,
+transfer and native-canary cases after research, validates them through a frozen
+executable domain oracle, and freezes the accepted data before study. The same
+background worker consumes it; the learner does not receive reserved payloads.
+Confirmed generation/validation receipts replay without new model/validator calls.
+Unknown execution stops for reconciliation, and changed proof prevents replay.
+
+Three initial vertical regressions failed before implementation. The first
+three-file run passed 30 tests. Expanded recovery tests exposed a real transient
+WAL-initialization race; Mission Store now uses the existing bounded retry option.
+The implementation and its remaining oracle/real-model limits are described in
+`NARA_GENERATED_CURRICULUM_2026-11-27.md`. This closes case-file authoring for
+configured families, not automatic correctness verification in arbitrary domains.
+
+Final integrated validation passed 76 tests across those seven affected suites;
+all 16 mandatory checks passed. Live-model curriculum quality remains unproved.

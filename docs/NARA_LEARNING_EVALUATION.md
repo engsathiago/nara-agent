@@ -275,7 +275,8 @@ recorded as `single_source_not_compared` and incurs no comparison model call.
 Pages with identical archived bytes share one evidence source; acquired URL aliases
 are retained rather than counted as independent corroboration.
 Existing protocol-v1 jobs retain their original first-source choice; new jobs
-freeze protocol v2, or v3 when native-skill admission is configured. This avoids
+freeze protocol v2, v3 with native-skill admission, or v4 with generated curricula.
+This avoids
 changing an already-declared experiment on replay.
 
 The model's assessment is a relevance judgment, not independent verification of
@@ -314,6 +315,7 @@ LLM loop. Gateway maintenance returns immediately while the worker runs in a cop
 profile context. A second wake cannot duplicate the active worker, and a separate
 process cannot acquire its queue-worker lock. Without a matching protocol a gap
 stays open, visible through `gap-list`; no evaluator or reserved solution is invented.
+The generated-curriculum option below can supply new cases for a configured task family.
 Background work is disabled until configured. The same commands remain available
 for explicit operation and inspection.
 
@@ -430,6 +432,91 @@ Vertical tests exercise real native discovery, the registered CLI, gateway
 housekeeping and process termination at three admission boundaries. Their grader
 is deterministic and checks a prepared procedure; these results establish the
 consumer and recovery behavior, not real-model task improvement. Automatic
-curriculum generation, independent evaluator validation and broad longitudinal
-transfer remain separate gates. Protocols without this option retain their
+curriculum generation for arbitrary domains, independent evaluator validation and
+broad longitudinal transfer remain separate gates. The configured-family generator
+below supplies new exercises without operator-authored case files. Protocols without this option retain their
 existing inactive-candidate behavior.
+
+
+## Generate new exercises from the researched source
+
+A protocol can now declare `curriculum` instead of supplying `cases_file`,
+`development_case_ids` and `skill_admission`. This is protocol v4. The same
+`study-enqueue`, `study-work` and gateway background worker consume it:
+
+```json
+{
+  "objective": "Inspect a pinned repository commit before use",
+  "domains": ["docs.github.com"],
+  "evaluator": "/absolute/path/transfer-evaluator.py",
+  "system_file": "/absolute/path/system.json",
+  "minimum_candidate_score": 1.0,
+  "max_seconds": 600,
+  "timeout": 30,
+  "curriculum": {
+    "brief_file": "/absolute/path/task-family.json",
+    "validator": "/absolute/path/curriculum-validator.py",
+    "canary_evaluator": "/absolute/path/native-canary.py",
+    "minimum_score": 1.0,
+    "minimum_gain": 0.01
+  }
+}
+```
+
+The brief is a nonempty JSON object, limited to 16,000 characters, defining the
+supported task family, case payload contract and required independence between
+problems. The transfer evaluator, native evaluator, brief and domain validator
+are copied and hashed at enqueue, before source research. They remain executable
+operator-configured components; the model produces exercise data, not executable
+evaluator code. Existing protocol-v1/v2/v3 jobs keep their declared behavior.
+
+After research and source selection, the host model task `nara_curriculum` receives
+only the public objective, selected source spans and brief. One bounded call
+(up to 8,192 output tokens and 120 seconds or the remaining deadline) proposes:
+
+- an explanation and 1–5 questions/answers citing supplied source spans;
+- 1–10 development cases, 1–20 reserved transfer cases and 1–5 native canaries;
+- a distinct case ID, split, underlying problem `group_id` and JSON object payload
+  for each exercise; no code or replacement evaluator is accepted.
+
+The host rejects duplicate identities, duplicate JSON payloads and groups shared
+across splits. Group names are normalized for case and surrounding whitespace.
+These checks cannot prove semantic independence when a generator invents different
+group labels. The trusted domain validator must check that property, factual
+answers, question relevance, reserved-answer leakage through teaching text and
+fitness for the declared evaluator. Exact source
+citations prove where text came from, not that a question or answer is correct.
+A validator that accepts everything invalidates the experiment's meaning.
+
+The validator uses the existing subprocess evaluator contract. It receives
+`candidate: null` and a `case` object containing `case_id`, `curriculum`, `objective`,
+`source` and `brief`. `curriculum.teaching_material` contains the explanation and
+questions with resolved citations. Each `curriculum.cases` row contains `case_id`,
+`split`, normalized `group_id` and decoded `payload`. It must return score `1.0`
+with actual validation evidence to admit the package; a lower score stops the job
+before candidate generation. Its input, file hash, result and evidence hashes are
+archived. This is a trusted domain oracle, not another ungrounded model vote.
+
+The admitted cases are then frozen before the learner runs. The existing study
+cycle receives the explanation/questions as `study_material`, with an instruction
+to use the original source for authority. Reserved case payloads and validator
+inputs are not included. Development feedback remains the only task-feedback
+channel into later procedure revisions. Passing transfer still leads to the
+separate native canary and activation described above.
+
+Generation and validation each have a persisted intent and confirmed receipt.
+Restart reopens confirmed receipts and checks source, brief, evaluator, evidence
+and effective protocol bytes without regenerating questions or re-running the
+validator. An intent without a result stops for reconciliation; the original job
+deadline is never renewed. `study-jobs` exposes these phases and artifact IDs in
+`progress`; `mission artifact-show` can inspect their underlying evidence.
+Generation usage and validator cost remain in separate receipts, including unknown
+cost, rather than being reported as free. The web research monetary-limit caveat
+above still applies. Temporary profiles do not create an OS sandbox.
+
+This removes the need to write every new exercise manually for a configured task
+family. It does not supply a universal oracle, automatically trust a new validator,
+prove semantic independence in arbitrary subjects or establish real-model learning
+gain. The deterministic tests use a deliberately narrow repository-inspection
+oracle and verify both acceptance and rejection through the production CLI and
+gateway. Broader domain verifiers and live-model evidence remain required.
