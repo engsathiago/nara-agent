@@ -21,6 +21,7 @@ from plugins.mission_control.contracts import (
 )
 from plugins.mission_control.kanban_bridge import create_mission_task
 from plugins.mission_control.ledger import ExperienceLedger
+from plugins.mission_control.model_benchmark_cli import register_model_cli
 from plugins.mission_control.learning_cli import dispatch_learning, register_learning_cli
 from plugins.mission_control.learning_fabric_cli import register_media_cli
 from plugins.mission_control.goal_bridge import bind_mission_goal
@@ -175,6 +176,7 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     study_plan.add_argument("--holdout-case", action="append", required=True)
     study_plan.add_argument("--minimum-candidate-score", type=float, default=0.8)
 
+    register_model_cli(actions)
     register_study_cli(actions)
     register_learning_cli(actions)
     register_media_cli(actions)

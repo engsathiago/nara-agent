@@ -121,6 +121,10 @@ def register(ctx) -> None:
         return {"consolidation": consolidation, "study": background_study.wake()}
 
     def handle_cli(args):
+        if args.mission_action and args.mission_action.startswith("model-"):
+            from plugins.mission_control.model_benchmark_cli import model_command
+
+            return model_command(args, ctx.llm if args.mission_action == "model-benchmark-run" else None)
         llm = ctx.llm if args.mission_action in {"learn-media-study", "study-run", "study-resume", "study-work"} else None
         return mission_command(args, dispatch_tool=ctx.dispatch_tool, llm=llm)
 
@@ -130,6 +134,11 @@ def register(ctx) -> None:
     def on_blocked(*, task_id, run_id=None, **kwargs):
         sync_task_status(task_id=task_id, status="blocked", run_id=run_id)
 
+    ctx.register_auxiliary_task(
+        "nara_model_benchmark", display_name="Nara model comparison",
+        description="Measure configured model routes on frozen inputs with an independent grader.",
+        defaults={"timeout": 120},
+    )
     ctx.register_auxiliary_task(
         "nara_curriculum", display_name="Nara exercise design",
         description="Generate source-grounded exercises for an independently validated study curriculum",
