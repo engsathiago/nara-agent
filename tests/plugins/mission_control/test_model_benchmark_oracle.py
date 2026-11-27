@@ -20,3 +20,11 @@ def test_zip_prediction_oracle_checks_utf8_directories_and_exact_totals(tmp_path
         incorrect = evaluator(None, {**case, 'response': {**answer, 'total_bytes': 99}})
         assert correct['score'] == 1 and incorrect['score'] == 0
         assert correct['evidence'] and incorrect['evidence']
+
+
+def test_zip_prediction_oracle_does_not_accept_boolean_byte_counts(tmp_path):
+    spec = protocol(['fixture'])
+    evaluator = ProcessEvaluator(Path(zip_manifest_grader.__file__), tmp_path / 'evidence')
+    answer = {'files': [{'name': 'a.txt', 'bytes': 3}, {'name': 'empty.txt', 'bytes': False}], 'total_bytes': 3}
+    result = evaluator(None, {**spec['cases'][0], 'response': answer})
+    assert result['score'] == 0
