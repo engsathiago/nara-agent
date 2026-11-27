@@ -55,8 +55,7 @@ class ProcessEvaluator:
         with TemporaryDirectory(prefix="nara-transfer-case-") as temp:
             workdir = Path(temp).resolve()
             (workdir / "profile").mkdir()
-            request = {"schema_version": 1, "case": case,
-                       "candidate": candidate.to_dict() if candidate is not None else None}
+            request = self.prepare_request(workdir, candidate, case)
             command = ([sys.executable, str(self.archived_path)] if self.python_script
                        else [str(self.archived_path)])
             allowed = {"PATH", "SYSTEMROOT", "WINDIR", "TZ", "LANG", "PYTHONPATH"}
@@ -115,4 +114,11 @@ class ProcessEvaluator:
                 if not isinstance(feedback, str) or len(feedback) > 4000:
                     raise ValueError("evaluator feedback must be text of at most 4000 characters")
                 response["feedback"] = feedback
-            return response
+            return self.finish_result(response, payload, request, workdir)
+
+    def prepare_request(self, workdir, candidate, case):
+        return {"schema_version": 1, "case": case,
+                "candidate": candidate.to_dict() if candidate is not None else None}
+
+    def finish_result(self, response, payload, request, workdir):
+        return response

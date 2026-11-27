@@ -165,7 +165,7 @@ def competence_command(store: MissionStore, args: Any, *, llm: Any = None, dispa
             plan = registry.study_plan(args.plan_id)
             return {"plan": plan.to_dict(), "gap": registry.gap(plan.gap_id),
                     "cycle": registry.study_cycle(plan.plan_id)}
-        if args.mission_action in {"study-enqueue", "study-work", "study-jobs"}:
+        if args.mission_action in {"study-enqueue", "study-work", "study-jobs", "study-rollback"}:
             from plugins.mission_control.study_background import job_command
 
             return job_command(store, args, dispatch_tool, llm)
