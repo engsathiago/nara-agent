@@ -1127,7 +1127,7 @@ def _get_pre_tool_call_directive_details(
     human-approval gate; ``rule_key`` picks the ``[a]lways`` allowlist grain). Precedence is
     ``block`` > ``approve`` > none, not registration order: any plugin's valid veto wins over an
     earlier plugin's request for human confirmation (#87420); among approves the first valid one
-    wins. Irrelevant returns are ignored."""
+    wins. A valid operational error precedes all authorization directives. Irrelevant returns are ignored."""
     allowed = getattr(_thread_tool_whitelist, "allowed", None)
     if allowed is not None and tool_name not in allowed:
         fmt = getattr(_thread_tool_whitelist, "fmt", "Tool '{tool_name}' denied")
@@ -1138,6 +1138,10 @@ def _get_pre_tool_call_directive_details(
         task_id=task_id, session_id=session_id, tool_call_id=tool_call_id, turn_id=turn_id,
         api_request_id=api_request_id, middleware_trace=list(middleware_trace or []), conversation_id=conversation_id,
     )
+    from nara_cli.plugin_preparation_errors import preparation_error
+    error = preparation_error(hook_results)
+    if error:
+        return _PreToolCallDirective(action="error", message=error)
     modified_args: Optional[dict[str, Any]] = None
     first_approve: Optional[tuple[Optional[str], Optional[str]]] = None  # (message, rule_key)
     for result in hook_results:
@@ -1186,7 +1190,7 @@ def get_pre_tool_call_block_message(
 ) -> Optional[str]:
     """Deprecated shim: only the ``block`` message (or ``None``); ``approve`` is invisible here."""
     directive, message = get_pre_tool_call_directive(tool_name, args, **hook_kwargs)
-    return message if directive == "block" else None
+    return message if directive in {"block", "error"} else None
 
 
 def resolve_pre_tool_block(
@@ -1203,6 +1207,8 @@ def _resolve_block_from_details(
 ) -> Optional[str]:
     """The ONE place for the fail-closed approval logic: ``block`` blocks with its message; an
     ``approve`` whose gate errors, denies, or times out is blocked; anything else proceeds."""
+    if details.action == "error":
+        return details.message
     if details.action in {"block", "approve"}:
         from agent.nara_security_bridge import nara_authorization_override
 
