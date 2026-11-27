@@ -42,6 +42,11 @@ def test_measurement_changes_next_real_child_route_and_preserves_schema(benchmar
         runner = ModelBenchmarks.open_default(llm)
         report = runner.run(runner.enqueue(spec)['mission_id'])
         assert report['status'] == 'completed', report
+        from plugins.mission_control.specialists import AgentFactory, SpecialistResolver
+        resolver = SpecialistResolver.open_default()
+        plan = AgentFactory(resolver).plan(mission_id='m', task_id='t', task=task['goal'],
+                                           category=task['task_category'], tools=['terminal'])
+        assert plan.model == 'small-good'
         second = json.loads(delegate_task(tasks=[task], parent_agent=_parent()))
         assert second['results'][0]['status'] == 'completed', second
         assert recorded[1]['model'] == 'small-good' and recorded[0]['model'] == 'large-bad'

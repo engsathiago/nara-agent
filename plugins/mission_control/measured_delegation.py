@@ -42,7 +42,7 @@ def _pool(settings):
             raise DelegationRouteError('nara-measured routes must have distinct provider/model identities')
         indexed[key] = {key: copy.deepcopy(value) for key, value in route.items() if key in ROUTE_KEYS}
         candidates.append(candidate)
-    return ModelCapabilityRegistry(candidates), indexed
+    return candidates, indexed
 
 
 def _requirements(task):
@@ -90,9 +90,9 @@ class MeasuredDelegationProvider(DelegationProvider):
                 'This does not change the model of an already running child.')
 
     def route_task(self, task, config):
-        registry, routes = _pool(self.settings(config))
+        candidates, routes = _pool(self.settings(config))
         requirements = _requirements(task)
-        selected = registry.select(**requirements)
+        selected = ModelCapabilityRegistry(candidates).select(**requirements)
         if selected is None:
             raise DelegationRouteError('No configured nara-measured route satisfies this task; revise requirements or routes')
         route = routes[(selected.provider, selected.model)]
@@ -104,3 +104,9 @@ class MeasuredDelegationProvider(DelegationProvider):
         else:
             route['label'] = f'{selected.model}: configured capabilities; no comparable category measurement'
         return route
+
+
+def measured_candidates(delegation):
+    """Share the backend's validated capability pool with planning and resolver surfaces."""
+    candidates, _ = _pool(MeasuredDelegationProvider().settings(delegation))
+    return candidates

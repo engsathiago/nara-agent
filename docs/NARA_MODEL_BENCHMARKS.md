@@ -103,6 +103,9 @@ skills. Run only models suitable for the available machine.
 
 ## Apply measurements when creating subagents
 
+With `nara-measured` selected, the specialist resolver and Agent Factory read
+the same validated route pool as the executor.
+
 The bundled `delegation/nara-measured` backend implements the host's public
 `DelegationProvider` contract. It returns a model route before the existing core
 creates each child; core still owns execution, prompts, tool restrictions,

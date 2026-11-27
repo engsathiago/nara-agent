@@ -175,6 +175,10 @@ class ModelCapabilityRegistry:
         config = load_config() or {}
         model_cfg = config.get("model") or {}
         delegation = config.get("delegation") or {}
+        if str(delegation.get("backend") or "").strip().casefold() == "nara-measured":
+            from plugins.mission_control.measured_delegation import measured_candidates
+
+            return measured_candidates(delegation)
         routes = {
             (str(model_cfg.get("provider") or ""), str(model_cfg.get("default") or "")),
             (str(delegation.get("provider") or ""), str(delegation.get("model") or "")),

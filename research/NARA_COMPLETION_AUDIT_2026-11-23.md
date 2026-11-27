@@ -534,10 +534,12 @@ session tool schema remains stable as measurement history grows. Incompatible
 requirements or corrupted evidence stop only the affected task. Provider
 credentials stay in host route resolution and are absent from selection labels.
 
-The first integration scenario failed before implementation. Final focused
-validation passed 51 distinct tests in seven suites: measured delegation 4,
+The first integration scenario failed before implementation. A further failing
+check exposed a planner/executor inventory mismatch; both now read the same
+validated route pool when this backend is selected. Final focused
+validation passed 56 distinct tests in eight suites: measured delegation 4,
 existing delegation backends 15, route fields 15, session switching 2, benchmark
-CLI 1, benchmark producer 2 and benchmark recovery 12. The one inherited test
+CLI 1, benchmark producer 2, benchmark recovery 12 and specialist resolver 5. The one inherited test
 that assumed an exact number of installed backends now checks required discovery
 entries without forbidding additional legitimate plugins.
 
