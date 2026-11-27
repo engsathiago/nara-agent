@@ -497,3 +497,27 @@ remain unproved. Identical-source quality/latency calibration across curriculum
 routes is now the next concrete learning-path need. Other outstanding datasheet
 capabilities remain open; this increment does not claim full-project completion.
 VPS remains separate and later.
+
+
+## Verified category model measurements — 2026-11-27
+
+Added a production producer for model-quality observations: frozen bounded
+comparison missions, real host inference, separate-process graders and evidence
+revalidation before subsequent specialist selection. CLI and resolver are wired;
+worker plans freeze their selected route and measurement evidence. Completed
+repetitions and failures are aggregated by exact category/protocol/configuration;
+unknown model-call prices remain unknown. An interrupted call of uncertain outcome
+is not repeated. Commands and limits: `docs/NARA_MODEL_BENCHMARKS.md`.
+
+37 focused tests across seven suites and all 16 checks passed. A real local-model
+trial through the actual CLI completed three calls and independent ZIP grading.
+Two answers passed; an incorrect UTF-8 byte count failed, retaining a measured
+success rate of 2/3. All 19 stored blobs and grader references were rehashed.
+Evidence and hashes: `NARA_MODEL_PERFORMANCE_2026-11-27.md`.
+
+This does not close the complete Agent Factory requirement: the current factory
+plans workers, while a public delegation-provider consumer is still needed to
+apply the measurement-driven choice automatically at actual child creation.
+Broad inventory, category classification, scheduled model exploration, positive
+real learning/transfer/native gain and all other listed gaps remain open. No
+VPS work was attempted or made a prerequisite.
