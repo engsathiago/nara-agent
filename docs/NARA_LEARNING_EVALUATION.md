@@ -525,7 +525,7 @@ gateway. Broader domain verifiers and live-model evidence remain required.
 
 `nara mission study-oracles` lists shipped domain oracles and runs their local
 calibration without calling a model. The first family, `zip-manifest`, exports a
-generated-curriculum package (v5 with bounded source context):
+generated-curriculum package (v6 with bounded source context and typed exercise payloads):
 
 ```bash
 nara mission study-oracle-prepare zip-manifest /absolute/new/zip-study --model qwen3.5:4b
@@ -615,3 +615,34 @@ its generator. The study-cycle request also saves the policy, so a practice
 revision after restart retains its source budget and original deadline. Changes
 to an editable exported protocol do not alter an already queued study. Original
 web receipts and Learning Fabric source bytes remain available for inspection.
+
+
+## Typed exercise payloads (protocol v6)
+
+A curriculum brief may declare `payload_schema`. New ZIP exports use this field
+so each case contains a native JSON object `payload`, rather than a `payload_json`
+string containing a second JSON document. The schema is frozen inside the brief
+before any research and reused when generation receipts are replayed. Generation
+requests carry schema version 2. Briefs without the field retain the old request
+shape and strict `json.loads(payload_json)` behavior; neither malformed strings nor
+Python literals are repaired or accepted silently.
+
+This is an explicit small JSON Schema subset, not arbitrary JSON Schema support:
+
+- Closed `object`: `type`, `properties`, `required`, `additionalProperties: false`;
+  1–32 named properties, every property required, names 1–120 characters.
+- Bounded `array`: `type`, `items`, `minItems`, `maxItems`, integer bounds 0–35.
+- Bounded `string`: `type`, `minLength`, `maxLength`, integer bounds 0–8,000.
+
+The root must be an object and schema nesting cannot exceed six edges. No other
+keywords, types, remote references or implicit optional fields are supported.
+Invalid contracts fail at enqueue before research/model calls. The host checks
+these constraints independently of provider-side JSON Schema support, rejects
+payloads above 8,000 canonical serialized characters and retains existing
+nonempty-object, reserved `case_id`, duplicate and split/group checks.
+
+For ZIP exercises, `members` is an array of at most eight `{name, text}` objects.
+The schema constrains strings, while the independent ZIP oracle continues to
+check UTF-8 byte limits, relative paths, directory semantics, source-backed facts
+and distinct archive topologies. Well-formed JSON is not evidence of correct
+teaching, useful transfer or native skill improvement. Those gates are unchanged.

@@ -109,6 +109,8 @@ def freeze_protocol(root, spec):
     context = validate_source_context(spec.get("source_context"))
     if context is not None:
         payload.update(schema_version=5, source_context=context)
+    if generated and payload["curriculum"].get("payload_format") == "typed-object-v1":
+        payload["schema_version"] = 6
     return _freeze_bytes(root, json.dumps(payload, sort_keys=True).encode(), ".json")
 
 
