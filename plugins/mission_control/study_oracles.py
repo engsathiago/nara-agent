@@ -31,7 +31,12 @@ def _runtime(root):
 
 
 def _brief():
-    return {"task_family": FAMILY, "version": 1,
+    return {"task_family": FAMILY, "version": 2,
+            "payload_schema": {"type": "object", "additionalProperties": False, "required": ["members"],
+                "properties": {"members": {"type": "array", "minItems": 0, "maxItems": 8,
+                    "items": {"type": "object", "additionalProperties": False, "required": ["name", "text"],
+                        "properties": {"name": {"type": "string", "minLength": 1, "maxLength": 160},
+                                       "text": {"type": "string", "minLength": 0, "maxLength": 4096}}}}}},
             "case_contract": {"members": [{"name": "relative ZIP member path, trailing / denotes directory",
                                             "text": "UTF-8 contents; empty for directory entries"}]},
             "bounds": "Exactly one development, one transfer and one canary case. Each has 0-8 unique relative members; "

@@ -4,6 +4,7 @@ import json
 
 from plugins.mission_control.learning_acceptance import validate_minimum_score
 from plugins.mission_control.study_checkpoint import read_checkpoint
+from plugins.mission_control.study_payload_schema import payload_schema, validate_payload
 
 
 SPLITS = {"development": 10, "transfer": 20, "canary": 5}
@@ -20,14 +21,19 @@ def freeze_curriculum(root, spec, freeze_inputs):
     brief = read_checkpoint(references["brief"])
     if not isinstance(brief, dict) or not brief or len(json.dumps(brief)) > 16000:
         raise ValueError("curriculum brief must be a nonempty object of at most 16000 characters")
+    schema = payload_schema(brief)
     score = validate_minimum_score(spec.get("minimum_score", 1.0))
     gain = validate_minimum_score(spec.get("minimum_gain", 0.01))
     if score <= 0 or gain <= 0:
         raise ValueError("curriculum admission floors must be positive")
-    return {"files": references, "minimum_score": score, "minimum_gain": gain}
+    frozen = {"files": references, "minimum_score": score, "minimum_gain": gain}
+    if schema is not None:
+        frozen["payload_format"] = "typed-object-v1"
+    return frozen
 
 
-def curriculum_schema(spans):
+def curriculum_schema(spans, payload_contract=None):
+    field = "payload" if payload_contract is not None else "payload_json"
     text = {"type": "string", "minLength": 1, "maxLength": 2000}
     question = {"type": "object", "additionalProperties": False, "properties": {
         "question": text, "answer": text,
@@ -38,8 +44,8 @@ def curriculum_schema(spans):
         "case_id": {"type": "string", "minLength": 1, "maxLength": 120},
         "split": {"type": "string", "enum": list(SPLITS)},
         "group_id": {"type": "string", "minLength": 1, "maxLength": 120},
-        "payload_json": {"type": "string", "minLength": 2, "maxLength": 8000},
-    }, "required": ["case_id", "split", "group_id", "payload_json"]}
+        field: payload_contract if payload_contract is not None else {"type": "string", "minLength": 2, "maxLength": 8000},
+    }, "required": ["case_id", "split", "group_id", field]}
     return {"type": "object", "additionalProperties": False, "properties": {
         "explanation": {"type": "string", "maxLength": 4000},
         "questions": {"type": "array", "maxItems": 5, "items": question},
@@ -72,20 +78,31 @@ def _questions(items, spans):
     return resolved
 
 
-def _cases(items):
+def _payload(item, contract):
+    if contract is None:
+        return json.loads(_text(item["payload_json"], 8000, "payload_json"))
+    value = item["payload"]
+    validate_payload(value, contract)
+    if len(json.dumps(value, sort_keys=True, allow_nan=False)) > 8000:
+        raise ValueError("curriculum payload exceeds 8000 serialized characters")
+    return value
+
+
+def _cases(items, payload_contract=None):
+    field = "payload" if payload_contract is not None else "payload_json"
     if not isinstance(items, list) or not 3 <= len(items) <= 35:
         raise ValueError("curriculum requires separate development, transfer and canary cases")
     resolved, identities, groups, payloads = [], set(), {}, set()
     counts = dict.fromkeys(SPLITS, 0)
     for item in items:
-        if not isinstance(item, dict) or set(item) != {"case_id", "split", "group_id", "payload_json"}:
+        if not isinstance(item, dict) or set(item) != {"case_id", "split", "group_id", field}:
             raise ValueError("curriculum case requires identity, split, group and JSON payload")
         identity = _text(item["case_id"], 120, "case_id")
         group = _text(item["group_id"], 120, "group_id").strip().casefold()
         split = item["split"]
         if not isinstance(split, str) or split not in SPLITS or identity in identities:
             raise ValueError("curriculum has a duplicate identity or unknown split")
-        payload = json.loads(_text(item["payload_json"], 8000, "payload_json"))
+        payload = _payload(item, payload_contract)
         if not isinstance(payload, dict) or not payload or "case_id" in payload:
             raise ValueError("curriculum payload must be an object without case_id")
         canonical = json.dumps(payload, sort_keys=True, allow_nan=False)
@@ -101,7 +118,7 @@ def _cases(items):
     return resolved
 
 
-def resolve_curriculum(parsed, spans):
+def resolve_curriculum(parsed, spans, payload_contract=None):
     if not isinstance(parsed, dict) or set(parsed) != {"explanation", "questions", "cases", "decline_reason"}:
         raise ValueError("curriculum requires explanation, questions, cases and decline_reason")
     reason = parsed["decline_reason"]
@@ -113,4 +130,4 @@ def resolve_curriculum(parsed, spans):
                 "questions": _questions(parsed["questions"], spans)}
     if len(json.dumps(material, ensure_ascii=False)) > 16000:
         raise ValueError("curriculum teaching material exceeds 16000 characters")
-    return {"teaching_material": material, "cases": _cases(parsed["cases"])}
+    return {"teaching_material": material, "cases": _cases(parsed["cases"], payload_contract)}

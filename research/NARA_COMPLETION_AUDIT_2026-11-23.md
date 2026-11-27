@@ -451,3 +451,24 @@ Final focused integration passed 69 tests in seven suites, including frozen-poli
 replay and a resumed practice revision; all 16 mandatory checks passed before the
 live runs. Full-project completion, factual conflicts, semantic memory, longitudinal
 learning and the separate later VPS stage are not claimed by this increment.
+
+
+## Typed exercise contracts and live group rejection — 2026-11-27
+
+Protocol v6 freezes a typed object payload contract in the task-family brief.
+The host supports a bounded closed-object/array/string subset, rejects unsupported
+contracts before research, and checks payload shape independently of optional
+provider schema validation. Old brief/replay behavior is preserved. ZIP exports
+now consume this path; domain and admission criteria are unchanged.
+
+Two regression scenarios failed on main before implementation. The completed
+change passed 62 distinct tests across six suites and all 16 mandatory checks.
+A fresh real local-model trial acquired three sources, completed source comparison
+and generated three valid typed exercise objects. It then failed group separation:
+all three cases used the same group across the reserved splits. The package was
+rejected before the independent domain validator or learner; no skill was activated.
+
+The next concrete integration need is bounded, durable curriculum correction with
+validator feedback, not relaxed split checks. Positive transfer/native gain and
+broader learning remain open. Full hashes and limits are recorded in
+`NARA_TYPED_STUDY_PAYLOADS_2026-11-27.md`. VPS remains a later separate step.

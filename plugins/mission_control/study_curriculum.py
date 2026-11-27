@@ -10,6 +10,7 @@ from plugins.mission_control.study_checkpoint import read_checkpoint, verify_eva
 from plugins.mission_control.study_curriculum_schema import curriculum_schema, resolve_curriculum
 from plugins.mission_control.study_source_selection import source_inputs
 from plugins.mission_control.study_source_context import CONTEXT_INSTRUCTION
+from plugins.mission_control.study_payload_schema import payload_schema
 
 
 INSTRUCTIONS = (
@@ -53,12 +54,16 @@ class StudyCurriculum:
         inputs = source_inputs(LearningFabric.open_default(), [source], objective=self.protocol["objective"],
                                source_context=self.protocol.get("source_context"))
         brief = read_checkpoint(self.spec["files"]["brief"])
+        contract = payload_schema(brief)
         expected = {"objective": self.protocol["objective"], "source": inputs[0], "brief": brief}
         if "curriculum_generation_artifact_id" not in self.state:
             request = {"kind": "curriculum_request", "schema_version": 1,
                        "input": expected, "instructions": INSTRUCTIONS,
-                       "schema": curriculum_schema(inputs[0]["spans"]), "timeout": self._timeout(),
+                       "schema": curriculum_schema(inputs[0]["spans"], contract), "timeout": self._timeout(),
                        "task": "nara_curriculum", "temperature": 0.0, "max_tokens": 8192}
+            if contract is not None:
+                request["schema_version"] = 2
+                request["instructions"] = INSTRUCTIONS.replace("payload_json", "payload (a JSON object, never an encoded string)")
             if self.protocol.get("source_context") is not None:
                 request["instructions"] += CONTEXT_INSTRUCTION
             request_id = self._archive(request)
@@ -82,7 +87,7 @@ class StudyCurriculum:
         request = self._read(receipt["request_artifact_id"])
         if request["input"] != expected or receipt["status"] != "generated":
             raise ValueError("curriculum generation proof does not match the selected source and brief")
-        return resolve_curriculum(receipt["parsed"], inputs[0]["spans"]), expected
+        return resolve_curriculum(receipt["parsed"], inputs[0]["spans"], contract), expected
 
     def _validate(self, package, expected):
         case = {"case_id": self.job.mission_id + ":curriculum", "curriculum": package, **expected}
