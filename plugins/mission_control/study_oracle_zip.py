@@ -105,7 +105,10 @@ def _validate_teaching(material, source):
         if answer not in accepted:
             raise ValueError("ZIP question answer contradicts the runtime API")
         if not any(term in spans.get(cite["id"], "") for cite in question["citations"]):
-            raise ValueError("ZIP question lacks a relevant source citation")
+            cited = ", ".join(cite["id"] for cite in question["citations"])
+            raise ValueError(f"ZIP question {question['question']!r} lacks a citation containing {term!r}; "
+                             f"cited IDs: {cited}. Cite a supporting supplied span or omit this question "
+                             "if none is supplied.")
 
 
 def validate_curriculum(case):

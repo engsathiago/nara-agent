@@ -5,6 +5,7 @@ import json
 from plugins.mission_control.study_checkpoint import verify_evaluator_result
 from plugins.mission_control.study_curriculum_schema import resolve_curriculum
 from plugins.mission_control.study_payload_schema import payload_schema
+from plugins.mission_control.study_teaching_schema import teaching_schema
 
 
 CORRECTION_INSTRUCTION = (
@@ -30,7 +31,7 @@ def resolve_proposal(parsed, expected):
     contract = payload_schema(expected["brief"])
     reason = parsed.get("decline_reason") if isinstance(parsed, dict) else None
     try:
-        return resolve_curriculum(parsed, expected["source"]["spans"], contract)
+        return resolve_curriculum(parsed, expected["source"]["spans"], contract, teaching_schema(expected["brief"]))
     except ValueError as exc:
         # Abstention is a source suitability decision, not a format error to repair.
         if isinstance(reason, str) and reason.strip():

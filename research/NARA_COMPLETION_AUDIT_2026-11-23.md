@@ -577,3 +577,26 @@ negative result. It does not close approved curriculum, transfer or native gain.
 The next learning work is contract-compliant generation or a stronger measured
 route, without weakening the independent criteria. All broader pending items
 remain open; VPS remains separate and later.
+
+
+## Source-reference teaching and actionable citation feedback — 2026-11-27
+
+Optional frozen source-span teaching replaces generated quotations with exact
+reference resolution and declared question wording. Unknown references, overrides,
+unsupported questions and factual/group failures still block teaching. Old protocols
+remain compatible; new ZIP exports use v8. A separate-process comparator validates
+both formats. ZIP citation feedback now names the offending question and public
+term without exposing reserved exercises.
+
+63 distinct focused tests across seven suites and all 16 checks passed. Two source
+contract regressions and the feedback regression were demonstrated before their
+fixes. A real study reached domain validation with exact extracted quotations but
+failed unsupported citations; a second live study rejected repeated groups before
+domain validation. The source text changed between runs, preventing causal
+comparison. All 27 and 20 stored blobs respectively, plus frozen files and grader
+receipts, were independently checked. Neither trial taught or activated a skill.
+
+The first extraction itself lacked two requested API facts, narrowing the next
+source-quality investigation to acquisition/selection as well as generation.
+Positive real transfer/native gain and the full datasheet remain open. Evidence:
+`NARA_SOURCE_REFERENCE_TEACHING_2026-11-27.md`. VPS remains later and separate.

@@ -5,6 +5,7 @@ import json
 from plugins.mission_control.learning_acceptance import validate_minimum_score
 from plugins.mission_control.study_checkpoint import read_checkpoint
 from plugins.mission_control.study_payload_schema import payload_schema, validate_payload
+from plugins.mission_control.study_teaching_schema import apply_schema, resolve_teaching, teaching_schema
 
 
 SPLITS = {"development": 10, "transfer": 20, "canary": 5}
@@ -25,11 +26,14 @@ def freeze_curriculum(root, spec, freeze_inputs):
     if not isinstance(brief, dict) or not brief or len(json.dumps(brief)) > 16000:
         raise ValueError("curriculum brief must be a nonempty object of at most 16000 characters")
     schema = payload_schema(brief)
+    teaching = teaching_schema(brief)
     score = validate_minimum_score(spec.get("minimum_score", 1.0))
     gain = validate_minimum_score(spec.get("minimum_gain", 0.01))
     if score <= 0 or gain <= 0:
         raise ValueError("curriculum admission floors must be positive")
     frozen = {"files": references, "minimum_score": score, "minimum_gain": gain}
+    if teaching is not None:
+        frozen["teaching_format"] = teaching["mode"]
     if schema is not None:
         frozen["payload_format"] = "typed-object-v1"
     if "max_generations" in spec:
@@ -38,6 +42,8 @@ def freeze_curriculum(root, spec, freeze_inputs):
 
 
 def curriculum_version(spec):
+    if spec.get("teaching_format") == "source-span-v1":
+        return 8
     if "max_generations" in spec:
         return 7
     if spec.get("payload_format") == "typed-object-v1":
@@ -45,7 +51,7 @@ def curriculum_version(spec):
     return 4
 
 
-def curriculum_schema(spans, payload_contract=None):
+def curriculum_schema(spans, payload_contract=None, teaching_contract=None):
     field = "payload" if payload_contract is not None else "payload_json"
     text = {"type": "string", "minLength": 1, "maxLength": 2000}
     question = {"type": "object", "additionalProperties": False, "properties": {
@@ -59,12 +65,13 @@ def curriculum_schema(spans, payload_contract=None):
         "group_id": {"type": "string", "minLength": 1, "maxLength": 120},
         field: payload_contract if payload_contract is not None else {"type": "string", "minLength": 2, "maxLength": 8000},
     }, "required": ["case_id", "split", "group_id", field]}
-    return {"type": "object", "additionalProperties": False, "properties": {
+    schema = {"type": "object", "additionalProperties": False, "properties": {
         "explanation": {"type": "string", "maxLength": 4000},
         "questions": {"type": "array", "maxItems": 5, "items": question},
         "cases": {"type": "array", "maxItems": 35, "items": case},
         "decline_reason": {"type": "string", "maxLength": 1000},
     }, "required": ["explanation", "questions", "cases", "decline_reason"]}
+    return apply_schema(schema, spans, teaching_contract)
 
 
 def _text(value, limit, label):
@@ -131,7 +138,8 @@ def _cases(items, payload_contract=None):
     return resolved
 
 
-def resolve_curriculum(parsed, spans, payload_contract=None):
+def resolve_curriculum(parsed, spans, payload_contract=None, teaching_contract=None):
+    parsed = resolve_teaching(parsed, spans, teaching_contract)
     if not isinstance(parsed, dict) or set(parsed) != {"explanation", "questions", "cases", "decline_reason"}:
         raise ValueError("curriculum requires explanation, questions, cases and decline_reason")
     reason = parsed["decline_reason"]
