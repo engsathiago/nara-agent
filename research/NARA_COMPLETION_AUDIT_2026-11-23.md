@@ -521,3 +521,37 @@ apply the measurement-driven choice automatically at actual child creation.
 Broad inventory, category classification, scheduled model exploration, positive
 real learning/transfer/native gain and all other listed gaps remain open. No
 VPS work was attempted or made a prerequisite.
+
+
+## Measured routing reaches core child execution — 2026-11-27
+
+The new bundled `nara-measured` delegation backend consumes verified model
+measurements before the existing core creates a child. It uses the public
+`DelegationProvider` interface and a configured route pool; it adds no agent
+loop or private core crossing. Each new task can supply an exact category and
+vision/context requirements. The core result explains the choice, while the
+session tool schema remains stable as measurement history grows. Incompatible
+requirements or corrupted evidence stop only the affected task. Provider
+credentials stay in host route resolution and are absent from selection labels.
+
+The first integration scenario failed before implementation. Final focused
+validation passed 51 distinct tests in seven suites: measured delegation 4,
+existing delegation backends 15, route fields 15, session switching 2, benchmark
+CLI 1, benchmark producer 2 and benchmark recovery 12. The one inherited test
+that assumed an exact number of installed backends now checks required discovery
+entries without forbidding additional legitimate plugins.
+
+Tests exercise real plugin discovery and core credential/child-construction
+paths. A full AIAgent child run with a recording localhost model server verified
+that the model chosen after measurement reaches the HTTP request and produces
+its result. The server responses and comparison responses in these integration
+tests are fixtures; they do not establish real-model task quality. The separate
+PR71 Ollama trial remains the real benchmark-inference evidence.
+
+This closes the missing consumer at core child creation when the backend and
+pool are configured. It does not close full specialist-profile assembly, task
+classification, broad model discovery, scheduled exploration or the real
+three-model team proof. Auxiliary structured-task scores are routing signals;
+child-prompt/tool competence still needs child-task evaluation. Positive real
+learning/transfer/native gain and other datasheet gaps remain open. Usage and
+limits are in `docs/NARA_MODEL_BENCHMARKS.md`; VPS remains later and separate.

@@ -80,9 +80,9 @@ choice. Call and grading intents are durable: an interrupted execution with no
 confirmed result stops for reconciliation, not automatic retry.
 
 This increment does not classify arbitrary requests into categories, invent an
-independent oracle, schedule model exploration, expand the configured model
-inventory, or automatically dispatch the returned plan to every delegation
-surface. Those consumers remain separate work. A benchmark completion proves
+independent oracle, schedule model exploration, discover every installed/cloud model, or assemble complete specialist profiles.
+The opt-in `nara-measured` backend below applies the verified choice at core
+child creation; other delegation surfaces remain separate work. A benchmark completion proves
 that its measurement matrix was executed and verified, even when every model
 scored zero. Small fixed suites do not establish statistical superiority or
 performance on unseen tasks. Grader cost is separate from reported model-call
@@ -99,3 +99,75 @@ Repeat `--model` to compare compatible installed routes on the same frozen cases
 The harness saves the protocol, model digests, stdout/stderr, final measurement
 summary and report checksum. It neither starts the VPS nor activates learned
 skills. Run only models suitable for the available machine.
+
+
+## Apply measurements when creating subagents
+
+The bundled `delegation/nara-measured` backend implements the host's public
+`DelegationProvider` contract. It returns a model route before the existing core
+creates each child; core still owns execution, prompts, tool restrictions,
+concurrency, session state, cancellation and results. No second agent loop is
+introduced. This backend does not assemble the specialist's full prompt or
+silently substitute a model during an active child run.
+
+Configure an explicit trusted route pool and select this backend for a new
+session. Example (replace model IDs and verify the declared capabilities):
+
+```yaml
+delegation:
+  backend: nara-measured
+  backends:
+    nara-measured:
+      routes:
+        - provider: custom
+          model: YOUR_INSTALLED_MODEL
+          base_url: http://127.0.0.1:11434/v1
+          api_key: local
+          reasoning_effort: none
+          capabilities:
+            supports_tools: true
+            supports_vision: false
+            supports_reasoning: false
+            context_window: 32768
+```
+
+There may be 1–32 routes, each with a distinct provider/model identity. They
+carry ordinary host route fields, including endpoint/credential configuration,
+plus declared capabilities. Unknown tool support is not eligible; vision tasks
+need explicit vision support. Context capacity must meet the task requirement.
+Profile routes are excluded because they would override the measured model
+identity. These declarations describe the operator's configuration, not a live
+capability/availability probe. Credentials remain host-owned and are not copied
+into selection labels or benchmark statistics.
+
+The ordinary `delegate_task` tool gains stable per-task fields:
+
+```json
+{"tasks":[{"goal":"Produce the manifest for these ZIP entries...",
+           "task_category":"archive.zip-manifest.prediction",
+           "requires_vision":false,"min_context":16000}]}
+```
+
+`benchmark_scope` optionally pins a particular comparison cohort. The leader
+must supply a known category; omitting it uses capability fallback. The returned
+child route label explains the basis and, for measured choices, includes success
+rate, sample count and full cohort hash. Changing measurement history does not
+change the tool schema, preserving the session's cached prompt. Changing the
+backend itself follows the host's existing next-session or explicit `--now`
+semantics.
+
+An incompatible task, invalid requirement or damaged measurement prevents that
+child from starting; compatible siblings still execute. The backend uses the
+same current-configuration comparison filter as the resolver. Configure the
+route pool **before** measuring it; changing the configuration requires a new
+cohort. A single provider/model may not represent multiple differently configured
+routes in this pool. Actual quality under the child agent's system prompt and
+toolset still requires child-task evaluation; a structured auxiliary benchmark
+is a routing signal, not proof of tool-using competence.
+
+Behavior tests use real plugin discovery, credential resolution and delegation.
+They verify the model reaches child construction, and a full `AIAgent` child run
+with a recording localhost model server verifies the selected model reaches the
+HTTP request and produces a result. Those server responses are fixtures, not
+real-model quality evidence. The separate Ollama trial above verifies real
+benchmark inference; it does not establish a three-model live team mission.
