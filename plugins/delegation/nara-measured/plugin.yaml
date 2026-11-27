@@ -1,0 +1,5 @@
+name: nara-measured
+version: 1.0.0
+description: "Select each subagent's configured model using verified task-category benchmarks."
+author: Nara
+kind: backend

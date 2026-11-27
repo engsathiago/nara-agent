@@ -642,8 +642,12 @@ recibos verificáveis, custo conhecido/ausente e taxa de sucesso incluindo falha
 O resolver aceita categoria e usa essas evidências na próxima seleção; o plano
 já criado mantém seu modelo. Comandos, formato, critérios e limites estão em
 `docs/NARA_MODEL_BENCHMARKS.md`. Inventário amplo, classificação automática,
-exploração agendada e despacho automático de todos os workers continuam pendentes;
+exploração agendada e integração de todas as superfícies continuam pendentes;
 este incremento não comprova superioridade geral de nenhum modelo.
+O backend `nara-measured` aplica a escolha à criação real de filhos pelo mecanismo
+de delegação existente, quando configurado com rotas e categoria. A montagem
+completa de perfis especialistas e a prova de equipe real com três modelos
+continuam abertas.
 
 ### 7.10 Roteamento em camadas
 
