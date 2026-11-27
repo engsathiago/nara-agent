@@ -133,9 +133,9 @@ exercise rejection, unknown costs, and an owned-process cleanup failure path.
 They do not substitute for successful real-model curriculum, practice, reserved
 transfer or native canary outcomes.
 
-The next implementation need exposed here is bounded relevant source context:
-sending entire acquired excerpts to the small local model is too expensive for
-this comparison deadline. That change must preserve original spans, provenance
+The next improvement to evaluate is bounded relevant source context. The timeout
+does not by itself isolate prefill, generation, transport or model-loading latency.
+A smaller relevant-source view must preserve original spans, provenance
 and replay of existing frozen protocols; increasing a timeout or loosening the
 oracle until a trial passes would not establish improvement. Real generated
 curriculum admission and positive transfer remain open. This increment does not
