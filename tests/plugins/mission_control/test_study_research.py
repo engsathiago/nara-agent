@@ -95,3 +95,27 @@ def test_research_stops_honestly_when_sources_or_priced_usage_are_unavailable(re
     assert len(calls) == (2 if failure == "extract" else 1)
     assert MissionStore.open_default().get(result["mission_id"]).status == "failed"
     assert registry.current() == [] and result["sources"] == []
+
+
+def test_long_extraction_retains_original_receipt_and_bounds_study_text(research_profile, capsys):
+    import hashlib
+
+    parser, _, gap = research_profile
+    url = 'https://docs.python.org/3/library/zipfile.html'
+    original = 'ZipFile.infolist returns member metadata.\n' * 1250 + '\nTool footer with paging instructions.'
+
+    def dispatch(name, args):
+        if name == 'web_search':
+            return json.dumps({'data': {'web': [{'url': url}]}})
+        return json.dumps({'results': [{'url': url, 'content': original}]})
+
+    _, report = _run(parser, gap, dispatch, capsys, '--max-sources', '1')
+    assert report['status'] == 'sources_found', report
+    row = report['sources'][0]
+    source = LearningFabric.open_default().source(row['source_id'])
+    assert source['extracted_text'] == original[:48000]
+    clipping = source['metadata']['text_window']
+    assert clipping == {'start': 0, 'end': 48000, 'received_characters': len(original),
+                        'received_sha256': hashlib.sha256(original.encode()).hexdigest(), 'truncated': True}
+    raw = json.loads(ArtifactStore.open_default().read_bytes(report['mission_id'], row['extraction_artifact_id']))
+    assert raw['result']['results'][0]['content'] == original

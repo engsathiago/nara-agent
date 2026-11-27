@@ -24,6 +24,9 @@ def register_study_cli(actions: Any) -> None:
     from plugins.mission_control.study_background import register_job_cli
 
     register_job_cli(actions)
+    from plugins.mission_control.study_oracles import register_oracle_cli
+
+    register_oracle_cli(actions)
     command = actions.add_parser(
         "study-evaluate", help="Execute a reserved study and record verified competence evidence")
     command.add_argument("plan_id")
@@ -145,6 +148,10 @@ def record_study_proof(registry, lab, plan_id, candidate_id, proof):
 
 
 def competence_command(store: MissionStore, args: Any, *, llm: Any = None, dispatch_tool: Any = None) -> dict[str, Any] | list[dict[str, Any]]:
+    if args.mission_action in {"study-oracles", "study-oracle-prepare"}:
+        from plugins.mission_control.study_oracles import oracle_command
+
+        return oracle_command(args)
     registry = CompetenceRegistry.open_default()
     handlers = {
         "competence": lambda: registry.current(args.category),

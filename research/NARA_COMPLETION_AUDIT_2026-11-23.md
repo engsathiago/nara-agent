@@ -404,3 +404,27 @@ configured families, not automatic correctness verification in arbitrary domains
 
 Final integrated validation passed 76 tests across those seven affected suites;
 all 16 mandatory checks passed. Live-model curriculum quality remains unproved.
+
+## Calibrated domain oracle and real local probes — 2026-11-27
+
+`study-oracles` / `study-oracle-prepare` now export a calibrated `zip-manifest`
+protocol for generated curricula. The domain validator checks selected Python
+API facts and separates archive topologies; the task evaluator launches the real
+Nara CLI/terminal, checks the produced manifest against actual ZIP metadata, and
+owns/cleans up its temporary gateway. Unknown runtime costs remain unknown.
+
+Real acquisition exposed a paging-footer length failure, now reproduced and
+corrected with an explicit study text window and an intact original tool receipt.
+A real curriculum call then declined an unsuitable index. A three-source run
+acquired module documentation but its comparison hit the local-model API timeout.
+Separate terminal smoke executions reached the runtime but exhausted four turns;
+none is evidence of positive learning. No native skill was activated. The owned
+gateway cleanup was observed on this Mac. Full evidence and frozen hashes are in
+`NARA_CALIBRATED_ZIP_STUDY_2026-11-27.md`.
+
+Final integration: 41 tests across five files and all 16 mandatory checks passed.
+The narrow oracle is implemented and calibrated. Real-model generated curriculum
+admission, useful transfer and native canary success remain unproved; relevant
+source-context budgeting is the next concrete integration need. Factual source
+conflicts, semantic memory consolidation and longitudinal improvement remain open.
+VPS installation remains a separate later phase, not a prerequisite for code.
