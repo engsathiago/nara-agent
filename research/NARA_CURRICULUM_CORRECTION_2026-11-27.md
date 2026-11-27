@@ -92,3 +92,46 @@ Mac already showed approximately 5.2 GB of compressed memory and a 5.18 GB resid
 harness now accepts `--curriculum-reasoning low` to test increased reasoning on
 the existing model without changing source-selection settings or personal defaults;
 frozen metadata records each auxiliary task's actual setting.
+
+
+### Second outcome: requested low reasoning, generation timeout
+
+A fresh profile used the same model digest with `nara_curriculum.reasoning_effort`
+set to `low`; selection and procedure-study slots stayed at `none`. This records
+requested configuration, not a provider-side guarantee of internal reasoning.
+Code was clean at `702621cfc65a2f4ed57a1303cade90a9bf2c37c9`.
+
+- Profile: `/private/var/folders/c4/sn_zf7557_1gcpsyy2qtvwzr0000gn/T/nara-live-zip-study-tzarck5w`.
+- Job: `study-job-0ca86ccf0e7f64edaf04e8ba`.
+- Protocol: `84ed4c02ad97b0fedf77a7ad4fcc10e7460b9f3de008f82d69abd16c94c72419`.
+- Config: `4af5d4f347ef9001b6b8f3888f688e017046917b2219c326e8047a8692d87415`.
+- Selection request: `815e4ecfcbd3cae42993696c76bc1f8e055bfc5c3ce7260ba8bdc6d7ec5af3bb`.
+- Selection receipt: `64ef3ef09ccb366c824797ccacbe8ebda480c9f0af89383bf02ef1c5d31f383b`.
+- Curriculum request: `4dc0085a1ad455f982624bb48c142a0cadbe24136e1840187d942d2a557bc23b`.
+- Failure receipt: `adf43979fe23e6b8c66225c5dc7444e69e62d9137ef4f4c420cb71482bcd7cfb`.
+
+The live search returned current, Python 2.7 and Python 3.5 ZIP documentation;
+the current source was selected, with extracted-text hash
+`c9a3c17019643b6ea7ab72e7c100fb2d2a4a1a66e6a8b1c49ab1de499d2d4406`.
+Thus source inputs changed as well as the reasoning setting: this is **not** a
+controlled causal comparison of reasoning modes. Selection completed with 7,705
+input / 700 output / 8,405 total reported tokens, cost unknown. Curriculum
+generation failed with `APITimeoutError` at the unchanged 120-second timeout.
+There was no confirmed proposal to repair, so no correction or learner call ran.
+
+The owned worker exited with a recorded failed study. Offline checks verified all
+ten artifact blobs, protocol, configuration and stdout; zero native skills remain.
+Worker stdout SHA-256:
+`451d1f69e2e16c1f247f56f916409bfe21d470a10a5fc259021ff118c63eaf5b`.
+The profile retains `summary.json` and `verification.json`.
+
+## Remaining evidence gates
+
+The bounded correction consumer is implemented and exercised with real inference.
+A successful real-model repair and valid domain-approved curriculum remain
+unproved, as do useful held-out transfer and native skill gain. The next concrete
+work is curriculum-route quality/latency calibration with identical frozen public
+source inputs, followed by valid independent exercises and real execution. Group
+checks and evaluator thresholds must stay intact. Factual source conflicts,
+semantic memory consolidation, broader domains and longitudinal gains remain
+separate unfinished requirements. VPS remains a later deployment stage.
