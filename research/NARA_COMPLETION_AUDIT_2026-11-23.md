@@ -600,3 +600,18 @@ The first extraction itself lacked two requested API facts, narrowing the next
 source-quality investigation to acquisition/selection as well as generation.
 Positive real transfer/native gain and the full datasheet remain open. Evidence:
 `NARA_SOURCE_REFERENCE_TEACHING_2026-11-27.md`. VPS remains later and separate.
+
+## Automatic specialist instructions at native dispatch — 2026-11-27
+
+The registered pre-tool hook now composes full selected Legião/native-skill instructions
+into each child context, freezes preparation per session/call, and verifies hashes on
+selection and replay. Canonical plugin settings configure the catalog. Native task
+fields, delegation lifecycle and routing remain owned by the existing runtime.
+
+Three initial regression cases failed before implementation. A real-parent/child-HTTP
+fixture proved the composition path; an injected snapshot failure additionally exposed
+that authorization and preparation failure needed separate semantics. PR #75 adds a
+generic operational `error` hook result; the consumer uses it so failed preparation
+cannot silently execute a generic child in unrestricted mode. The six focused integration suites pass all 26 tests; all 16 staged checks pass.
+No model quality or full Agent Profile completion is claimed. Configuration, storage and remaining limits:
+`docs/NARA_SPECIALIST_DISPATCH.md`. VPS remains a later separate step.

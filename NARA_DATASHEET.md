@@ -627,6 +627,15 @@ Cada agente recebe somente:
 Podem existir agentes persistentes com nome e histórico, com papéis de especialidade, e workers efêmeros que
 desaparecem depois da entrega.
 
+**Integração de especialistas no dispatch nativo (27/11/2026):** o hook de delegação
+agora resolve cada tarefa, acrescenta as instruções completas do especialista escolhido
+(Legião ou skill instalada) ao contexto do filho e congela essa preparação por sessão/chamada.
+O teste com agente principal real e servidor HTTP determinístico comprova a chegada das
+instruções ao filho; uma falha técnica na preparação impede o dispatch mesmo com autorização
+irrestrita. Isso ainda não completa os perfis com ferramentas/MCP, memória e orçamento por
+worker nem demonstra qualidade de uma equipe com modelos reais. Detalhes:
+`docs/NARA_SPECIALIST_DISPATCH.md`.
+
 ### 7.9 Model Capability Registry
 
 **Função:** conhecer e medir os modelos disponíveis.

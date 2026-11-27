@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, Iterable
 
-from nara_cli.config import load_config
+from nara_cli.config import load_config, load_config_readonly
 from nara_constants import get_nara_home
 from plugins.mission_control.competence import CompetenceRegistry
 
@@ -27,13 +27,13 @@ def configured_legiao_path() -> Path | None:
     explicit = os.environ.get("NARA_LEGIAO_HOME", "").strip()
     if explicit:
         return Path(explicit).expanduser()
-    try:
-        config = load_config() or {}
-        block = ((config.get("plugins") or {}).get("mission_control") or {})
-        value = str(block.get("legiao_path") or "").strip()
-        return Path(value).expanduser() if value else None
-    except Exception:
-        return None
+    config = load_config_readonly() or {}
+    plugins = config.get("plugins") or {}
+    settings = (((plugins.get("entries") or {}).get("mission_control") or {}).get("settings") or {})
+    legacy = plugins.get("mission_control") or {}
+    value = str(settings.get("legiao_path", legacy.get("legiao_path")) or "").strip()
+    return Path(value).expanduser() if value else None
+
 
 
 @dataclass(frozen=True)
@@ -378,8 +378,9 @@ def pre_llm_specialist_context(user_message: Any = "", **_: Any) -> dict[str, st
         "[Nara Specialist Resolver — metadata only]\n"
         f"decision_id={decision['decision_id']} decision={decision['decision']}\n"
         f"candidates={json.dumps(rows, ensure_ascii=False)}\n"
-        "For a simple task, continue as leader. If specialization improves the mission, call "
-        "nara_specialist_get for exactly one chosen candidate before delegating."
+        "For a simple task, continue as leader. Native delegate_task calls automatically bind "
+        "the best matching specialist instructions when specialist_delegation is enabled. "
+        "Use nara_specialist_get to inspect a candidate when needed."
     )}
 
 

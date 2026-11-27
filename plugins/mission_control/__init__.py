@@ -51,7 +51,8 @@ def register(ctx) -> None:
         learning_status_tool,
         maybe_run_gateway_consolidation,
     )
-    from plugins.mission_control.effect_hooks import post_tool_call, pre_tool_call
+    from plugins.mission_control.effect_hooks import post_tool_call
+    from plugins.mission_control.specialist_dispatch import pre_tool_call
     from plugins.mission_control.evolution import EVOLUTION_STATUS_SCHEMA, evolution_status_tool
     from plugins.mission_control.fleet import FLEET_STATUS_SCHEMA, fleet_status_tool
     from plugins.mission_control.kanban_bridge import sync_task_status
