@@ -113,7 +113,7 @@ def register(ctx) -> None:
     )
 
     def handle_cli(args):
-        llm = ctx.llm if args.mission_action in {"learn-media-study", "study-run"} else None
+        llm = ctx.llm if args.mission_action in {"learn-media-study", "study-run", "study-resume"} else None
         return mission_command(args, dispatch_tool=ctx.dispatch_tool, llm=llm)
 
     def on_completed(*, task_id, run_id=None, **kwargs):

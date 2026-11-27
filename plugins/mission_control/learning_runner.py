@@ -28,13 +28,15 @@ def load_evaluation_cases(path: Path, development_case_ids: set[str]) -> list[di
 
 
 class ProcessEvaluator:
-    def __init__(self, path: Path | str, evidence_root: Path | str, *, timeout: float = 30.0):
+    def __init__(self, path: Path | str, evidence_root: Path | str, *, timeout: float = 30.0,
+                 python_script: bool | None = None):
         self.path = Path(path).resolve()
         if not self.path.is_file():
             raise ValueError(f"evaluator file not found: {self.path}")
         if not 1 <= timeout <= 120:
             raise ValueError("evaluator timeout must be between 1 and 120 seconds")
         self.timeout = timeout
+        self.python_script = self.path.suffix == ".py" if python_script is None else python_script
         self.evidence_root = Path(evidence_root)
         source = self.path.read_bytes()
         self.sha256 = hashlib.sha256(source).hexdigest()
@@ -55,7 +57,7 @@ class ProcessEvaluator:
             (workdir / "profile").mkdir()
             request = {"schema_version": 1, "case": case,
                        "candidate": candidate.to_dict() if candidate is not None else None}
-            command = ([sys.executable, str(self.archived_path)] if self.path.suffix == ".py"
+            command = ([sys.executable, str(self.archived_path)] if self.python_script
                        else [str(self.archived_path)])
             allowed = {"PATH", "SYSTEMROOT", "WINDIR", "TZ", "LANG", "PYTHONPATH"}
             env = {key: value for key, value in os.environ.items() if key in allowed}

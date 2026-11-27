@@ -56,6 +56,14 @@ The multimodal contract still has these concrete implementation gaps:
   activating a skill. Independently replayed receipts confirm the feedback chain
   and scores; see `NARA_BOUNDED_STUDY_CYCLE_2026-11-26.md`. Successful autonomous
   transfer remains unproved.
+- Explicit `study-resume` now restores a current-protocol study after its owner
+  exits. Process-kill tests cover generation, confirmed practice, reserved
+  observations and the competence commit boundary: confirmed evaluations are
+  reused and competence is recorded once. Counters, costs, frozen inputs and
+  the absolute deadline survive restart. An unconfirmed evaluator intent stops
+  for reconciliation rather than repeating possible effects. This closes the
+  explicit local recovery path; it does not establish automatic background
+  dispatch, cross-host recovery or successful real-model learning transfer.
 
 Reingestion also previously accepted an existing archive without checking its
 bytes. The ingestion path now verifies its SHA-256 before reuse and reports
