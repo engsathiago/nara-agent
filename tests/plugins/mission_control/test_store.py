@@ -101,3 +101,22 @@ def test_task_request_is_persisted_before_link_and_reconstructs(tmp_path):
     assert completed.task_states == {"task-123": "done"}
     assert store.reconstruct("mission-1") == completed
 
+
+
+def test_first_open_tolerates_a_transient_wal_activation_lock(tmp_path, monkeypatch):
+    import nara_state_wal
+
+    activate = nara_state_wal.apply_wal_with_fallback
+    attempts = []
+
+    def contested(conn, **kwargs):
+        attempts.append(True)
+        if len(attempts) == 1:
+            raise sqlite3.OperationalError("database is locked")
+        return activate(conn, **kwargs)
+
+    monkeypatch.setattr(nara_state_wal, "apply_wal_with_fallback", contested)
+    store = MissionStore(tmp_path / "first-open.db")
+    store.create(_mission())
+    assert store.get("mission-1").objective == "Create a verified report"
+    assert store.verify_projection("mission-1")

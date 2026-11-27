@@ -80,12 +80,13 @@ class StudyCycle:
     def __init__(self, registry: CompetenceRegistry, lab: LearningLab, llm: Any,
                  plan_id: str, source_id: str, *, cases_file: Path, evaluator_path: Path,
                  system: dict[str, Any], max_attempts: int = 3, max_seconds: float = 600,
-                 timeout: float = 30.0):
+                 timeout: float = 30.0, teaching_material: dict[str, Any] | None = None):
         if llm is None:
             raise ValueError("host model access is unavailable on this surface")
         self.registry, self.lab, self.llm = registry, lab, llm
         self.plan = registry.study_plan(plan_id)
         self.source_id, self.system = source_id, system
+        self.teaching_material = teaching_material
         self.max_attempts = max_attempts
         cases, source, self.budget_usd = _validate_protocol(
             registry, lab, self.plan, source_id, cases_file, system, max_attempts, max_seconds)
@@ -107,6 +108,8 @@ class StudyCycle:
             "max_seconds": max_seconds, "timeout_per_variant_seconds": timeout,
             "max_output_tokens_per_generation": 2048, "budget_usd": self.budget_usd,
         }
+        if teaching_material is not None:
+            request["teaching_material"] = teaching_material
         self.request_path, self.request_hash = _archive(lab, request)
         self.cycle_id = registry.claim_study_cycle(plan_id, {
             "path": str(self.request_path), "sha256": self.request_hash,
@@ -202,7 +205,7 @@ class StudyCycle:
         self._progress("studying")
         generation = study_media(
             self.lab, self.llm, self.source_id, self.plan.objective,
-            development_feedback=feedback, timeout=min(120.0, remaining))
+            development_feedback=feedback, teaching_material=self.teaching_material, timeout=min(120.0, remaining))
         attempt = {"generation_evidence": generation["evidence"],
                    "usage": generation["usage"], "practice": [], "practice_complete": False,
                    "candidate_id": generation.get("candidate", {}).get("candidate_id")}
@@ -265,4 +268,5 @@ def run_study_cycle(registry, lab, llm, args):
             cases_file=args.cases_file, evaluator_path=args.evaluator,
             system=json.loads(args.system_file.read_text(encoding="utf-8-sig")),
             max_attempts=args.max_attempts, max_seconds=args.max_seconds, timeout=args.timeout,
+            teaching_material=getattr(args, "teaching_material", None),
         ).run()

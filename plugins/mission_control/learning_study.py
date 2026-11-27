@@ -29,6 +29,7 @@ STUDY_INSTRUCTIONS = (
 def study_media(lab: Any, llm: Any, source_id: str, objective: str,
                 *, repository_claim_id: str | None = None,
                 development_feedback: dict[str, Any] | None = None,
+                teaching_material: dict[str, Any] | None = None,
                 timeout: float = 120.0) -> dict[str, Any]:
     """One bounded model call; never evaluates, promotes or executes the output."""
     if llm is None:
@@ -42,6 +43,11 @@ def study_media(lab: Any, llm: Any, source_id: str, objective: str,
         or len(json.dumps(development_feedback, ensure_ascii=False)) > 16000
     ):
         raise ValueError("development feedback must be an object of at most 16000 characters")
+    if teaching_material is not None and (
+        not isinstance(teaching_material, dict)
+        or len(json.dumps(teaching_material, ensure_ascii=False)) > 16000
+    ):
+        raise ValueError("study teaching material must be an object of at most 16000 characters")
     fabric = lab.source_fabric
     try:
         source = fabric.source(source_id)
@@ -70,6 +76,10 @@ def study_media(lab: Any, llm: Any, source_id: str, objective: str,
     }
     if development_feedback is not None:
         request["input"]["development_feedback"] = development_feedback
+    if teaching_material is not None:
+        request["input"]["study_material"] = teaching_material
+        request["instructions"] += " Generated study material is guidance, not new source authority; cite the original spans."
+        instructions = request["instructions"]
     request_hash, _ = fabric._store(json.dumps(request, sort_keys=True, ensure_ascii=False).encode())
     receipt: dict[str, Any] = {
         "kind": "media_study_result", "schema_version": 2,

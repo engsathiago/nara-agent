@@ -233,10 +233,16 @@ O ensaio real e os testes estão em `research/NARA_SOURCE_COMPARISON_2026-11-26.
 `study-enqueue`, `study-work` e `study-jobs` conectam pesquisa, prática e prova à fila de missões.
 Com `study_background` habilitado e um protocolo por categoria, o gateway acorda um worker por
 perfil, respeita prioridade e limites e retoma trabalho confirmado sem bloquear a manutenção.
-Os protocolos são congelados antes da pesquisa; lacunas sem protocolo continuam abertas. Testes
-verticais verificam isolamento, recuperação e ausência de chamadas duplicadas. A criação autônoma
-de exercícios e provas independentes, a verificação factual de divergências entre fontes e o ganho
-longitudinal com modelos reais continuam pendentes. Detalhes e limites:
+Os protocolos fornecidos são congelados antes da pesquisa; lacunas sem protocolo continuam abertas.
+O modo opcional `curriculum` também congela o contrato e os verificadores antes da pesquisa, mas
+permite que o modelo gere perguntas, respostas e exercícios depois de ler a fonte escolhida. Um
+validador executável da categoria confere o material antes de congelar os casos de prática,
+transferência e canário. Grupos declarados não atravessam esses conjuntos; somente explicação e
+perguntas entram no contexto de estudo. Testes verticais verificam o gateway, rejeição de gabarito
+incorreto, isolamento e retomada sem chamadas duplicadas. Isso implementa geração de exercícios
+para categorias com verificador configurado; não gera nem valida sozinho verificadores para
+qualquer domínio. A validação semântica geral das provas, a verificação factual de divergências
+entre fontes e o ganho longitudinal com modelos reais continuam pendentes. Detalhes e limites:
 `docs/NARA_LEARNING_EVALUATION.md` e `research/NARA_AUTOMATIC_SOURCE_STUDY_2026-11-26.md`.
 
 A publicação de skills avaliadas agora suporta repetição e recuperação após queda do processo.

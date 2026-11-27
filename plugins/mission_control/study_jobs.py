@@ -23,6 +23,8 @@ from plugins.mission_control.study_research import SourceResearch, research_opti
 from plugins.mission_control.study_source_selection import SourceSelection
 from plugins.mission_control.study_admission import StudyAdmission, prepare_experiment
 from plugins.mission_control.study_admission_protocol import freeze_admission
+from plugins.mission_control.study_curriculum import StudyCurriculum
+from plugins.mission_control.study_curriculum_schema import freeze_curriculum
 from plugins.mission_control.verification import VerificationService
 
 
@@ -60,6 +62,25 @@ def _freeze_inputs(root, spec, names=("cases_file", "system_file", "evaluator"))
     return files
 
 
+def _manual_protocol(root, spec, payload):
+    files = payload["files"]
+    development = list(dict.fromkeys(spec["development_case_ids"]))
+    cases = load_evaluation_cases(Path(files["cases_file"]["path"]), set(development))
+    holdout = [str(case["case_id"]) for case in cases if str(case["case_id"]) not in development]
+    if not development or not holdout or len(development) > 10 or len(holdout) > 20:
+        raise ValueError("study requires 1-10 development and 1-20 reserved cases")
+    payload.update(development_case_ids=development, holdout_case_ids=holdout)
+    admission = freeze_admission(root, spec.get("skill_admission"), development + holdout, _freeze_inputs)
+    if admission is not None:
+        payload.update(schema_version=3, skill_admission=admission)
+    material = spec.get("teaching_material")
+    if material is not None:
+        if not isinstance(material, dict) or len(json.dumps(material, ensure_ascii=False)) > 16000:
+            raise ValueError("study teaching material must be an object of at most 16000 characters")
+        payload["teaching_material"] = material
+    return payload
+
+
 def freeze_protocol(root, spec):
     objective, domains = research_options(spec["objective"], spec.get("domains", []),
                                            spec.get("max_sources", 3), spec.get("research_seconds", 120))
@@ -68,24 +89,22 @@ def freeze_protocol(root, spec):
         raise ValueError("study max-attempts must be from 1 to 5")
     if not 1 <= seconds <= 3600 or not 1 <= timeout <= 120:
         raise ValueError("study deadline or evaluator timeout is outside supported bounds")
-    files = _freeze_inputs(root, spec)
-    development = list(dict.fromkeys(spec["development_case_ids"]))
-    cases = load_evaluation_cases(Path(files["cases_file"]["path"]), set(development))
-    holdout = [str(case["case_id"]) for case in cases if str(case["case_id"]) not in development]
-    if not development or not holdout or len(development) > 10 or len(holdout) > 20:
-        raise ValueError("study requires 1-10 development and 1-20 reserved cases")
+    generated = spec.get("curriculum") is not None
+    if generated and any(key in spec for key in ("cases_file", "development_case_ids", "skill_admission", "teaching_material")):
+        raise ValueError("generated curriculum cannot be mixed with supplied cases or teaching material")
+    files = _freeze_inputs(root, spec, names=("system_file", "evaluator") if generated else ("cases_file", "system_file", "evaluator"))
     system = read_checkpoint(files["system_file"])
     if not isinstance(system, dict) or not system:
         raise ValueError("study system must be a nonempty JSON object")
     payload = {"schema_version": 2, "objective": objective, "domains": domains,
                "max_sources": spec.get("max_sources", 3), "research_seconds": spec.get("research_seconds", 120),
                "max_attempts": attempts, "max_seconds": seconds, "timeout": timeout,
-               "development_case_ids": development, "holdout_case_ids": holdout,
                "minimum_candidate_score": validate_minimum_score(spec.get("minimum_candidate_score", 0.8)),
                "files": files}
-    admission = freeze_admission(root, spec.get("skill_admission"), development + holdout, _freeze_inputs)
-    if admission is not None:
-        payload.update(schema_version=3, skill_admission=admission)
+    if generated:
+        payload.update(schema_version=4, curriculum=freeze_curriculum(root, spec["curriculum"], _freeze_inputs))
+    else:
+        payload = _manual_protocol(root, spec, payload)
     return _freeze_bytes(root, json.dumps(payload, sort_keys=True).encode(), ".json")
 
 
@@ -106,7 +125,7 @@ class StudyJobs:
                     existing = self.missions.transition(identity, "planned", actor_id="study-queue")
                 return existing.to_dict()
             mission = self.missions.create(Mission(
-                mission_id=identity, objective="Study: " + spec["objective"], completion_criteria=[CRITERION, ADMISSION_CRITERION] if spec.get("skill_admission") is not None else [CRITERION],
+                mission_id=identity, objective="Study: " + spec["objective"], completion_criteria=[CRITERION, ADMISSION_CRITERION] if spec.get("skill_admission") is not None or spec.get("curriculum") is not None else [CRITERION],
                 constraints={"study_job": True, "gap_id": gap_id, "protocol": protocol, "impact": gap["impact"]},
                 budget={"max_seconds": spec.get("max_seconds", 600), "budget_usd": gap["budget_usd"]},
             ), actor_id="study-queue")
@@ -121,7 +140,8 @@ class StudyJobs:
 
     def _protocol(self, mission):
         protocol = read_checkpoint(mission.constraints["protocol"])
-        files = [*protocol["files"].values(), *protocol.get("skill_admission", {}).get("files", {}).values()]
+        files = [*protocol["files"].values(), *protocol.get("skill_admission", {}).get("files", {}).values(),
+                 *protocol.get("curriculum", {}).get("files", {}).values()]
         for reference in files:
             if hashlib.sha256(Path(reference["path"]).read_bytes()).hexdigest() != reference["sha256"]:
                 raise ValueError("frozen study input changed")
@@ -143,14 +163,16 @@ class StudyJobs:
             self.missions.transition(job.mission_id, "running", actor_id="study-worker")
         try:
             protocol = self._protocol(job)
-            prepare_experiment(job, protocol)
+            if "curriculum" not in protocol:
+                prepare_experiment(job, protocol)
             if not state:
                 state = {"phase": "ready", "deadline_at": time.time() + protocol["max_seconds"]}
                 self._checkpoint(job.mission_id, state)
-            if state["phase"] in {"research_running", "selection_running"}:
-                raise ValueError("interrupted research or selection has unconfirmed usage; reconcile before retry")
+            if state["phase"] in {"research_running", "selection_running", "curriculum_generating", "curriculum_validating"}:
+                raise ValueError("interrupted research, selection or curriculum has unconfirmed execution; reconcile before retry")
             if state["phase"] == "ready":
                 self._research(job, protocol, state)
+            protocol = self._effective_protocol(job, protocol, state)
             result = self._study(job, protocol, state)
             state.update(phase="finished", result=result)
             self._checkpoint(job.mission_id, state)
@@ -159,6 +181,22 @@ class StudyJobs:
             return {"job_id": job.mission_id, "status": "busy"}
         except (ValueError, OSError, KeyError) as exc:
             return self._failed(job, state, exc)
+
+    def _effective_protocol(self, job, protocol, state):
+        if "curriculum" not in protocol:
+            return protocol
+        source = self._selected_source(job, protocol, state)
+        spec = StudyCurriculum(self, job, protocol, state).materialize(source, _freeze_bytes)
+        reference = freeze_protocol(self.root, spec)
+        if "curriculum_protocol" in state:
+            if reference != state["curriculum_protocol"]:
+                raise ValueError("validated curriculum protocol changed before study")
+        else:
+            state["curriculum_protocol"] = reference
+            self._checkpoint(job.mission_id, state)
+        effective = read_checkpoint(reference)
+        prepare_experiment(job, effective)
+        return effective
 
     def _failed(self, job, state, error):
         admission = self.missions.get(job.mission_id).diagnostics.get("skill_admission") or {}
@@ -259,7 +297,7 @@ class StudyJobs:
             mission_action="study-resume" if cycle else "study-run", plan_id=plan.plan_id,
             source_id=source["source_id"], cases_file=files["cases_file"], evaluator=files["evaluator"],
             system_file=files["system_file"], max_attempts=protocol["max_attempts"],
-            max_seconds=remaining, timeout=protocol["timeout"])
+            max_seconds=remaining, timeout=protocol["timeout"], teaching_material=protocol.get("teaching_material"))
         return run_study_cycle(self.registry, open_learning_lab(self.missions), self.llm, args)
 
     def _settle(self, job, result):

@@ -235,6 +235,8 @@ class MissionStore:
             db_label="plugin-data/mission-control/missions.db",
             foreign_keys=True,
             synchronous_full=True,
+            # Background workers and status readers may open a fresh profile together.
+            wal_lock_retries=5,
             initialize=_initialize,
         )
 

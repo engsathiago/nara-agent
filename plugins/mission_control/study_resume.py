@@ -52,6 +52,7 @@ def _restore(registry, lab, llm, row, request):
     cycle.registry, cycle.lab, cycle.llm = registry, lab, llm
     cycle.plan = _verify_contract(registry, lab, row["plan_id"], request)
     cycle.source_id, cycle.system = request["source_id"], request["system"]
+    cycle.teaching_material = request.get("teaching_material")
     cycle.max_attempts, cycle.budget_usd = request["max_generation_calls"], request["budget_usd"]
     cycle.deadline = time.monotonic() + request["deadline_at"] - time.time()
     cycle.request_path, cycle.request_hash = Path(row["request"]["path"]), row["request"]["sha256"]
