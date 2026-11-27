@@ -91,7 +91,8 @@ def prepare(output, model, base_url):
                 "evaluator": str(output / "transfer.py"), "system_file": str(output / "system.json"),
                 "max_attempts": 2, "max_seconds": 1200, "timeout": 120, "minimum_candidate_score": 1.0,
                 "curriculum": {"brief_file": str(output / "brief.json"), "validator": str(output / "validator.py"),
-                               "canary_evaluator": str(output / "canary.py"), "minimum_score": 1.0, "minimum_gain": 0.01}}
+                               "canary_evaluator": str(output / "canary.py"), "minimum_score": 1.0, "minimum_gain": 0.01,
+                               "max_generations": 3}}
     path = output / "protocol.json"
     path.write_text(json.dumps(protocol, indent=2), encoding="utf-8")
     return {"protocol_file": str(path), "calibration": calibration, "system": system,

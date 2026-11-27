@@ -25,7 +25,7 @@ from plugins.mission_control.study_source_context import validate_source_context
 from plugins.mission_control.study_admission import StudyAdmission, prepare_experiment
 from plugins.mission_control.study_admission_protocol import freeze_admission
 from plugins.mission_control.study_curriculum import StudyCurriculum
-from plugins.mission_control.study_curriculum_schema import freeze_curriculum
+from plugins.mission_control.study_curriculum_schema import freeze_curriculum, curriculum_version
 from plugins.mission_control.verification import VerificationService
 
 
@@ -103,14 +103,13 @@ def freeze_protocol(root, spec):
                "minimum_candidate_score": validate_minimum_score(spec.get("minimum_candidate_score", 0.8)),
                "files": files}
     if generated:
-        payload.update(schema_version=4, curriculum=freeze_curriculum(root, spec["curriculum"], _freeze_inputs))
+        curriculum = freeze_curriculum(root, spec["curriculum"], _freeze_inputs)
+        payload.update(schema_version=curriculum_version(curriculum), curriculum=curriculum)
     else:
         payload = _manual_protocol(root, spec, payload)
     context = validate_source_context(spec.get("source_context"))
     if context is not None:
-        payload.update(schema_version=5, source_context=context)
-    if generated and payload["curriculum"].get("payload_format") == "typed-object-v1":
-        payload["schema_version"] = 6
+        payload.update(schema_version=max(5, payload["schema_version"]), source_context=context)
     return _freeze_bytes(root, json.dumps(payload, sort_keys=True).encode(), ".json")
 
 

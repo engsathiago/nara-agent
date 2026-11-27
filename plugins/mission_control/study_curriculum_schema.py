@@ -13,6 +13,9 @@ SPLITS = {"development": 10, "transfer": 20, "canary": 5}
 def freeze_curriculum(root, spec, freeze_inputs):
     if not isinstance(spec, dict):
         raise ValueError("curriculum must declare a brief, validator and native canary evaluator")
+    limit = spec.get("max_generations", 1)
+    if type(limit) is not int or not 1 <= limit <= 3:
+        raise ValueError("curriculum max_generations must be an integer from 1 to 3")
     references = {}
     for name, source in (("brief", spec["brief_file"]), ("validator", spec["validator"]),
                          ("canary_evaluator", spec["canary_evaluator"])):
@@ -29,7 +32,17 @@ def freeze_curriculum(root, spec, freeze_inputs):
     frozen = {"files": references, "minimum_score": score, "minimum_gain": gain}
     if schema is not None:
         frozen["payload_format"] = "typed-object-v1"
+    if "max_generations" in spec:
+        frozen["max_generations"] = limit
     return frozen
+
+
+def curriculum_version(spec):
+    if "max_generations" in spec:
+        return 7
+    if spec.get("payload_format") == "typed-object-v1":
+        return 6
+    return 4
 
 
 def curriculum_schema(spans, payload_contract=None):

@@ -525,7 +525,7 @@ gateway. Broader domain verifiers and live-model evidence remain required.
 
 `nara mission study-oracles` lists shipped domain oracles and runs their local
 calibration without calling a model. The first family, `zip-manifest`, exports a
-generated-curriculum package (v6 with bounded source context and typed exercise payloads):
+generated-curriculum package (v7 with bounded source context, typed payloads and curriculum correction):
 
 ```bash
 nara mission study-oracle-prepare zip-manifest /absolute/new/zip-study --model qwen3.5:4b
@@ -646,3 +646,41 @@ The schema constrains strings, while the independent ZIP oracle continues to
 check UTF-8 byte limits, relative paths, directory semantics, source-backed facts
 and distinct archive topologies. Well-formed JSON is not evidence of correct
 teaching, useful transfer or native skill improvement. Those gates are unchanged.
+
+
+## Bounded curriculum correction (protocol v7)
+
+Set `curriculum.max_generations` to an integer from 1 to 3 to freeze the total
+number of curriculum proposals permitted before research. ZIP exports use 3.
+This is separate from the study/practice `max_attempts` limit: rejected curricula
+never reach practice. Omission retains legacy single-generation behavior. New
+opt-in requests carry schema version 3; source, brief, evaluator hashes, context
+policy, admission floors and original wall-clock deadline stay frozen.
+
+A confirmed structural rejection or verified domain score below 1.0 can trigger
+another complete proposal. The generator receives the rejection stage, up to
+4,000 characters of feedback, and the preceding proposal only if it fits 16,000
+characters. Larger proposals stay archived and are explicitly omitted from the
+next prompt. Renaming groups is not a substitute for independent task structure.
+Source abstention, transport failure, altered evidence and uncertain execution
+stop the job instead of initiating correction.
+
+Each rejection links the confirmed generation and, when applicable, the domain
+validator receipt. Replaying the history reconstructs prior generation inputs,
+rechecks structural failures and verifies domain request identity, evaluator hash,
+score, feedback and evidence-file hashes. A rejection checkpoint precedes advancing
+the attempt. Confirmed generation/validation results are reused; an interrupted
+call without a confirmed receipt stops with an unconfirmed-execution diagnostic
+requesting reconciliation under the existing worker policy. Attempt exhaustion leaves the gap unresolved, and the
+next generation/evaluator call cannot start after the original deadline.
+
+Only the curriculum generator receives correction context. The independent domain
+validator sees the current curriculum, source and brief. The learner receives
+accepted teaching material and development feedback, never correction history or
+reserved exercise inputs. No rejected proposal is activated. Native skill
+admission still requires the existing exact reserved-case and gain checks.
+
+Generation and validator usage remain archived in their receipts, including
+unknown cost; the generation limit is not a prepaid monetary cap. Passing this
+loop establishes a validated curriculum for its configured task family, not
+learning gain. Real transfer and native canary evaluation remain separate gates.
