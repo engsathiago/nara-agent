@@ -61,6 +61,7 @@ def execute(repo, root, env, identity):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--model', action='append', help='Installed Ollama model; repeat to compare models')
+    parser.add_argument('--curriculum-request', type=Path, help='Compare initial curriculum generation using one archived ZIP request')
     args = parser.parse_args()
     models = args.model or ['qwen3.5:4b']
     repo = Path(__file__).resolve().parents[2]
@@ -75,12 +76,18 @@ def main():
         'plugins': {'entries': {'mission_control': {'llm': {'allow_provider_override': True,
             'allow_model_override': True, 'allowed_providers': ['custom'], 'allowed_models': models}}}},
         '_benchmark_inventory': inventory})
-    spec = protocol(models)
+    if args.curriculum_request:
+        from evals.model_comparison.curriculum_benchmark import prepare
+
+        spec = prepare(args.curriculum_request, models, root / 'curriculum-grader.py')
+    else:
+        spec = protocol(models)
     write_json(root / 'comparison.json', spec)
     env = {key: value for key, value in os.environ.items() if key in {'PATH', 'PYTHONPATH', 'SYSTEMROOT', 'WINDIR', 'TZ', 'LANG'}}
     env['NARA_HOME'] = str(root)
     job = cli(repo, root, env, 'enqueue', 'model-benchmark-enqueue', '--protocol-file', str(root / 'comparison.json'))
-    write_json(root / 'frozen.json', {'mission_id': job['mission_id'], 'constraints': job['constraints'], 'models': inventory})
+    write_json(root / 'frozen.json', {'mission_id': job['mission_id'], 'constraints': job['constraints'], 'models': inventory,
+                                     'source_request_sha256': spec.get('source_request_sha256')})
     code = execute(repo, root, env, job['mission_id'])
     scores = cli(repo, root, env, 'performance', 'model-performance', spec['category'])
     summary = {'profile': str(root), 'mission_id': job['mission_id'], 'exit_code': code, 'performance': scores,

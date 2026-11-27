@@ -174,3 +174,30 @@ with a recording localhost model server verifies the selected model reaches the
 HTTP request and produces a result. Those server responses are fixtures, not
 real-model quality evidence. The separate Ollama trial above verifies real
 benchmark inference; it does not establish a three-model live team mission.
+
+
+## Compare initial curriculum generation on a frozen source
+
+The same live harness accepts `--curriculum-request PATH`, pointing to an archived
+initial ZIP `curriculum_request` artifact. With repeated `--model` arguments, each
+installed local model receives identical public source spans, brief, instructions
+and output schema. Prior correction proposals are excluded. This measures the
+initial generation's validity under category `curriculum.zip-manifest`, not its
+ability to learn or operate tools.
+
+The comparator snapshots the existing structural, typed-payload and ZIP domain
+validators, together with their small standard-library-only dependencies, into a
+single archived evaluator. Its subprocess imports this frozen package, not the
+live checkout. It calibrates the ZIP oracle, then checks source citations, factual
+answers and distinct task topologies using the same validators as study jobs.
+The output includes hashes of the bundled modules. Correct examples and negative
+controls for repeated cases, renamed topologies, incorrect facts and invented
+citations are exercised before live comparisons.
+
+The original request bytes and SHA-256 are preserved beside `frozen.json` in the
+disposable profile. The benchmark's own frozen protocol also retains the exact
+public input, schema and instructions. The host task/schema names are those of
+the benchmark service; source and prompt content are controlled across the
+compared models. This does not replay a study's correction history or activate
+any skill. A one-source result is a diagnostic observation, not a statistically
+validated model ranking for all curricula.
