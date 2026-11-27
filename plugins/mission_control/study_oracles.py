@@ -31,7 +31,8 @@ def _runtime(root):
 
 
 def _brief():
-    return {"task_family": FAMILY, "version": 2,
+    return {"task_family": FAMILY, "version": 3,
+            "teaching_schema": {"mode": "source-span-v1", "questions": list(study_oracle_zip.QUESTIONS)},
             "payload_schema": {"type": "object", "additionalProperties": False, "required": ["members"],
                 "properties": {"members": {"type": "array", "minItems": 0, "maxItems": 8,
                     "items": {"type": "object", "additionalProperties": False, "required": ["name", "text"],
@@ -48,8 +49,8 @@ def _brief():
             "questions": list(study_oracle_zip.QUESTIONS),
             "teaching_contract": "Choose 1-3 questions from the provided wording. Answer with the Python API "
                                  "method or attribute name, using the source, and cite its supporting span. "
-                                 "Do not add a prose sentence around the answer. The explanation must copy one "
-                                 "supplied source span exactly, discussing infolist, is_dir, or file_size.",
+                                 "Do not add a prose sentence around the answer. Select explanation_source_span_id for one "
+                                 "supplied span discussing infolist, is_dir, or file_size; the runtime quotes it exactly.",
             "task_result": "The real Nara terminal inspects source.zip and writes manifest.json: sorted regular "
                            "member paths in files; integer total_file_bytes excluding directories; integer directory_count. "
                            "The validator computes truth from actual ZipInfo records; do not generate an answer key."}

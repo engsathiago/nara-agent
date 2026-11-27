@@ -684,3 +684,37 @@ Generation and validator usage remain archived in their receipts, including
 unknown cost; the generation limit is not a prepaid monetary cap. Passing this
 loop establishes a validated curriculum for its configured task family, not
 learning gain. Real transfer and native canary evaluation remain separate gates.
+
+
+## Exact source references for generated teaching
+
+A curriculum brief may opt into `teaching_schema`:
+
+```json
+{"teaching_schema":{"mode":"source-span-v1","questions":["Which API returns member metadata?"]}}
+```
+
+The mode requires 1–5 distinct question strings, each at most 2,000 characters.
+Unsupported contracts stop enqueue before research. The frozen brief governs
+replay; editing or removing its original file does not change an enqueued job.
+
+The model returns `explanation_source_span_id` instead of a free-form explanation.
+Its response schema lists the supplied source IDs and the declared question
+wording. After generation the runtime independently checks the reference and
+retrieves the exact original text (nonempty, at most 4,000 characters). Empty ID
+is only useful for a source abstention. Unknown IDs, an additional free-form
+explanation and undeclared questions fail before teaching. Answers and citations
+are still generated and checked by the independent domain validator; extracting
+a quotation is not proof of understanding or factual accuracy.
+
+The normalized teaching package keeps the existing `explanation` text field for
+the validator and learner. Raw generation, source spans and the original request
+remain archived, preserving the selected reference for replay. Reserved exercises
+remain excluded from learner input. Bounded correction handles a confirmed invalid
+reference using the same history-verification path as other structural failures.
+
+This optional contract uses study protocol v8 and curriculum request v4. Existing
+briefs keep their old free-form format and protocol behavior. New ZIP exports use
+source references and the existing calibrated question set; their fact, topology,
+transfer and native-admission criteria are unchanged. The frozen model comparator
+supports both formats and bundles the teaching resolver with the other validators.

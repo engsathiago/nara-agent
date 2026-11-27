@@ -11,6 +11,7 @@ from plugins.mission_control.study_curriculum_schema import curriculum_schema
 from plugins.mission_control.study_source_selection import source_inputs
 from plugins.mission_control.study_source_context import CONTEXT_INSTRUCTION
 from plugins.mission_control.study_payload_schema import payload_schema
+from plugins.mission_control.study_teaching_schema import INSTRUCTION as TEACHING_INSTRUCTION, teaching_schema
 from plugins.mission_control.study_curriculum_correction import (
     CORRECTION_INSTRUCTION, DOMAIN_REASON, CurriculumCorrections, CurriculumRejected, resolve_proposal, validator_input,
 )
@@ -59,11 +60,12 @@ class StudyCurriculum:
                                source_context=self.protocol.get("source_context"))
         brief = read_checkpoint(self.spec["files"]["brief"])
         contract = payload_schema(brief)
+        teaching = teaching_schema(brief)
         expected = self.corrections.input({"objective": self.protocol["objective"], "source": inputs[0], "brief": brief})
         if "curriculum_generation_artifact_id" not in self.state:
             request = {"kind": "curriculum_request", "schema_version": 1,
                        "input": expected, "instructions": INSTRUCTIONS,
-                       "schema": curriculum_schema(inputs[0]["spans"], contract), "timeout": self._timeout(),
+                       "schema": curriculum_schema(inputs[0]["spans"], contract, teaching), "timeout": self._timeout(),
                        "task": "nara_curriculum", "temperature": 0.0, "max_tokens": 8192}
             if contract is not None:
                 request["schema_version"] = 2
@@ -73,6 +75,9 @@ class StudyCurriculum:
             if "max_generations" in self.spec:
                 request["schema_version"] = 3
                 request["instructions"] += CORRECTION_INSTRUCTION
+            if teaching is not None:
+                request["schema_version"] = 4
+                request["instructions"] += TEACHING_INSTRUCTION
             request_id = self._archive(request)
             self._save("curriculum_generating", curriculum_request_artifact_id=request_id)
             receipt = {"kind": "curriculum_generation", "request_artifact_id": request_id}

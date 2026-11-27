@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 MODULES = ('learning_acceptance', 'study_checkpoint', 'study_payload_schema',
-           'study_curriculum_schema', 'study_oracle_zip')
+           'study_curriculum_schema', 'study_teaching_schema', 'study_oracle_zip')
 
 GRADER = '''
 import base64
@@ -30,6 +30,7 @@ def main():
             path.write_text(content, encoding='utf-8')
         sys.path.insert(0, str(root))
         from plugins.mission_control.study_payload_schema import payload_schema
+        from plugins.mission_control.study_teaching_schema import teaching_schema
         from plugins.mission_control.study_curriculum_schema import resolve_curriculum
         from plugins.mission_control.study_oracle_zip import calibrate, validate_curriculum
         calibration = calibrate()
@@ -37,7 +38,7 @@ def main():
             raise ValueError('frozen ZIP oracle failed calibration')
         supplied = case['input']
         try:
-            package = resolve_curriculum(case['response'], supplied['source']['spans'], payload_schema(supplied['brief']))
+            package = resolve_curriculum(case['response'], supplied['source']['spans'], payload_schema(supplied['brief']), teaching_schema(supplied['brief']))
             validation = validate_curriculum({'curriculum': package, 'source': supplied['source']})
             result = {'score': 1, 'validation': validation}
         except (ValueError, TypeError, KeyError) as exc:
