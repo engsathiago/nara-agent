@@ -468,7 +468,7 @@ class CompetenceRegistry:
     def update_study_cycle(self, cycle_id: str, status: str, result: dict[str, Any]) -> None:
         states = {"studying": "studying", "practicing": "practicing", "proving": "proving"}
         terminal = {"completed", "exhausted", "holdout_failed", "declined", "no_change",
-                    "failed", "budget_exhausted", "budget_unverifiable"}
+                    "failed", "budget_exhausted", "budget_unverifiable", "reconciliation_required"}
         if status not in states and status not in terminal:
             raise ValueError("invalid study cycle state")
         with transaction(self._connect(), immediate=True) as conn:

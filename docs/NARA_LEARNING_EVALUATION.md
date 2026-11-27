@@ -155,10 +155,38 @@ The competence database journals the cycle and partial attempts. One cycle may
 claim a plan; simultaneous or repeated commands cannot start another cycle with
 that plan. `study-show` exposes its request, progress and result. A killed process
 can leave nonterminal progress: that record alone is not proof that a process is
-still running or has stopped. Inspect the execution before further action; this
-version does not automatically recover an interrupted cycle. New experiments
+still running or has stopped. `study-run`, `study-resume` and `study-evaluate`
+share a per-plan SQLite process lock; the OS releases it when its owner exits.
+New experiments
 need a new plan with genuinely unused reserved cases. Case IDs are operator
 declarations, not a global guarantee that content was never seen elsewhere.
+
+### Resume an interrupted cycle
+
+```sh
+nara mission study-resume PLAN_ID
+```
+
+Resume uses the original archived source, cases, evaluator bytes and dispatch
+mode, and system description. It verifies candidate, generation and evaluator
+evidence before starting new work. The original generation/evaluator counters,
+reported cost and absolute deadline persist; restart does not grant another
+budget. Confirmed practice and reserved observations are reused without running
+their processes again. Once holdout evaluation starts, the candidate stays
+frozen and no new model generation is allowed. An already completed proof can
+be recorded after the deadline without new inference. Repeating a terminal
+resume returns the same verified final receipt.
+
+An interrupted generation with no confirmed response consumes its reserved
+attempt and leaves its cost unknown. A monetary limit therefore stops it as
+`budget_unverifiable`; without one, remaining attempts may continue. An evaluator
+intent without a confirmed outcome instead stops as `reconciliation_required`:
+its subprocess or external effects may survive its parent, so Nara does not
+automatically repeat it. Inspect and reconcile those effects before a new study.
+This state does not claim that every child process has stopped. Legacy cycles
+without a call journal cannot be resumed safely; completed legacy receipts are
+still inspectable. Resumption is explicit through this command; background
+restart scheduling is separate.
 
 Resource bounds are explicit: 1–5 generation calls (default 3), at most 10
 development and 20 reserved cases, 2,048 output tokens per generation request,
@@ -175,5 +203,5 @@ cap: the last call may exceed the budget, and provider estimates may be incomple
 Without a monetary limit, unknown costs remain explicit in the result.
 
 This foreground pipeline supplies the executable study/practice consumer.
-Automatic source discovery, event-driven gap dispatch, interrupted-cycle
-recovery and broad longitudinal learning remain separate completion gates.
+Automatic source discovery, event-driven gap dispatch and broad longitudinal
+learning remain separate completion gates.

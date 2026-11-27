@@ -7,13 +7,14 @@ import json
 import sqlite3
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from plugins.mission_control.competence import CompetenceRegistry
 from plugins.mission_control.contracts import utc_now
 from plugins.mission_control.learning import LearningLab
 from plugins.mission_control.learning_runner import ProcessEvaluator, load_evaluation_cases
 from plugins.mission_control.store import MissionStore
+from plugins.mission_control.study_checkpoint import read_checkpoint, study_lock
 
 
 def register_study_cli(actions: Any) -> None:
@@ -36,6 +37,8 @@ def register_study_cli(actions: Any) -> None:
     cycle.add_argument("--max-attempts", type=int, default=3)
     cycle.add_argument("--max-seconds", type=float, default=600.0)
     cycle.add_argument("--timeout", type=float, default=30.0)
+    resume = actions.add_parser("study-resume", help="Resume an interrupted study from verified checkpoints")
+    resume.add_argument("plan_id")
 
 
 def _archive(lab: LearningLab, payload: dict[str, Any]) -> tuple[Path, str]:
@@ -54,6 +57,7 @@ def execute_study(
     registry: CompetenceRegistry, lab: LearningLab, plan_id: str, candidate_id: str,
     *, cases_file: Path, evaluator_path: Path, system: dict[str, Any], timeout: float = 30.0,
     evaluator: ProcessEvaluator | None = None,
+    checkpoint: Callable[[dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
     """Evaluate both variants; never accept caller-supplied scores or activate a skill."""
     plan = registry.study_plan(plan_id)
@@ -99,12 +103,10 @@ def execute_study(
             "request_path": str(request_path), "request_sha256": request_hash,
             "system": bound_system, "evaluation": report,
         })
-        result = registry.evaluate_study(
-            plan_id, baseline_scores={row["case_id"]: row["baseline"] for row in report["cases"]},
-            candidate_scores={row["case_id"]: row["candidate"] for row in report["cases"]},
-            system=bound_system, evidence_artifact_ids=[f"sha256:{receipt_hash}"],
-            mission_id=registry.gap(plan.gap_id)["source_mission_id"],
-        )
+        proof = {"path": str(receipt_path), "sha256": receipt_hash}
+        if checkpoint is not None:
+            checkpoint(proof)
+        return record_study_proof(registry, lab, plan_id, candidate_id, proof)
     except (ValueError, OSError, KeyError, sqlite3.DatabaseError) as exc:
         failure_path, _ = _archive(lab, {
             "schema_version": 1, "kind": "study_evaluation_failure",
@@ -113,9 +115,27 @@ def execute_study(
         })
         registry.mark_study_execution(plan_id, failed=True)
         raise ValueError(f"study execution failed: {exc}; receipt: {failure_path}") from exc
-    return {"plan_id": plan_id, "candidate_id": candidate_id,
-            "evaluation": report, "competence": result,
-            "receipt_path": str(receipt_path), "receipt_sha256": receipt_hash}
+
+
+def record_study_proof(registry, lab, plan_id, candidate_id, proof):
+    receipt = read_checkpoint(proof)
+    plan = registry.study_plan(plan_id)
+    current = json.loads(json.dumps(plan.to_dict()))
+    frozen = receipt["plan"]
+    if {key: value for key, value in current.items() if key != "status"} != {
+        key: value for key, value in frozen.items() if key != "status"
+    }:
+        raise ValueError("study plan changed after evaluation")
+    report = lab.verified_evaluation(candidate_id)
+    if report != receipt["evaluation"] or receipt["system"]["procedure_candidate_id"] != candidate_id:
+        raise ValueError("study proof does not match the latest verified evaluation")
+    result = registry.evaluate_study(
+        plan_id, baseline_scores={row["case_id"]: row["baseline"] for row in report["cases"]},
+        candidate_scores={row["case_id"]: row["candidate"] for row in report["cases"]},
+        system=receipt["system"], evidence_artifact_ids=[f"sha256:{proof['sha256']}"],
+        mission_id=registry.gap(plan.gap_id)["source_mission_id"])
+    return {"plan_id": plan_id, "candidate_id": candidate_id, "evaluation": report,
+            "competence": result, "receipt_path": proof["path"], "receipt_sha256": proof["sha256"]}
 
 
 def competence_command(store: MissionStore, args: Any, *, llm: Any = None) -> dict[str, Any] | list[dict[str, Any]]:
@@ -141,14 +161,15 @@ def competence_command(store: MissionStore, args: Any, *, llm: Any = None) -> di
                     "cycle": registry.study_cycle(plan.plan_id)}
         from plugins.mission_control.learning_cli import open_learning_lab
 
-        if args.mission_action == "study-run":
+        lab = open_learning_lab(store)
+        if args.mission_action in {"study-run", "study-resume"}:
             from plugins.mission_control.study_cycle import run_study_cycle
 
-            return run_study_cycle(registry, open_learning_lab(store), llm, args)
-        return execute_study(
-            registry, open_learning_lab(store), args.plan_id, args.candidate_id, cases_file=args.cases_file,
-            evaluator_path=args.evaluator,
-            system=json.loads(args.system_file.read_text(encoding="utf-8-sig")), timeout=args.timeout,
-        )
+            return run_study_cycle(registry, lab, llm, args)
+        with study_lock(lab.candidate_root.parent, args.plan_id):
+            return execute_study(
+                registry, lab, args.plan_id, args.candidate_id, cases_file=args.cases_file,
+                evaluator_path=args.evaluator,
+                system=json.loads(args.system_file.read_text(encoding="utf-8-sig")), timeout=args.timeout)
     except (OSError, KeyError) as exc:
         raise ValueError(f"study input or evidence unavailable: {exc}") from exc

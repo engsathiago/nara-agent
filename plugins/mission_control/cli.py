@@ -342,7 +342,7 @@ def mission_command(
             ))
         elif action == "ledger":
             _print(ExperienceLedger.open_default().mission_tree(store, args.mission_id))
-        elif action in {"competence", "gap-list", "gap-record", "study-plan", "study-evaluate", "study-show", "study-run"}:
+        elif action in {"competence", "gap-list", "gap-record", "study-plan", "study-evaluate", "study-show", "study-run", "study-resume"}:
             _print(competence_command(store, args, llm=llm))
         elif action.startswith("learn-"):
             _print(dispatch_learning(store, args, llm=llm))
