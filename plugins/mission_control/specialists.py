@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, Iterable
 
-from nara_cli.config import load_config
+from nara_cli.config import load_config, load_config_readonly
 from nara_constants import get_nara_home
 from plugins.mission_control.competence import CompetenceRegistry
 
@@ -27,13 +27,13 @@ def configured_legiao_path() -> Path | None:
     explicit = os.environ.get("NARA_LEGIAO_HOME", "").strip()
     if explicit:
         return Path(explicit).expanduser()
-    try:
-        config = load_config() or {}
-        block = ((config.get("plugins") or {}).get("mission_control") or {})
-        value = str(block.get("legiao_path") or "").strip()
-        return Path(value).expanduser() if value else None
-    except Exception:
-        return None
+    config = load_config_readonly() or {}
+    plugins = config.get("plugins") or {}
+    settings = (((plugins.get("entries") or {}).get("mission_control") or {}).get("settings") or {})
+    legacy = plugins.get("mission_control") or {}
+    value = str(settings.get("legiao_path", legacy.get("legiao_path")) or "").strip()
+    return Path(value).expanduser() if value else None
+
 
 
 @dataclass(frozen=True)
@@ -284,6 +284,15 @@ class AgentFactory:
         )
 
 
+def _select_candidate(candidates, rank_score):
+    """Abstain on weak or near-tied lexical evidence; scores are not probabilities."""
+    if not candidates or candidates[0].score < 0.4:
+        return None
+    if len(candidates) > 1 and rank_score(candidates[0]) - rank_score(candidates[1]) < 0.15:
+        return None
+    return candidates[0]
+
+
 class SpecialistResolver:
     def __init__(
         self,
@@ -336,7 +345,7 @@ class SpecialistResolver:
         model = self.models.select(
             requires_tools=requires_tools, requires_vision=requires_vision, min_context=min_context,
             category=category, benchmark_scope=benchmark_scope)
-        selected = selected_candidates[0] if selected_candidates and selected_candidates[0].score >= 0.2 else None
+        selected = _select_candidate(selected_candidates, _effective)
         decision = "specialist" if selected else "leader"
         receipt = hashlib.sha256(json.dumps({
             "task": task, "category": category, "benchmark_scope": benchmark_scope, "candidates": [item.to_dict() for item in selected_candidates],
@@ -351,8 +360,8 @@ class SpecialistResolver:
             "observed_competence": observed_competence,
             "legiao": self.legiao.stats() if self.legiao else {"available": False},
             "reason": (
-                "best matching specialist exceeded the routing threshold"
-                if selected else "no specialist demonstrated enough relevance; keep the task with the leader"),
+                "specialist exceeded the match threshold and candidate margin"
+                if selected else "specialist evidence is weak or ambiguous; keep the task with the leader"),
         }
 
     def load_selected(self, source: str, specialist_id: str) -> dict[str, Any]:
@@ -378,8 +387,9 @@ def pre_llm_specialist_context(user_message: Any = "", **_: Any) -> dict[str, st
         "[Nara Specialist Resolver — metadata only]\n"
         f"decision_id={decision['decision_id']} decision={decision['decision']}\n"
         f"candidates={json.dumps(rows, ensure_ascii=False)}\n"
-        "For a simple task, continue as leader. If specialization improves the mission, call "
-        "nara_specialist_get for exactly one chosen candidate before delegating."
+        "For a simple task, continue as leader. Native delegate_task calls automatically bind "
+        "the best matching specialist instructions when specialist_delegation is enabled. "
+        "Use nara_specialist_get to inspect a candidate when needed."
     )}
 
 
