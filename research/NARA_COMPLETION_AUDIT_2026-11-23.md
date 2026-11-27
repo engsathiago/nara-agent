@@ -622,3 +622,15 @@ minimum-match and candidate-margin abstention. Two new regressions failed before
 that correction. The lexical method does not establish general semantic suitability;
 intent-aware classification and full profile materialization remain open. Real-catalog
 preparation/replay evidence: `NARA_SPECIALIST_DISPATCH_2026-11-27.md`.
+
+
+## Larger installed local route probe — 2026-11-27
+
+A same-source comparison exercised qwen3.5:4b and the installed qwen38-unc-16k route.
+The first scored zero for repeated curriculum groups. The larger route timed out
+at 120 seconds and fell back to the main 4B model; the benchmark detected the actual
+returned identity, recorded route_mismatch and withheld grading for that route.
+All 11 content-addressed files and the original source-request copy were verified.
+Measurement completed, but no learning or skill activation occurred. This does not
+establish model superiority or a successful larger-model result. Detailed inputs,
+resource observation, receipts and limits: `NARA_LARGE_LOCAL_CURRICULUM_PROBE_2026-11-27.md`.

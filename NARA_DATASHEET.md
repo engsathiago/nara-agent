@@ -280,6 +280,11 @@ qual pergunta e citação precisam de correção, sem alterar os critérios de a
 ensaios reais ainda não chegaram ao aprendizado: um falhou em citações sem suporte na extração
 recebida; outro repetiu grupos entre as divisões. Fonte completa e geração confiável continuam
 pendentes. Detalhes: `research/NARA_SOURCE_REFERENCE_TEACHING_2026-11-27.md`.
+Uma comparação posterior com a mesma requisição congelada mediu o modelo de 4B e uma rota
+local instalada de 27B. O 4B repetiu grupos entre conjuntos; a rota maior atingiu 120 segundos,
+acionou fallback para 4B e foi corretamente registrada como troca de rota, sem atribuir a
+resposta ao modelo solicitado. Ainda não há resultado válido de qualidade para essa rota maior
+nem ganho de aprendizado. Evidências: `research/NARA_LARGE_LOCAL_CURRICULUM_PROBE_2026-11-27.md`.
 
 A publicação de skills avaliadas agora suporta repetição e recuperação após queda do processo.
 A prova continua válida após mudanças de status; arquivos editados não são sobrescritos, e o
