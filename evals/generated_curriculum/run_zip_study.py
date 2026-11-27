@@ -71,6 +71,7 @@ def main():
         "memory": {"provider": "nara_temporal"},
         "auxiliary": {"transient_retries": 0,
                       "nara_curriculum": {"reasoning_effort": "none"},
+                      "nara_source_selection": {"reasoning_effort": "none"},
                       "nara_media_study": {"reasoning_effort": "none"}},
     })
     shutil.copytree(repo / "extensions/nara_temporal_memory/nara_temporal", root / "plugins/nara_temporal")
@@ -86,7 +87,9 @@ def main():
     job = cli(repo, root, env, "enqueue", "study-enqueue", gap["gap_id"],
               "--protocol-file", prepared["protocol_file"])
     write_json(root / "frozen.json", {"job_id": job["mission_id"], "protocol": job["constraints"]["protocol"],
-                                     "oracle": prepared["system"], "model_digest": model["digest"]})
+                                     "oracle": prepared["system"], "model_digest": model["digest"],
+                                     "study_config_sha256": hashlib.sha256((root / "config.yaml").read_bytes()).hexdigest(),
+                                     "auxiliary_reasoning_effort": "none"})
     code = work(repo, root, env)
     jobs = cli(repo, root, env, "jobs", "study-jobs")
     current = next(row for row in jobs if row["job_id"] == job["mission_id"])
