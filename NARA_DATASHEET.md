@@ -216,6 +216,21 @@ demonstrada. A infraestrutura está ligada ao runtime e às ferramentas `nara_co
 `nara_gap_record`. A geração autônoma da candidata por pesquisa/modelo real ainda precisa atravessar
 essa mesma bancada antes de a Fase 3 receber `operational`.
 
+A pesquisa de fontes agora tem consumidor registrado em `nara mission study-research`: usa as
+ferramentas web configuradas, filtra os domínios escolhidos e arquiva resultados, texto extraído e
+hashes na missão. Uma consulta real, sem credenciais, encontrou a documentação oficial de `zipapp`
+do Python; seus três artefatos e a projeção de eventos foram reabertos e verificados. Isso demonstra
+busca e aquisição, não competência aprendida.
+
+`study-enqueue`, `study-work` e `study-jobs` conectam pesquisa, prática e prova à fila de missões.
+Com `study_background` habilitado e um protocolo por categoria, o gateway acorda um worker por
+perfil, respeita prioridade e limites e retoma trabalho confirmado sem bloquear a manutenção.
+Os protocolos são congelados antes da pesquisa; lacunas sem protocolo continuam abertas. Testes
+verticais verificam isolamento, recuperação e ausência de chamadas duplicadas. A criação autônoma
+de exercícios e provas independentes, a seleção semântica entre fontes, a ativação automática de
+skills admitidas e o ganho longitudinal com modelos reais continuam pendentes. Detalhes e limites:
+`docs/NARA_LEARNING_EVALUATION.md` e `research/NARA_AUTOMATIC_SOURCE_STUDY_2026-11-26.md`.
+
 O primeiro incremento da Fase 4 está `verified`. O Evolution Lab congela desenvolvimento, holdout,
 limite de regressão, ganho mínimo e custo antes da avaliação; armazena cada variante por SHA-256;
 reabre os mesmos bytes antes do canário e da ativação; fixa sessões em andamento à versão anterior;

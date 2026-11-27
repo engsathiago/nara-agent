@@ -9,6 +9,10 @@ from pathlib import Path
 import sqlite3
 
 
+class StudyBusyError(ValueError):
+    """A live executor owns the study lock; this is not a failed experiment."""
+
+
 @contextmanager
 def study_lock(root: Path, plan_id: str):
     # A separate SQLite file provides an OS-released, cross-process lock without
@@ -22,7 +26,7 @@ def study_lock(root: Path, plan_id: str):
             conn.execute("BEGIN EXCLUSIVE")
         except sqlite3.OperationalError as exc:
             if exc.sqlite_errorcode in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED}:
-                raise ValueError("this study plan is already executing in another process") from exc
+                raise StudyBusyError("this study plan is already executing in another process") from exc
             raise
         try:
             yield
