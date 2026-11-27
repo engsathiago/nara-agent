@@ -82,9 +82,11 @@ def test_generated_false_answer_never_reaches_the_learner(curriculum_job, capsys
     fixture, package = curriculum_job
     _, parser, registry, plan, _, _, ctx, calls, _ = fixture
     package['cases'][0]['payload_json'] = json.dumps({'requires': 'trust the latest unpinned branch'})
-    enqueue(fixture, capsys)
+    job = enqueue(fixture, capsys)
     _, result = command(ctx, parser, capsys, 'study-work')
     assert result['status'] == 'failed' and 'curriculum validator' in result['reason'], result
+    state = MissionStore.open_default().get(job['mission_id']).diagnostics['study_state']
+    assert state['result']['error_type'] == 'ValueError' and 'curriculum_revisions' not in state
     assert [call['task'] for call in calls] == ['nara_curriculum']
     assert registry.gap(plan.gap_id)['state'] == 'unresolved'
 

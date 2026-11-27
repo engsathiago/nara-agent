@@ -7,10 +7,13 @@ import time
 from plugins.mission_control.learning_fabric import LearningFabric
 from plugins.mission_control.learning_runner import ProcessEvaluator
 from plugins.mission_control.study_checkpoint import read_checkpoint, verify_evaluator_result
-from plugins.mission_control.study_curriculum_schema import curriculum_schema, resolve_curriculum
+from plugins.mission_control.study_curriculum_schema import curriculum_schema
 from plugins.mission_control.study_source_selection import source_inputs
 from plugins.mission_control.study_source_context import CONTEXT_INSTRUCTION
 from plugins.mission_control.study_payload_schema import payload_schema
+from plugins.mission_control.study_curriculum_correction import (
+    CORRECTION_INSTRUCTION, DOMAIN_REASON, CurriculumCorrections, CurriculumRejected, resolve_proposal, validator_input,
+)
 
 
 INSTRUCTIONS = (
@@ -31,6 +34,7 @@ class StudyCurriculum:
     def __init__(self, jobs, job, protocol, state):
         self.jobs, self.job, self.protocol, self.state = jobs, job, protocol, state
         self.spec = protocol["curriculum"]
+        self.corrections = CurriculumCorrections(self)
 
     def _archive(self, payload):
         return self.jobs.artifacts.put_bytes(
@@ -55,7 +59,7 @@ class StudyCurriculum:
                                source_context=self.protocol.get("source_context"))
         brief = read_checkpoint(self.spec["files"]["brief"])
         contract = payload_schema(brief)
-        expected = {"objective": self.protocol["objective"], "source": inputs[0], "brief": brief}
+        expected = self.corrections.input({"objective": self.protocol["objective"], "source": inputs[0], "brief": brief})
         if "curriculum_generation_artifact_id" not in self.state:
             request = {"kind": "curriculum_request", "schema_version": 1,
                        "input": expected, "instructions": INSTRUCTIONS,
@@ -66,6 +70,9 @@ class StudyCurriculum:
                 request["instructions"] = INSTRUCTIONS.replace("payload_json", "payload (a JSON object, never an encoded string)")
             if self.protocol.get("source_context") is not None:
                 request["instructions"] += CONTEXT_INSTRUCTION
+            if "max_generations" in self.spec:
+                request["schema_version"] = 3
+                request["instructions"] += CORRECTION_INSTRUCTION
             request_id = self._archive(request)
             self._save("curriculum_generating", curriculum_request_artifact_id=request_id)
             receipt = {"kind": "curriculum_generation", "request_artifact_id": request_id}
@@ -87,10 +94,10 @@ class StudyCurriculum:
         request = self._read(receipt["request_artifact_id"])
         if request["input"] != expected or receipt["status"] != "generated":
             raise ValueError("curriculum generation proof does not match the selected source and brief")
-        return resolve_curriculum(receipt["parsed"], inputs[0]["spans"], contract), expected
+        return resolve_proposal(receipt["parsed"], expected), expected
 
     def _validate(self, package, expected):
-        case = {"case_id": self.job.mission_id + ":curriculum", "curriculum": package, **expected}
+        case = validator_input(self.job.mission_id, package, expected)
         files = self.spec["files"]
         if "curriculum_validation_artifact_id" not in self.state:
             evaluator = ProcessEvaluator(files["validator"]["path"], self.jobs.root / "curriculum-evidence",
@@ -111,11 +118,19 @@ class StudyCurriculum:
             raise ValueError("curriculum validation proof changed")
         result = verify_evaluator_result(receipt["result"])
         if result["score"] != 1.0:
-            raise ValueError("curriculum validator rejected the proposed teaching material or exercises")
+            raise CurriculumRejected("domain", result.get("feedback", DOMAIN_REASON))
+
+    def _validated_package(self, source):
+        while True:
+            try:
+                package, expected = self._generate(source)
+                self._validate(package, expected)
+                return package
+            except CurriculumRejected as exc:
+                self.corrections.reject(exc)
 
     def materialize(self, source, freeze_bytes):
-        package, expected = self._generate(source)
-        self._validate(package, expected)
+        package = self._validated_package(source)
         root = self.jobs.root / "curricula"
         by_split = {name: [{"case_id": row["case_id"], **row["payload"]}
                           for row in package["cases"] if row["split"] == name]

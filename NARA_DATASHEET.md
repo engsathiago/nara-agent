@@ -260,10 +260,15 @@ e gerou perguntas, mas os dados dos exercícios vieram em JSON inválido e foram
 antes da prática. Detalhes: `research/NARA_BOUNDED_SOURCE_CONTEXT_2026-11-27.md`.
 O protocolo v6 agora congela um contrato tipado para os dados dos exercícios. Um ensaio real
 produziu três objetos válidos, mas repetiu o mesmo grupo entre prática, transferência e canário;
-o pacote foi rejeitado antes do aprendizado. A próxima pendência é a correção limitada do
-currículo com feedback e retomada auditável, mantendo o verificador independente e a separação
-dos conjuntos. A prova real de ganho continua aberta. Evidências:
+o pacote foi rejeitado antes do aprendizado. Evidências:
 `research/NARA_TYPED_STUDY_PAYLOADS_2026-11-27.md`.
+O protocolo v7 agora corrige currículos rejeitados com feedback, limite congelado de até três
+gerações e histórico verificado após reinício. O verificador independente e o aluno não recebem
+esse histórico. No ensaio real, o modelo de 4B fez três propostas, mas manteve o conflito de grupos;
+nenhuma skill foi ativada. Outro ensaio com raciocínio solicitado em `low` atingiu timeout de geração.
+A próxima pendência é calibrar qualidade e latência das rotas de currículo com fontes congeladas,
+seguida de currículo aprovado e prova real de transferência e ganho. Detalhes:
+`research/NARA_CURRICULUM_CORRECTION_2026-11-27.md`.
 
 A publicação de skills avaliadas agora suporta repetição e recuperação após queda do processo.
 A prova continua válida após mudanças de status; arquivos editados não são sobrescritos, e o

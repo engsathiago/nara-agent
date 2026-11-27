@@ -56,6 +56,8 @@ def work(repo, root, env):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", default="qwen3.5:4b")
+    parser.add_argument("--curriculum-reasoning", choices=["none", "low"], default="none",
+                        help="Reasoning effort for curriculum generation only; other auxiliary tasks stay at none")
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[2]
     with urlopen("http://127.0.0.1:11434/api/tags", timeout=10) as response:
@@ -70,7 +72,7 @@ def main():
                   "base_url": "http://127.0.0.1:11434/v1", "api_key": "local-eval"},
         "memory": {"provider": "nara_temporal"},
         "auxiliary": {"transient_retries": 0,
-                      "nara_curriculum": {"reasoning_effort": "none"},
+                      "nara_curriculum": {"reasoning_effort": args.curriculum_reasoning},
                       "nara_source_selection": {"reasoning_effort": "none"},
                       "nara_media_study": {"reasoning_effort": "none"}},
     })
@@ -89,7 +91,8 @@ def main():
     write_json(root / "frozen.json", {"job_id": job["mission_id"], "protocol": job["constraints"]["protocol"],
                                      "oracle": prepared["system"], "model_digest": model["digest"],
                                      "study_config_sha256": hashlib.sha256((root / "config.yaml").read_bytes()).hexdigest(),
-                                     "auxiliary_reasoning_effort": "none"})
+                                     "auxiliary_reasoning_effort": {"nara_source_selection": "none",
+                                        "nara_curriculum": args.curriculum_reasoning, "nara_media_study": "none"}})
     code = work(repo, root, env)
     jobs = cli(repo, root, env, "jobs", "study-jobs")
     current = next(row for row in jobs if row["job_id"] == job["mission_id"])

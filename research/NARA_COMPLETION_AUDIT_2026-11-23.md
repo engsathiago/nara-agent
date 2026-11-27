@@ -472,3 +472,28 @@ The next concrete integration need is bounded, durable curriculum correction wit
 validator feedback, not relaxed split checks. Positive transfer/native gain and
 broader learning remain open. Full hashes and limits are recorded in
 `NARA_TYPED_STUDY_PAYLOADS_2026-11-27.md`. VPS remains a later separate step.
+
+
+## Durable bounded curriculum correction — 2026-11-27
+
+Protocol v7 implements the correction consumer identified above. A frozen 1–3
+generation limit permits only confirmed structural/domain rejections to produce
+another proposal. Rejection history, source/brief identity, evaluator evidence,
+original deadline and reserved-case separation survive replay. Unknown execution,
+source abstention, altered proofs and transport failure stop the job. Only the
+generator receives previous-proposal feedback; the verifier and learner do not.
+
+Four initial regressions failed on main, then 78 distinct tests across eight
+suites and all 16 mandatory checks passed. Real qwen3.5:4b inference exercised two
+corrections but all three proposals retained a cross-split group conflict. A fresh
+trial requesting low reasoning timed out during generation; live sources also
+changed, preventing a causal comparison of reasoning modes. Neither trial reached
+the domain validator or activated a skill. All archived blobs and frozen-input
+hashes were independently checked. Full evidence is in
+`NARA_CURRICULUM_CORRECTION_2026-11-27.md`.
+
+Successful real-model repair, domain-approved curricula, transfer and native gain
+remain unproved. Identical-source quality/latency calibration across curriculum
+routes is now the next concrete learning-path need. Other outstanding datasheet
+capabilities remain open; this increment does not claim full-project completion.
+VPS remains separate and later.
