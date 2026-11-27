@@ -9,6 +9,7 @@ from plugins.mission_control.learning_runner import ProcessEvaluator
 from plugins.mission_control.study_checkpoint import read_checkpoint, verify_evaluator_result
 from plugins.mission_control.study_curriculum_schema import curriculum_schema, resolve_curriculum
 from plugins.mission_control.study_source_selection import source_inputs
+from plugins.mission_control.study_source_context import CONTEXT_INSTRUCTION
 
 
 INSTRUCTIONS = (
@@ -49,7 +50,8 @@ class StudyCurriculum:
         return min(120, remaining)
 
     def _generate(self, source):
-        inputs = source_inputs(LearningFabric.open_default(), [source])
+        inputs = source_inputs(LearningFabric.open_default(), [source], objective=self.protocol["objective"],
+                               source_context=self.protocol.get("source_context"))
         brief = read_checkpoint(self.spec["files"]["brief"])
         expected = {"objective": self.protocol["objective"], "source": inputs[0], "brief": brief}
         if "curriculum_generation_artifact_id" not in self.state:
@@ -57,12 +59,14 @@ class StudyCurriculum:
                        "input": expected, "instructions": INSTRUCTIONS,
                        "schema": curriculum_schema(inputs[0]["spans"]), "timeout": self._timeout(),
                        "task": "nara_curriculum", "temperature": 0.0, "max_tokens": 8192}
+            if self.protocol.get("source_context") is not None:
+                request["instructions"] += CONTEXT_INSTRUCTION
             request_id = self._archive(request)
             self._save("curriculum_generating", curriculum_request_artifact_id=request_id)
             receipt = {"kind": "curriculum_generation", "request_artifact_id": request_id}
             try:
                 response = self.jobs.llm.complete_structured(
-                    instructions=INSTRUCTIONS, input=[{"type": "text", "text": json.dumps(expected, ensure_ascii=False)}],
+                    instructions=request["instructions"], input=[{"type": "text", "text": json.dumps(expected, ensure_ascii=False)}],
                     json_schema=request["schema"], schema_name="study_curriculum", purpose="mission-control.curriculum",
                     task=request["task"], temperature=0.0, max_tokens=8192, timeout=request["timeout"])
                 if len(response.text) > 200000 or len(json.dumps(response.parsed)) > 200000:

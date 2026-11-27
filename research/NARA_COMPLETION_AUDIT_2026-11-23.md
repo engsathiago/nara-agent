@@ -428,3 +428,26 @@ admission, useful transfer and native canary success remain unproved; relevant
 source-context budgeting is the next concrete integration need. Factual source
 conflicts, semantic memory consolidation and longitudinal improvement remain open.
 VPS installation remains a separate later phase, not a prerequisite for code.
+
+## Bounded source views and live generation — 2026-11-27
+
+Protocol v5 now freezes a per-source context policy before acquisition. It ranks
+whole original spans and retains IDs, text and character offsets; metadata and
+model instructions disclose partial coverage. Comparison, curriculum validation,
+procedure study and restarted practice share the frozen policy. Old protocols
+retain their original full-span inputs. This closes the bounded-source-context
+consumer identified above; it does not establish universal semantic relevance.
+
+The first bounded live call still timed out. Aligning the disposable harness's
+source-selection reasoning setting with its other two slots then allowed the
+same comparison request to complete, followed by real curriculum generation.
+Three proposed exercise payload strings were invalid JSON, so the package was
+rejected before practice and no skill was activated. Typed exercise payload
+contracts are now the next concrete integration need; positive transfer and
+native admission remain unproved. Evidence, hashes and configuration limits are
+in `NARA_BOUNDED_SOURCE_CONTEXT_2026-11-27.md`.
+
+Final focused integration passed 69 tests in seven suites, including frozen-policy
+replay and a resumed practice revision; all 16 mandatory checks passed before the
+live runs. Full-project completion, factual conflicts, semantic memory, longitudinal
+learning and the separate later VPS stage are not claimed by this increment.

@@ -13,6 +13,7 @@ from plugins.mission_control.learning import LearningLab
 from plugins.mission_control.learning_github_source import _check_cited_source
 from plugins.mission_control.learning_runner import ProcessEvaluator, load_evaluation_cases
 from plugins.mission_control.learning_study import study_media
+from plugins.mission_control.study_source_context import validate_source_context
 from plugins.mission_control.study_checkpoint import initial_result, read_checkpoint, study_lock, verify_evaluator_result
 from plugins.mission_control.study_execution import _archive, execute_study, record_study_proof
 
@@ -80,13 +81,15 @@ class StudyCycle:
     def __init__(self, registry: CompetenceRegistry, lab: LearningLab, llm: Any,
                  plan_id: str, source_id: str, *, cases_file: Path, evaluator_path: Path,
                  system: dict[str, Any], max_attempts: int = 3, max_seconds: float = 600,
-                 timeout: float = 30.0, teaching_material: dict[str, Any] | None = None):
+                 timeout: float = 30.0, teaching_material: dict[str, Any] | None = None,
+                 source_context: dict[str, Any] | None = None):
         if llm is None:
             raise ValueError("host model access is unavailable on this surface")
         self.registry, self.lab, self.llm = registry, lab, llm
         self.plan = registry.study_plan(plan_id)
         self.source_id, self.system = source_id, system
         self.teaching_material = teaching_material
+        self.source_context = validate_source_context(source_context)
         self.max_attempts = max_attempts
         cases, source, self.budget_usd = _validate_protocol(
             registry, lab, self.plan, source_id, cases_file, system, max_attempts, max_seconds)
@@ -110,6 +113,8 @@ class StudyCycle:
         }
         if teaching_material is not None:
             request["teaching_material"] = teaching_material
+        if self.source_context is not None:
+            request["source_context"] = self.source_context
         self.request_path, self.request_hash = _archive(lab, request)
         self.cycle_id = registry.claim_study_cycle(plan_id, {
             "path": str(self.request_path), "sha256": self.request_hash,
@@ -205,7 +210,8 @@ class StudyCycle:
         self._progress("studying")
         generation = study_media(
             self.lab, self.llm, self.source_id, self.plan.objective,
-            development_feedback=feedback, teaching_material=self.teaching_material, timeout=min(120.0, remaining))
+            development_feedback=feedback, teaching_material=self.teaching_material,
+            source_context=self.source_context, timeout=min(120.0, remaining))
         attempt = {"generation_evidence": generation["evidence"],
                    "usage": generation["usage"], "practice": [], "practice_complete": False,
                    "candidate_id": generation.get("candidate", {}).get("candidate_id")}
@@ -269,4 +275,5 @@ def run_study_cycle(registry, lab, llm, args):
             system=json.loads(args.system_file.read_text(encoding="utf-8-sig")),
             max_attempts=args.max_attempts, max_seconds=args.max_seconds, timeout=args.timeout,
             teaching_material=getattr(args, "teaching_material", None),
+            source_context=getattr(args, "source_context", None),
         ).run()

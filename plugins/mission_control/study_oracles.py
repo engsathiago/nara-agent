@@ -81,6 +81,8 @@ def prepare(output, model, base_url):
     (output / "calibration.json").write_text(json.dumps({**calibration, "system": system}, indent=2), encoding="utf-8")
     protocol = {"objective": "Python zipfile documentation: inspect ZIP archive members, directories and uncompressed sizes",
                 "domains": ["docs.python.org"], "max_sources": 3, "research_seconds": 120,
+                "source_context": {"strategy": "lexical-spans-v1", "max_characters": 6000,
+                                   "terms": ["infolist", "is_dir", "file_size"]},
                 "evaluator": str(output / "transfer.py"), "system_file": str(output / "system.json"),
                 "max_attempts": 2, "max_seconds": 1200, "timeout": 120, "minimum_candidate_score": 1.0,
                 "curriculum": {"brief_file": str(output / "brief.json"), "validator": str(output / "validator.py"),

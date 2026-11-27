@@ -525,7 +525,7 @@ gateway. Broader domain verifiers and live-model evidence remain required.
 
 `nara mission study-oracles` lists shipped domain oracles and runs their local
 calibration without calling a model. The first family, `zip-manifest`, exports a
-protocol-v4 package:
+generated-curriculum package (v5 with bounded source context):
 
 ```bash
 nara mission study-oracle-prepare zip-manifest /absolute/new/zip-study --model qwen3.5:4b
@@ -581,3 +581,37 @@ turns (including a turn-budget stop) do not receive a task score, even if the la
 sentence claims completion. A numeric usage total marked `cost_status: unknown`
 is not treated as a priced result. Auxiliary calls also leave this oracle's cost
 unknown because their aggregate does not prove every component is priced.
+
+## Bounded source views (protocol v5)
+
+A new protocol can opt into an explicit source-context budget before research:
+
+```json
+"source_context": {
+  "strategy": "lexical-spans-v1",
+  "max_characters": 6000,
+  "terms": ["infolist", "is_dir", "file_size"]
+}
+```
+
+The limit is 2,000–24,000 **source-text characters per source**, not a token,
+wall-time or total-prompt limit. Up to twelve public topic terms (64 characters
+each) can refine the public objective. Enqueue validates and freezes this setting;
+the exported ZIP family uses 6,000 characters. Existing protocols without it keep
+the full original span list and request shape.
+
+The versioned lexical selector ranks whole original spans by topic-term overlap,
+then inverse span frequency for objective terms; ties use source position. It
+selects spans that fit the declared budget and presents them in document order.
+It never renumbers citations, rewrites text or edits the acquired source. Request
+metadata records source size, selected size, omitted spans and partial coverage.
+The model is explicitly told that omitted text is unknown, not evidence that the
+source lacks a fact. This heuristic can miss relevant context or contradictions;
+it is neither a semantic relevance oracle nor a factual verdict.
+
+Source comparison, generated curriculum and procedure study consume the same
+frozen policy. Curriculum validation receives the same original spans shown to
+its generator. The study-cycle request also saves the policy, so a practice
+revision after restart retains its source budget and original deadline. Changes
+to an editable exported protocol do not alter an already queued study. Original
+web receipts and Learning Fabric source bytes remain available for inspection.

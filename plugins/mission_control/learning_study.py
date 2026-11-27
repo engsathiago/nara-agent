@@ -8,7 +8,8 @@ from typing import Any
 
 from plugins.mission_control.contracts import utc_now
 from plugins.mission_control.learning_github_source import _check_cited_source
-from plugins.mission_control.learning_study_sources import proposal_schema, resolve_proposal, source_spans
+from plugins.mission_control.learning_study_sources import proposal_schema, resolve_proposal
+from plugins.mission_control.study_source_context import CONTEXT_INSTRUCTION, project_source
 
 
 STUDY_INSTRUCTIONS = (
@@ -30,7 +31,7 @@ def study_media(lab: Any, llm: Any, source_id: str, objective: str,
                 *, repository_claim_id: str | None = None,
                 development_feedback: dict[str, Any] | None = None,
                 teaching_material: dict[str, Any] | None = None,
-                timeout: float = 120.0) -> dict[str, Any]:
+                source_context: dict[str, Any] | None = None, timeout: float = 120.0) -> dict[str, Any]:
     """One bounded model call; never evaluates, promotes or executes the output."""
     if llm is None:
         raise ValueError("host model access is unavailable on this surface")
@@ -57,9 +58,9 @@ def study_media(lab: Any, llm: Any, source_id: str, objective: str,
     text = source["extracted_text"] or ""
     if not text.strip() or len(text) > 48000:
         raise ValueError("study requires 1-48000 extracted characters; select a smaller source explicitly")
-    spans = source_spans(text)
+    spans, view = project_source(text, objective, source_context)
     schema = proposal_schema(spans)
-    instructions = STUDY_INSTRUCTIONS
+    instructions = STUDY_INSTRUCTIONS + (CONTEXT_INSTRUCTION if view is not None else "")
     if development_feedback is not None:
         instructions += (
             " Revise the previous procedure using development observations. They are diagnostics, "
@@ -74,6 +75,8 @@ def study_media(lab: Any, llm: Any, source_id: str, objective: str,
         "input": {"objective": objective.strip(), "source_spans": spans},
         "temperature": 0.0, "max_tokens": 2048, "timeout": timeout, "task": "nara_media_study",
     }
+    if view is not None:
+        request["input"]["source_context"] = view
     if development_feedback is not None:
         request["input"]["development_feedback"] = development_feedback
     if teaching_material is not None:
