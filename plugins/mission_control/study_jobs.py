@@ -20,6 +20,7 @@ from plugins.mission_control.learning_runner import load_evaluation_cases
 from plugins.mission_control.study_checkpoint import StudyBusyError, read_checkpoint, study_lock
 from plugins.mission_control.study_cycle import run_study_cycle
 from plugins.mission_control.study_research import SourceResearch, research_options
+from plugins.mission_control.study_source_selection import SourceSelection
 from plugins.mission_control.verification import VerificationService
 
 
@@ -73,7 +74,7 @@ def freeze_protocol(root, spec):
     system = read_checkpoint(files["system_file"])
     if not isinstance(system, dict) or not system:
         raise ValueError("study system must be a nonempty JSON object")
-    payload = {"schema_version": 1, "objective": objective, "domains": domains,
+    payload = {"schema_version": 2, "objective": objective, "domains": domains,
                "max_sources": spec.get("max_sources", 3), "research_seconds": spec.get("research_seconds", 120),
                "max_attempts": attempts, "max_seconds": seconds, "timeout": timeout,
                "development_case_ids": development, "holdout_case_ids": holdout,
@@ -138,8 +139,8 @@ class StudyJobs:
             if not state:
                 state = {"phase": "ready", "deadline_at": time.time() + protocol["max_seconds"]}
                 self._checkpoint(job.mission_id, state)
-            if state["phase"] == "research_running":
-                raise ValueError("interrupted research has unconfirmed tool usage; reconcile before retry")
+            if state["phase"] in {"research_running", "selection_running"}:
+                raise ValueError("interrupted research or selection has unconfirmed usage; reconcile before retry")
             if state["phase"] == "ready":
                 self._research(job, protocol, state)
             result = self._study(job, protocol, state)
@@ -171,12 +172,32 @@ class StudyJobs:
         if not result["sources"]:
             raise ValueError("research did not acquire a usable source")
 
+    def _selected_source(self, job, protocol, state):
+        sources = state["research"]["sources"]
+        # Protocol v1 jobs keep their original search-rank choice on replay.
+        if protocol["schema_version"] == 1:
+            return sources[0]
+        selection = SourceSelection(self.artifacts, LearningFabric.open_default(), self.llm, job.mission_id)
+        if "selection_artifact_id" not in state:
+            remaining = state["deadline_at"] - time.time()
+            if remaining < 1:
+                raise ValueError("study job deadline exhausted before source selection")
+
+            def on_start(request_id):
+                state.update(phase="selection_running", selection_request_artifact_id=request_id)
+                self._checkpoint(job.mission_id, state)
+
+            receipt = selection.run(sources, protocol["objective"], min(120, remaining), on_start)
+            state.update(phase="sources_selected", selection_artifact_id=receipt)
+            self._checkpoint(job.mission_id, state)
+        return selection.restore(state["selection_artifact_id"], sources, protocol["objective"])
+
     def _study(self, job, protocol, state):
         if state["phase"] == "finished":
             return state["result"]
         if not state["research"]["sources"]:
             raise ValueError("research did not acquire a usable source")
-        source = state["research"]["sources"][0]
+        source = self._selected_source(job, protocol, state)
         plan_id = job.mission_id
         try:
             plan = self.registry.study_plan(plan_id)

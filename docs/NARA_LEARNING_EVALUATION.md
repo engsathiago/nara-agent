@@ -254,12 +254,35 @@ nara mission study-jobs
 
 Jobs are missions, not a second mission database. `study-work` selects one pending
 job by gap impact and age. The worker acquires a process-owned lock, archives web
-sources, selects the first acquired source, creates a reserved plan and runs the
+sources, compares their usefulness for the objective, creates a reserved plan and runs the
 existing study/practice/transfer cycle. Missing sources, changed protocol bytes,
 unresolved execution and insufficient transfer leave the gap unresolved. Original
 protocol files can disappear after enqueue; their frozen copies remain the inputs.
 A completed study does not activate a skill automatically. Discovery is ranked by
-the configured search provider; semantic source adjudication is not claimed.
+the configured search provider; the acquired set is then assessed by the host's
+`nara_source_selection` auxiliary model task. Each source needs a bounded reason,
+limitations and 1-3 exact source-span citations; the selected source must be one
+of those assessed as usable. Invented source IDs, missing assessments, invalid
+citations or abstention stop the job without falling back to the first result.
+
+The comparison input contains only the objective and archived source spans, never
+reserved cases, solutions or the private gap diagnosis. Requests, raw responses,
+provider/model, reported usage and resolved quotations are content-addressed
+mission artifacts. The persisted choice is checked against those artifacts and
+source bytes before study or resumption. A single acquired source is explicitly
+recorded as `single_source_not_compared` and incurs no comparison model call.
+Pages with identical archived bytes share one evidence source; acquired URL aliases
+are retained rather than counted as independent corroboration.
+Existing protocol-v1 jobs retain their original first-source choice; new jobs
+freeze protocol v2. This avoids changing an already-declared experiment on replay.
+
+The model's assessment is a relevance judgment, not independent verification of
+source truth, authority or citation entailment. Contradictions and version limits
+can be reported in its limitations, but are not automatically resolved through
+additional external evidence. At most five extracted sources (48,000 characters
+each) are compared in one call capped at 4,096 output tokens and 120 seconds or
+the remaining job deadline. Reported comparison cost is archived separately from
+the subsequent study-cycle usage; unknown usage is not treated as free.
 
 To wake this worker from gateway maintenance, configure the plugin's settings:
 
@@ -292,8 +315,8 @@ stays open, visible through `gap-list`; no evaluator or reserved solution is inv
 Background work is disabled until configured. The same commands remain available
 for explicit operation and inspection.
 
-The job deadline includes research and is not renewed on restart. Confirmed study
-work resumes through `study-resume`; an interrupted research call with unconfirmed
+The job deadline includes research and source comparison and is not renewed on restart. Confirmed study
+work resumes through `study-resume`; an interrupted research or comparison call with unconfirmed
 usage stops for reconciliation instead of repeating potentially billed requests.
 The profile's web providers own transport timeouts: the job deadline blocks new
 calls, but does not claim to interrupt an already-running host request. Web tools

@@ -131,6 +131,11 @@ def register(ctx) -> None:
         sync_task_status(task_id=task_id, status="blocked", run_id=run_id)
 
     ctx.register_auxiliary_task(
+        "nara_source_selection", display_name="Nara source comparison",
+        description="Compare archived sources with cited reasons before procedural study.",
+        defaults={"timeout": 120},
+    )
+    ctx.register_auxiliary_task(
         "nara_media_study", display_name="Nara media study",
         description="Generate source-quoted inactive procedures from archived learning material.",
         defaults={"timeout": 120},

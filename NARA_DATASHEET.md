@@ -222,12 +222,20 @@ hashes na missão. Uma consulta real, sem credenciais, encontrou a documentaçã
 do Python; seus três artefatos e a projeção de eventos foram reabertos e verificados. Isso demonstra
 busca e aquisição, não competência aprendida.
 
+Novos estudos com várias fontes comparam o material pelo objetivo antes de escolher o que estudar.
+O slot de modelo `nara_source_selection` registra razões, limitações e trechos exatos de cada fonte;
+a escolha e o consumo informado ficam em artefatos e sobrevivem ao reinício. Uma resposta inválida
+ou que não encontre material útil interrompe o estudo sem escolher silenciosamente o primeiro
+resultado. Com uma única fonte, o recibo informa que não houve comparação. Essa avaliação é um
+julgamento de relevância pelo modelo, não prova de veracidade das fontes ou de competência aprendida.
+O ensaio real e os testes estão em `research/NARA_SOURCE_COMPARISON_2026-11-26.md`.
+
 `study-enqueue`, `study-work` e `study-jobs` conectam pesquisa, prática e prova à fila de missões.
 Com `study_background` habilitado e um protocolo por categoria, o gateway acorda um worker por
 perfil, respeita prioridade e limites e retoma trabalho confirmado sem bloquear a manutenção.
 Os protocolos são congelados antes da pesquisa; lacunas sem protocolo continuam abertas. Testes
 verticais verificam isolamento, recuperação e ausência de chamadas duplicadas. A criação autônoma
-de exercícios e provas independentes, a seleção semântica entre fontes, a ativação automática de
+de exercícios e provas independentes, a verificação factual de divergências entre fontes, a ativação automática de
 skills admitidas e o ganho longitudinal com modelos reais continuam pendentes. Detalhes e limites:
 `docs/NARA_LEARNING_EVALUATION.md` e `research/NARA_AUTOMATIC_SOURCE_STUDY_2026-11-26.md`.
 
