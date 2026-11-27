@@ -12,6 +12,7 @@ import time
 from plugins.mission_control.competence import CompetenceRegistry
 from plugins.mission_control.store import MissionStore
 from plugins.mission_control.study_jobs import StudyJobs
+from plugins.mission_control.study_checkpoint import StudyBusyError
 
 
 class StudyBackground:
@@ -58,6 +59,8 @@ class StudyBackground:
             report = jobs.run_once()
             if report["status"] != "idle":
                 logger.info("Background study: %s", report)
+        except StudyBusyError:
+            logger.debug("Another executor owns the background study queue")
         except Exception:
             logger.exception("Background study failed; inspect study-jobs and the mission event log")
 

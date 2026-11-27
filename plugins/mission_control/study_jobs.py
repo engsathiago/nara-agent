@@ -17,7 +17,7 @@ from plugins.mission_control.learning_acceptance import validate_minimum_score
 from plugins.mission_control.learning_cli import open_learning_lab
 from plugins.mission_control.learning_fabric import LearningFabric
 from plugins.mission_control.learning_runner import load_evaluation_cases
-from plugins.mission_control.study_checkpoint import read_checkpoint, study_lock
+from plugins.mission_control.study_checkpoint import StudyBusyError, read_checkpoint, study_lock
 from plugins.mission_control.study_cycle import run_study_cycle
 from plugins.mission_control.study_research import SourceResearch, research_options
 from plugins.mission_control.verification import VerificationService
@@ -146,6 +146,8 @@ class StudyJobs:
             state.update(phase="finished", result=result)
             self._checkpoint(job.mission_id, state)
             return self._settle(job, result)
+        except StudyBusyError:
+            return {"job_id": job.mission_id, "status": "busy"}
         except (ValueError, OSError, KeyError) as exc:
             result = {"status": "failed", "reason": str(exc), "error_type": type(exc).__name__}
             state.update(phase="finished", result=result)

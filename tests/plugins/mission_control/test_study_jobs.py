@@ -209,3 +209,18 @@ def test_failed_jobs_preserve_gap_without_competence(job_profile, capsys, failur
     assert registry.gap(plan.gap_id)["state"] == "unresolved" and registry.current() == []
     assert len(calls) == (1 if failure == "holdout" else 0)
     assert MissionStore.open_default().get(queued["mission_id"]).status == "failed"
+
+
+def test_busy_study_plan_keeps_job_pending_without_repeating_research(job_profile, capsys):
+    from plugins.mission_control.study_checkpoint import study_lock
+
+    _, parser, registry, plan, _, path, ctx, calls, web_calls = job_profile
+    _, queued = command(ctx, parser, capsys, "study-enqueue", plan.gap_id, "--protocol-file", str(path))
+    store = MissionStore.open_default()
+    with study_lock(store.path.parent / "learning", queued["mission_id"]):
+        code, result = command(ctx, parser, capsys, "study-work")
+    assert code == 0 and result["status"] == "busy"
+    assert store.get(queued["mission_id"]).status == "running" and calls == []
+    _, result = command(ctx, parser, capsys, "study-work")
+    assert result["status"] == "completed" and len(calls) == 1 and len(web_calls) == 2
+    assert registry.current()[0]["sample_count"] == 1
