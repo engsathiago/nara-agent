@@ -274,6 +274,12 @@ A comparação controlada com a mesma fonte agora foi executada: uma geração p
 estrutura, mas falharam no contrato didático; não houve aprendizado nem ativação de skill.
 Isso calibra o caminho de medição, sem estabelecer superioridade estatística ou encerrar a
 pendência de currículo aprovado. Evidências: `research/NARA_CURRICULUM_MODEL_COMPARISON_2026-11-27.md`.
+O protocolo v8 permite selecionar a explicação por ID de trecho; o runtime recupera o texto
+original e restringe o enunciado das perguntas ao contrato congelado. O validador ZIP identifica
+qual pergunta e citação precisam de correção, sem alterar os critérios de aprovação. Dois novos
+ensaios reais ainda não chegaram ao aprendizado: um falhou em citações sem suporte na extração
+recebida; outro repetiu grupos entre as divisões. Fonte completa e geração confiável continuam
+pendentes. Detalhes: `research/NARA_SOURCE_REFERENCE_TEACHING_2026-11-27.md`.
 
 A publicação de skills avaliadas agora suporta repetição e recuperação após queda do processo.
 A prova continua válida após mudanças de status; arquivos editados não são sobrescritos, e o
