@@ -85,4 +85,6 @@ def job_command(store, args, dispatch, llm):
     if args.mission_action == "study-rollback":
         return jobs.rollback(args.job_id, args.reason)
     return [{"job_id": job.mission_id, "status": job.status, "gap_id": job.constraints["gap_id"],
-             "progress": job.diagnostics.get("study_state")} for job in jobs.jobs()]
+             "progress": job.diagnostics.get("study_state"),
+             "admission": job.diagnostics.get("skill_admission"),
+             "admission_cleanup": job.diagnostics.get("admission_cleanup")} for job in jobs.jobs()]

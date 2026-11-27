@@ -149,6 +149,10 @@ def test_publication_retries_without_new_canaries_or_duplicate_memory(admission_
         patch.setattr(LearningLab, "promote", interrupted)
         _, pending = command(ctx, parser, capsys, "study-work")
     assert pending["status"] == "publication_pending", pending
+    code, listed = command(ctx, parser, capsys, "study-jobs")
+    observed = next(row for row in listed if row["job_id"] == job["mission_id"])
+    assert code == 0 and observed["admission"]["status"] == "publishing"
+    assert observed["admission"]["reason"] == "transient publication interruption"
     store = MissionStore.open_default()
     before = store.get(job["mission_id"]).diagnostics["skill_admission"]
     lab = open_learning_lab()
