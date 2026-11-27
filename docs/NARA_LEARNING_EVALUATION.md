@@ -520,3 +520,48 @@ prove semantic independence in arbitrary subjects or establish real-model learni
 gain. The deterministic tests use a deliberately narrow repository-inspection
 oracle and verify both acceptance and rejection through the production CLI and
 gateway. Broader domain verifiers and live-model evidence remain required.
+
+## Calibrated ZIP task family
+
+`nara mission study-oracles` lists shipped domain oracles and runs their local
+calibration without calling a model. The first family, `zip-manifest`, exports a
+protocol-v4 package:
+
+```bash
+nara mission study-oracle-prepare zip-manifest /absolute/new/zip-study --model qwen3.5:4b
+nara mission study-enqueue GAP_ID --protocol-file /absolute/new/zip-study/protocol.json
+nara mission study-work
+```
+
+The model must already be installed on the local HTTP endpoint (default Ollama
+`http://127.0.0.1:11434/v1`). Export records the runtime revision, dirty status,
+Python version and evaluator hashes. It refuses to overwrite an existing package.
+This family uses public Python documentation, generates three structurally
+different archives, and verifies the lesson's selected API facts against the
+calibrated contract. Renaming files or group IDs cannot disguise an identical
+member topology across splits. Explanation text must be an exact relevant source
+span, rather than unverified generated prose. The supported API facts are
+`ZipFile.infolist`, `ZipInfo.is_dir` and `ZipInfo.file_size`; see the
+[Python reference](https://docs.python.org/3.14/library/zipfile.html).
+
+Before export and again at curriculum validation, the oracle checks correct and
+incorrect reports against real ZIP files: nested members, directories, UTF-8 byte
+counts, boolean counts, extra fields, absent artifacts and empty archives. A
+failed calibration prevents use. This is finite calibration of a narrow domain,
+not proof that every possible validator defect has been excluded.
+
+Practice and transfer launch the real `nara -z` CLI with its terminal tool in a
+disposable working directory. The task must produce `manifest.json`; the oracle
+compares exact file paths, uncompressed byte totals and directory count to actual
+archive metadata, and verifies the archive was not changed. Native canaries use
+the ordinary `-s` skill preloader and bind the exact staged skill hash. Runtime
+errors do not count as task failure scores. Usage and output artifacts are kept;
+unknown monetary cost remains unknown. Temporary profiles are not OS sandboxes.
+
+`evals/generated_curriculum/run_zip_study.py` runs the research-to-study pipeline
+with a local model in a fresh profile, records its installed model digest, and
+withdraws any admitted skill before finishing. Invoke it with
+`scripts/nara-python evals/generated_curriculum/run_zip_study.py --model MODEL`.
+It performs real web/model calls; it is an opt-in evaluation, not a unit test.
+Do not adjust a protocol using already-revealed reserved results. A baseline
+that already solves the task yields no positive gain and must not cause promotion.

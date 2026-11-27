@@ -245,6 +245,13 @@ qualquer domínio. A validação semântica geral das provas, a verificação fa
 entre fontes e o ganho longitudinal com modelos reais continuam pendentes. Detalhes e limites:
 `docs/NARA_LEARNING_EVALUATION.md` e `research/NARA_AUTOMATIC_SOURCE_STUDY_2026-11-26.md`.
 
+O catálogo `study-oracles` agora inclui a família `zip-manifest`: calibra acertos e erros
+conhecidos sobre arquivos ZIP reais e exporta um protocolo de pesquisa e currículo. A prova
+executa a própria CLI da Nara com terminal e verifica o arquivo de resultado. Perguntas ficam
+restritas a fatos verificáveis da API Python; os três conjuntos exigem estruturas diferentes.
+Isso fornece um verificador concreto para essa categoria, sem estabelecer aprendizado geral
+ou ganho com modelo real apenas pela calibração.
+
 A publicação de skills avaliadas agora suporta repetição e recuperação após queda do processo.
 A prova continua válida após mudanças de status; arquivos editados não são sobrescritos, e o
 rollback retira a skill da descoberta do runtime antes de rejeitar sua memória. Testes com
